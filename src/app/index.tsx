@@ -23,6 +23,7 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 
 // UI Primitive & Icons
 import { LoadingScreen } from '../components/ui/LoadingScreen';
+import { AnimatedSplashScreen } from '../components/ui/AnimatedSplashScreen';
 import { Ionicons } from '@expo/vector-icons';
 
 type ActiveTab = 'home' | 'study' | 'quiz' | 'progress' | 'profile';
@@ -40,6 +41,7 @@ export default function IndexScreen() {
 
   // Local navigation states
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<boolean | null>(null);
+  const [isSplashAnimationDone, setIsSplashAnimationDone] = useState(false);
   const [authRoute, setAuthRoute] = useState<AuthRoute>('login');
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [forceLangSelect, setForceLangSelect] = useState(false);
@@ -68,8 +70,21 @@ export default function IndexScreen() {
     }
   }, [user, profile, isInitialized]);
 
-  // Loading phase
-  if (!isInitialized || isOnboardingCompleted === null || authLoading) {
+  // Determine if app data is fully initialized
+  const isAppReady = isInitialized && isOnboardingCompleted !== null && !authLoading;
+
+  // 0. Splash Screen Phase
+  if (!isSplashAnimationDone) {
+    return (
+      <AnimatedSplashScreen 
+        isReady={isAppReady} 
+        onAnimationComplete={() => setIsSplashAnimationDone(true)} 
+      />
+    );
+  }
+
+  // Fallback Loading phase
+  if (!isAppReady) {
     return <LoadingScreen />;
   }
 

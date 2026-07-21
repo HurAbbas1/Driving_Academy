@@ -12,8 +12,8 @@ export const Colors = {
     backgroundElement: '#FFFFFF',
     backgroundSelected: '#F1F5F9',
     textSecondary: '#475569',
-    primary: '#E31837',
-    primaryLight: '#FF3B55',
+    primary: '#E11D48',
+    primaryLight: '#F43F5E',
     success: '#10B981',
     warning: '#F59E0B',
     error: '#EF4444',
@@ -25,8 +25,8 @@ export const Colors = {
     backgroundElement: '#1A1A1A',
     backgroundSelected: '#2A2A2A',
     textSecondary: '#B0B0B0',
-    primary: '#E31837', // Accent Red from logo
-    primaryLight: '#FF3B55',
+    primary: '#E11D48', // Accent Red from logo
+    primaryLight: '#F43F5E',
     success: '#00C853',
     warning: '#FFB300',
     error: '#FF1744',

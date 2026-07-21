@@ -178,18 +178,22 @@ export default function App() {
       const { data: dbUsers, error: usersError } = await supabase
         .from('user_profiles')
         .select('*');
-      if (usersError) throw usersError;
-
-      const mappedUsers = (dbUsers || []).map(u => ({
-        user_id: u.user_id,
-        email: u.profile?.email || 'N/A',
-        displayName: u.profile?.displayName || 'User',
-        streakCurrent: u.profile?.streak?.current ?? 0,
-        streakLongest: u.profile?.streak?.longest ?? 0,
-        createdAt: u.profile?.createdAt || u.created_at || 'N/A',
-        lastActive: u.profile?.lastActive || u.updated_at || 'N/A',
-      }));
-      setUsers(mappedUsers);
+      
+      if (usersError) {
+        console.warn("Could not fetch user_profiles (likely due to RLS). Proceeding with empty users list.", usersError);
+      } else {
+        const mappedUsers = (dbUsers || []).map(u => ({
+          user_id: u.user_id,
+          email: u.profile?.email || 'N/A',
+          displayName: u.profile?.displayName || 'User',
+          language: u.profile?.language || 'en',
+          streakCurrent: u.profile?.streak?.current ?? 0,
+          streakLongest: u.profile?.streak?.longest ?? 0,
+          createdAt: u.profile?.createdAt || u.created_at || 'N/A',
+          lastActive: u.profile?.lastActive || u.updated_at || 'N/A',
+        }));
+        setUsers(mappedUsers);
+      }
     } catch (err) {
       console.error("Error loading data from Supabase:", err);
     }
@@ -995,26 +999,26 @@ export default function App() {
             <div style={styles.card}>
               <h2 style={styles.cardTitle}>Enrolled Language Distribution</h2>
               <div style={styles.barList}>
-                <div style={styles.barRow}>
-                  <span style={styles.barLabel}>English (🇬🇧)</span>
-                  <div style={styles.barBg}><div style={{...styles.barFill, width: '45%'}} /></div>
-                  <span style={styles.barValue}>45%</span>
-                </div>
-                <div style={styles.barRow}>
-                  <span style={styles.barLabel}>Japanese (🇯🇵)</span>
-                  <div style={styles.barBg}><div style={{...styles.barFill, width: '20%'}} /></div>
-                  <span style={styles.barValue}>20%</span>
-                </div>
-                <div style={styles.barRow}>
-                  <span style={styles.barLabel}>Chinese (🇨🇳)</span>
-                  <div style={styles.barBg}><div style={{...styles.barFill, width: '15%'}} /></div>
-                  <span style={styles.barValue}>15%</span>
-                </div>
-                <div style={styles.barRow}>
-                  <span style={styles.barLabel}>Portuguese (🇧🇷)</span>
-                  <div style={styles.barBg}><div style={{...styles.barFill, width: '20%'}} /></div>
-                  <span style={styles.barValue}>20%</span>
-                </div>
+                {(() => {
+                  const total = users.length || 1;
+                  const getPercent = (lang: string) => Math.round((users.filter(u => u.language === lang).length / total) * 100);
+                  const langs = [
+                    { label: 'English', code: 'en' },
+                    { label: 'Japanese', code: 'ja' },
+                    { label: 'Chinese', code: 'zh' },
+                    { label: 'Portuguese', code: 'pt' }
+                  ];
+                  return langs.map(l => {
+                    const percent = getPercent(l.code);
+                    return (
+                      <div key={l.code} style={styles.barRow}>
+                        <span style={styles.barLabel}>{l.label}</span>
+                        <div style={styles.barBg}><div style={{...styles.barFill, width: `${percent}%`}} /></div>
+                        <span style={styles.barValue}>{percent}%</span>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </div>

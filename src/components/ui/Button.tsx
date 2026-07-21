@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, ActivityIndicator, ViewStyle, TextStyle, Animated } from 'react-native';
+import { Pressable, StyleSheet, Text, ActivityIndicator, ViewStyle, TextStyle, Animated, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '../../constants/theme';
 import { useThemeStore } from '../../stores/themeStore';
@@ -110,7 +110,7 @@ export const Button: React.FC<ButtonProps> = ({
     if (disabled || loading) return;
     Animated.spring(scaleAnim, {
       toValue: 0.97,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
       speed: 50,
       bounciness: 4,
     }).start();
@@ -120,7 +120,7 @@ export const Button: React.FC<ButtonProps> = ({
     if (disabled || loading) return;
     Animated.spring(scaleAnim, {
       toValue: 1,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
       speed: 40,
       bounciness: 8,
     }).start();

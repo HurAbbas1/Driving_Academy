@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, ScrollView, SafeAreaView, Pressable, Platform } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, SafeAreaView, Pressable, Platform, ImageBackground, KeyboardAvoidingView } from 'react-native';
 import { Alert } from '../utils/alert';
-import { authenticateOrRegisterUser, loginAsMockUser } from '../services/supabase/auth';
-const auth = {};
+import { authenticateOrRegisterUser } from '../services/supabase/auth';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';
@@ -10,6 +9,7 @@ import { useLanguageStore, LanguageCode } from '../stores/languageStore';
 import { TextInput } from '../components/ui/TextInput';
 import { Button } from '../components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
+import { Card } from '../components/ui/Card';
 
 interface LoginScreenProps {
   onNavigateToSignup: () => void;
@@ -22,7 +22,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 }) => {
   const { t } = useTranslation();
   const theme = useThemeStore((state) => state.theme);
-  const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const colors = Colors[theme];
   const currentLang = useLanguageStore((state) => state.language);
   const setLanguage = useLanguageStore((state) => state.setLanguage);
@@ -31,6 +30,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
   const validate = () => {
     const tempErrors: Record<string, string> = {};
@@ -69,283 +69,292 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        {/* Top Control Bar containing Language Selector and Theme Toggle */}
-        <View style={styles.topControlBar}>
-          <View style={styles.languageContainer}>
-            {(['en', 'ja', 'zh', 'pt'] as LanguageCode[]).map((lang) => {
-              const isActive = currentLang === lang;
-              const labels = {
-                en: '🇬🇧 EN',
-                ja: '🇯🇵 日本語',
-                zh: '🇨🇳 中文',
-                pt: '🇧🇷 PT',
-              };
-              return (
-                <Pressable
-                  key={lang}
-                  onPress={() => setLanguage(lang)}
-                  style={[
-                    styles.langChip,
-                    { borderColor: colors.border },
-                    isActive && { backgroundColor: colors.primary, borderColor: colors.primary }
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.langText,
-                      { color: colors.text },
-                      isActive && { color: '#FFFFFF', fontWeight: 'bold' }
-                    ]}
-                  >
-                    {labels[lang]}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {/* Theme Toggle Chip */}
-          <Pressable
-            onPress={toggleTheme}
-            style={[
-              styles.themeToggleBtn,
-              { borderColor: colors.border, backgroundColor: colors.backgroundElement }
-            ]}
+    <ImageBackground 
+      source={require('../../assets/images/hero_fuji_night.jpg')} 
+      style={styles.backgroundImage}
+      blurRadius={Platform.OS === 'ios' ? 2 : 1}
+    >
+      <View style={styles.overlay}>
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView 
+            style={styles.keyboardAvoid} 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
-            <Ionicons
-              name={theme === 'light' ? 'moon-sharp' : 'sunny-sharp'}
-              size={18}
-              color={theme === 'light' ? colors.primary : '#FFB300'}
-            />
-          </Pressable>
-        </View>
+            <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+              
+              {/* Top Control Bar */}
+              <View style={styles.topControlBar}>
+                <View style={{ position: 'relative', zIndex: 100 }}>
+                  <Pressable 
+                    style={[styles.langSelector, { backgroundColor: 'rgba(0,0,0,0.5)', borderColor: 'rgba(255,255,255,0.2)' }]}
+                    onPress={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                  >
+                    <Ionicons name="globe-outline" size={16} color="#FFF" />
+                    <Text style={[styles.langText, { color: '#FFF' }]}>{currentLang.toUpperCase()}</Text>
+                    <Ionicons name="chevron-down" size={14} color="rgba(255,255,255,0.7)" />
+                  </Pressable>
+                  
+                  {isLangMenuOpen && (
+                    <View style={[styles.langDropdown, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                      {['en', 'ja', 'zh', 'pt'].map((lang) => (
+                        <Pressable
+                          key={lang}
+                          style={[styles.langDropdownItem, currentLang === lang && { backgroundColor: `${colors.primary}15` }]}
+                          onPress={() => {
+                            setLanguage(lang as LanguageCode);
+                            setIsLangMenuOpen(false);
+                          }}
+                        >
+                          <Text style={[styles.langDropdownText, { color: currentLang === lang ? colors.primary : colors.text }]}>
+                            {lang.toUpperCase()}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              </View>
 
-        <View style={styles.header}>
-          {/* Circular logo shape matching branding accent red */}
-          <View style={[styles.logoIcon, { backgroundColor: colors.primary, ...Platform.select({ web: { boxShadow: `0 4px 8px ${colors.primary}66` } as any, default: { shadowColor: colors.primary } }) }]}>
-            <Text style={styles.logoText}>NCS</Text>
-          </View>
-          <Text style={[styles.title, { color: colors.text }]}>{t('auth.welcomeBack')}</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            {t('common.appName')}
-          </Text>
-        </View>
+              {/* Logo & Welcome Area */}
+              <View style={styles.headerArea}>
+                <View style={[styles.iconBox, { backgroundColor: colors.primary }]}>
+                  <Text style={styles.logoLetter}>N<Text style={{color: '#fff'}}>S</Text></Text>
+                </View>
+                <Text style={styles.welcomeTitle}>{t("auth.welcomeBack")}</Text>
+                <Text style={styles.welcomeSubtitle}>{t("auth.academyName")}</Text>
+              </View>
 
-        <View style={styles.form}>
-          <TextInput
-            label="Your Name"
-            placeholder="Enter your name"
-            value={name}
-            onChangeText={(text) => {
-              setName(text);
-              if (errors.name) setErrors({ ...errors, name: '' });
-            }}
-            error={errors.name}
-          />
+              {/* Glassmorphic Login Form */}
+              <View style={[styles.formCard, { backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.85)' }]}>
+                
+                <TextInput
+                  label={t("auth.yourName")}
+                  placeholder={t("auth.enterName")}
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                  error={errors.name}
+                  style={styles.input}
+                />
 
-          <TextInput
-            label="Password"
-            placeholder="Min. 6 characters"
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              if (errors.password) setErrors({ ...errors, password: '' });
-            }}
-            secureTextEntry
-            autoCapitalize="none"
-            error={errors.password}
-          />
+                <TextInput
+                  label={t("auth.password")}
+                  placeholder={t("auth.enterPassword")}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  error={errors.password}
+                  style={styles.input}
+                />
+                <Text style={[styles.passwordHint, { color: 'rgba(255,255,255,0.6)' }]}>
+                  {t("auth.passwordHint")}
+                </Text>
 
-          <Pressable onPress={onNavigateToForgotPassword} style={styles.forgotContainer}>
-            <Text style={[styles.forgotText, { color: colors.primary }]}>
-              {t('auth.forgotPassword')}
-            </Text>
-          </Pressable>
+                <Pressable onPress={onNavigateToForgotPassword} style={styles.forgotPassword}>
+                  <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>{t("auth.forgotPassword")}</Text>
+                </Pressable>
 
-          <Button
-            title="Start Learning (Sign In / Register)"
-            onPress={handleLogin}
-            loading={loading}
-            style={styles.loginBtn}
-          />
+                <Button
+                  title={loading ? t('auth.login') + '...' : t('auth.signInRegister')}
+                  onPress={handleLogin}
+                  disabled={loading}
+                  style={styles.loginBtn}
+                />
 
-          <Button
-            title="Bypass Login (Developer Mode)"
-            onPress={loginAsMockUser}
-            variant="secondary"
-            style={{ marginTop: 12, width: '100%' }}
-          />
-        </View>
+                <View style={styles.dividerContainer}>
+                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                  <Text style={[styles.dividerText, { color: colors.textSecondary }]}>{t("auth.or")}</Text>
+                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                </View>
 
-        <View style={styles.dividerContainer}>
-          <View style={[styles.line, { backgroundColor: colors.border }]} />
-          <Text style={[styles.dividerText, { color: colors.textSecondary }]}>OR</Text>
-          <View style={[styles.line, { backgroundColor: colors.border }]} />
-        </View>
+                <Button
+                  title={t("auth.googleSignInComingSoon")}
+                  onPress={handleGoogleSignIn}
+                  variant="secondary"
+                  style={styles.socialBtn}
+                />
 
-        <View style={styles.socialContainer}>
-          <Button
-            title="Sign in with Google (coming soon)"
-            onPress={handleGoogleSignIn}
-            variant="secondary"
-            disabled={true}
-            style={[styles.socialBtn, { opacity: 0.6 }]}
-          />
+                <Button
+                  title={t("auth.appleSignInComingSoon")}
+                  onPress={handleAppleSignIn}
+                  variant="secondary"
+                  style={styles.socialBtn}
+                />
 
-          <Button
-            title="Sign in with Apple (coming soon)"
-            onPress={handleAppleSignIn}
-            variant="secondary"
-            disabled={true}
-            style={[styles.socialBtn, { opacity: 0.6 }]}
-          />
-        </View>
+                <Text style={[styles.hintText, { color: colors.textSecondary }]}>
+                  Type any name and password. If the name is new, we will automatically register a new profile for you!
+                </Text>
 
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: colors.textSecondary, textAlign: 'center', fontSize: 13, paddingHorizontal: 12 }]}>
-            Type any name and password. If the name is new, we will automatically register a new profile for you!
-          </Text>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+              </View>
+
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)', // Dim the background to make the form pop
+  },
+  safeArea: {
+    flex: 1,
+  },
+  keyboardAvoid: {
     flex: 1,
   },
   scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
-    paddingVertical: 32,
-    alignItems: 'center',
-    width: '100%',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-    marginTop: 20,
-  },
-  logoIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    paddingTop: 16,
+    paddingBottom: 40,
     justifyContent: 'center',
+  },
+  topControlBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 40,
+    marginTop: Platform.OS === 'ios' ? 0 : 20,
+    zIndex: 1000,
+    elevation: 1000,
+  },
+  langSelector: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  langText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  langDropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    marginTop: 8,
+    width: 80,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    zIndex: 999,
     ...Platform.select({
-      web: { boxShadow: '0 4px 8px rgba(0,0,0,0.4)' } as any,
-      default: {
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 8,
-        elevation: 8,
-      },
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
+      android: { elevation: 20 },
+      web: { boxShadow: '0 8px 24px rgba(0,0,0,0.12)' } as any,
     }),
   },
-  logoText: {
-    color: '#FFFFFF',
-    fontSize: 24,
+  langDropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  langDropdownText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  headerArea: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  iconBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    ...Platform.select({
+      ios: { shadowColor: '#E31837', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 12 },
+      android: { elevation: 10 },
+      web: { boxShadow: '0px 4px 12px rgba(227, 24, 55, 0.5)' } as any
+    }),
+  },
+  logoLetter: {
+    color: '#000',
+    fontSize: 28,
     fontWeight: '900',
+    fontStyle: 'italic',
+    letterSpacing: -1,
   },
-  title: {
-    fontSize: 26,
-    fontWeight: '800',
+  welcomeTitle: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#FFFFFF',
     marginBottom: 8,
+    ...Platform.select({
+      ios: { textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 10 },
+      android: { textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 10 },
+      web: { textShadow: '0px 2px 10px rgba(0,0,0,0.75)' } as any
+    }),
   },
-  subtitle: {
+  welcomeSubtitle: {
     fontSize: 14,
     fontWeight: '500',
+    color: 'rgba(255,255,255,0.85)',
   },
-  form: {
-    width: '100%',
+  formCard: {
+    padding: 24,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20 },
+      android: { elevation: 15 },
+    }),
+  },
+  input: {
+    marginBottom: 16,
+  },
+  passwordHint: {
+    fontSize: 11,
+    marginTop: -8,
+    marginBottom: 16,
+    marginLeft: 4,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
     marginBottom: 24,
   },
-  forgotContainer: {
-    alignSelf: 'flex-end',
-    marginVertical: 12,
-  },
-  forgotText: {
-    fontSize: 14,
+  forgotPasswordText: {
+    fontSize: 12,
     fontWeight: '600',
   },
   loginBtn: {
-    marginTop: 16,
-    width: '100%',
+    marginBottom: 24,
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 24,
-    width: '100%',
+    marginBottom: 24,
   },
-  line: {
+  divider: {
     flex: 1,
     height: 1,
   },
   dividerText: {
     marginHorizontal: 16,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
-  socialContainer: {
-    width: '100%',
-    gap: 12,
-    marginBottom: 32,
-  },
   socialBtn: {
-    width: '100%',
+    marginBottom: 12,
   },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  footerText: {
-    fontSize: 15,
-  },
-  signupLink: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  topControlBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingVertical: 12,
-    gap: 8,
-  },
-  languageContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
-    flex: 1,
-  },
-  langChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  langText: {
-    fontSize: 12,
-  },
-  themeToggleBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...Platform.select({
-      web: {
-        cursor: 'pointer',
-      } as any,
-    }),
+  hintText: {
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: 16,
+    lineHeight: 16,
   },
 });

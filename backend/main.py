@@ -56,8 +56,11 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "https://piknvoejjwgbrgewifeq.supabase.
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_l_Ue_-YjL5kd9MgHeRRD9w_WEVkILIX")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-client_ai_1 = genai.Client(api_key=os.getenv("GEMINI_KEY_1"))
-client_ai_2 = genai.Client(api_key=os.getenv("GEMINI_KEY_2"))
+api_key_1 = os.getenv("GEMINI_KEY_1")
+client_ai_1 = genai.Client(api_key=api_key_1) if api_key_1 else None
+
+api_key_2 = os.getenv("GEMINI_KEY_2")
+client_ai_2 = genai.Client(api_key=api_key_2) if api_key_2 else None
 
 def clean_and_parse_json(raw_text: str) -> dict:
     """Strip markdown fences and parse raw JSON text."""

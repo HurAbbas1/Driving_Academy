@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { View, TextInput as RNTextInput, StyleSheet, Text, Animated, TextInputProps as RNTextInputProps, ViewStyle, TextStyle } from 'react-native';
+import { View, TextInput as RNTextInput, StyleSheet, Text, Animated, TextInputProps as RNTextInputProps, ViewStyle, TextStyle, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/theme';
 import { useThemeStore } from '../../stores/themeStore';
 
@@ -20,11 +21,14 @@ export const TextInput: React.FC<TextInputProps> = ({
   value,
   onFocus,
   onBlur,
+  secureTextEntry,
+  style,
   ...props
 }) => {
   const theme = useThemeStore((state) => state.theme);
   const colors = Colors[theme];
   const [isFocused, setIsFocused] = useState(false);
+  const [isPasswordHidden, setIsPasswordHidden] = useState(secureTextEntry || false);
   
   // Animation value starts at 1 if input already has a value, otherwise 0
   const focusAnim = useRef(new Animated.Value(value ? 1 : 0)).current;
@@ -59,7 +63,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   });
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={[styles.container, containerStyle, style]}>
       <Animated.Text
         style={[
           styles.label,
@@ -80,22 +84,38 @@ export const TextInput: React.FC<TextInputProps> = ({
       >
         {label}
       </Animated.Text>
-      <RNTextInput
-        style={[
-          styles.input,
-          {
-            color: colors.text,
-            borderColor: error ? colors.error : isFocused ? colors.primary : colors.border,
-            backgroundColor: colors.backgroundElement,
-          },
-          inputStyle,
-        ]}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        value={value}
-        placeholderTextColor="transparent" // use floating labels instead of standard placeholder
-        {...props}
-      />
+      <View style={styles.inputWrapper}>
+        <RNTextInput
+          style={[
+            styles.input,
+            {
+              color: colors.text,
+              borderColor: error ? colors.error : isFocused ? colors.primary : colors.border,
+              backgroundColor: colors.backgroundElement,
+              paddingRight: secureTextEntry ? 45 : 16,
+            },
+            inputStyle,
+          ]}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          value={value}
+          secureTextEntry={isPasswordHidden}
+          placeholderTextColor="transparent"
+          {...props}
+        />
+        {secureTextEntry && (
+          <Pressable 
+            style={styles.eyeIcon} 
+            onPress={() => setIsPasswordHidden(!isPasswordHidden)}
+          >
+            <Ionicons 
+              name={isPasswordHidden ? 'eye-off-outline' : 'eye-outline'} 
+              size={20} 
+              color={colors.textSecondary} 
+            />
+          </Pressable>
+        )}
+      </View>
       {error ? <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text> : null}
     </View>
   );
@@ -112,6 +132,16 @@ const styles = StyleSheet.create({
     left: 12,
     zIndex: 1,
     fontWeight: '500',
+  },
+  inputWrapper: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 12,
+    padding: 4,
+    zIndex: 2,
   },
   input: {
     borderWidth: 1.5,

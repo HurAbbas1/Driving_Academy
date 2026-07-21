@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, StyleSheet, Text, SafeAreaView, ScrollView, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Text, SafeAreaView, ScrollView, Platform, ImageBackground, TouchableOpacity, Image, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';
 import { useAuthStore } from '../stores/authStore';
 import { useQuizStore } from '../stores/quizStore';
 import { useStudyStore } from '../stores/studyStore';
-import { useLanguageStore } from '../stores/languageStore';
+import { useLanguageStore, LanguageCode } from '../stores/languageStore';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { ProgressBar } from '../components/ui/ProgressBar';
@@ -56,6 +56,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
     : 0;
 
   const currentLang = useLanguageStore((state) => state.language);
+  const setLanguage = useLanguageStore((state) => state.setLanguage);
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
   // Resume title details
   const getResumeTitle = () => {
@@ -71,111 +73,199 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Background ambient radial gradient simulation wrapper */}
-      <View style={[
-        styles.gradientOverlay,
-        {
-          backgroundColor: colors.background,
-          ...Platform.select({
-            web: {
-              backgroundImage: theme === 'dark' 
-                ? 'radial-gradient(circle at 50% 50%, rgba(227, 24, 55, 0.05) 0%, rgba(13, 13, 13, 0) 70%)'
-                : 'radial-gradient(circle at 50% 50%, rgba(227, 24, 55, 0.03) 0%, rgba(248, 250, 252, 0) 70%)',
-            } as any,
-          })
-        }
-      ]} />
-      
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header Section */}
-        <View style={styles.header}>
-          <View>
-            <Text style={[styles.welcomeText, { color: colors.textSecondary }]}>{t('home.welcome')}</Text>
-            <Text style={[styles.nameText, { color: colors.text }]}>{username} 👋</Text>
-          </View>
-          <View style={[styles.streakContainer, { backgroundColor: `${colors.warning}15`, borderColor: `${colors.warning}30`, borderWidth: 1 }]}>
-            <Ionicons name="flame" size={20} color={colors.warning} />
-            <Text style={[styles.streakText, { color: colors.warning }]}>{t('home.streakDays', { days: streak })}</Text>
-          </View>
+        
+        {/* Top Header / App Branding Area */}
+        <View style={styles.topNav}>
+           <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Text style={{color: colors.primary, fontSize: 32, fontWeight: '900', fontStyle: 'italic', letterSpacing: -2}}>N<Text style={{color: colors.text}}>S</Text></Text>
+              <View style={{marginLeft: 12}}>
+                 <Text style={{color: colors.text, fontWeight: '800', fontSize: 16, letterSpacing: 1.5}}>NEW SUNSHINE</Text>
+                 <Text style={{color: colors.primary, fontWeight: '700', fontSize: 10, letterSpacing: 2}}>DRIVING ACADEMY</Text>
+              </View>
+           </View>
+           <View style={{ position: 'relative', zIndex: 50 }}>
+             <Pressable 
+               style={[styles.langSelector, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}
+               onPress={() => setIsLangMenuOpen(!isLangMenuOpen)}
+             >
+               <Ionicons name="globe-outline" size={16} color={colors.text} />
+               <Text style={[styles.langText, { color: colors.text }]}>{currentLang.toUpperCase()}</Text>
+               <Ionicons name="chevron-down" size={14} color={colors.textSecondary} />
+             </Pressable>
+             
+             {isLangMenuOpen && (
+               <View style={[styles.langDropdown, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
+                 {['en', 'ja', 'zh', 'pt'].map((lang) => (
+                   <Pressable
+                     key={lang}
+                     style={[styles.langDropdownItem, currentLang === lang && { backgroundColor: `${colors.primary}15` }]}
+                     onPress={() => {
+                       setLanguage(lang as LanguageCode);
+                       setIsLangMenuOpen(false);
+                     }}
+                   >
+                     <Text style={[styles.langDropdownText, { color: currentLang === lang ? colors.primary : colors.text }]}>
+                       {lang.toUpperCase()}
+                     </Text>
+                   </Pressable>
+                 ))}
+               </View>
+             )}
+           </View>
         </View>
+
+        {/* Huge Hero Image Section */}
+        <ImageBackground 
+           source={require('../../assets/images/hero_fuji_night.jpg')} 
+           style={styles.heroBackground}
+           imageStyle={{ borderRadius: 28, opacity: 0.85 }}
+        >
+          <View style={styles.heroOverlay}>
+             <View style={styles.heroTopRow}>
+                <View style={[styles.heroLocationBadge, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+                  <Ionicons name="location" size={14} color={colors.primary} />
+                  <Text style={[styles.heroLocationText, { color: '#FFF' }]}>ACROSS JAPAN</Text>
+                </View>
+                <View style={[styles.heroLocationBadge, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+                  <Ionicons name="globe" size={14} color={'#FFF'} />
+                  <Text style={[styles.heroLocationText, { color: '#FFF' }]}>5 LANGS</Text>
+                </View>
+             </View>
+             
+             <View style={styles.heroBottomContent}>
+                <Text style={styles.heroTitle}>{t('home.bannerTitle')}</Text>
+                <Text style={styles.heroSubtitle}>{t('home.bannerSub')}</Text>
+                
+                {/* Language Pills */}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.langPills}>
+                   <View style={[styles.langPill, {borderColor: colors.primary, backgroundColor: `${colors.primary}20`}]}><Text style={[styles.langPillText, {color: colors.primary}]}>Hello</Text></View>
+                   <View style={styles.langPill}><Text style={styles.langPillText}>こんにちは</Text></View>
+                   <View style={styles.langPill}><Text style={styles.langPillText}>你好</Text></View>
+                   <View style={styles.langPill}><Text style={styles.langPillText}>Xin chào</Text></View>
+                   <View style={styles.langPill}><Text style={styles.langPillText}>안녕하세요</Text></View>
+                </ScrollView>
+             </View>
+          </View>
+        </ImageBackground>
 
         {/* Bento Grid Layout */}
         <View style={styles.bentoGrid}>
-          {/* Row 1: Large Highlight Banner */}
-          <Card variant="glass" style={styles.bentoBanner}>
-            <Text style={[styles.bannerTitle, { color: colors.text }]}>{t('home.bannerTitle')}</Text>
-            <Text style={[styles.bannerSubtitle, { color: colors.textSecondary }]}>{t('home.bannerSub')}</Text>
-            <Badge label="English, 日本語, 中文, Português" variant="primary" style={styles.bannerBadge} />
+
+          {/* Practice Quiz Highlight Row */}
+          <Card style={styles.practiceQuizCard} variant="glass" onPress={() => onNavigateToTab?.('quiz')}>
+             <View style={styles.practiceRow}>
+                <View style={[styles.trophyIconBg, { backgroundColor: `${colors.primary}15`, borderColor: `${colors.primary}30` }]}>
+                   <Ionicons name="trophy" size={28} color={colors.primary} />
+                </View>
+                <View style={{flex: 1}}>
+                   <Text style={[styles.practiceTitle, { color: colors.text }]}>{t("home.practiceQuizTitle")}</Text>
+                   <Text style={[styles.practiceSub, { color: colors.textSecondary }]}>{t("home.practiceQuizSub")}</Text>
+                </View>
+             </View>
+             <View style={styles.practiceStatsRow}>
+                <View style={styles.statBox}>
+                   <Ionicons name="checkmark-circle-outline" size={20} color={colors.primary} style={{marginRight: 6}} />
+                   <View>
+                     <Text style={[styles.statValue, { color: colors.text }]}>{completedQuizzes}</Text>
+                     <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("home.quizzesCompleted")}</Text>
+                   </View>
+                </View>
+                <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.statBox}>
+                   <Ionicons name="star" size={20} color={colors.warning} style={{marginRight: 6}} />
+                   <View>
+                     <Text style={[styles.statValue, { color: colors.text }]}>{avgScore}%</Text>
+                     <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("quiz.averageScore")}</Text>
+                   </View>
+                </View>
+                <View style={[styles.takeQuizBtn, { borderColor: colors.primary }]}>
+                  <Text style={[styles.takeQuizText, { color: colors.primary }]}>{t('home.takeFirstQuiz')}</Text>
+                  <Ionicons name="arrow-forward" size={16} color={colors.primary} style={{ marginLeft: 6 }} />
+                </View>
+             </View>
           </Card>
 
-          {/* Row 2: Side-by-Side Asymmetric Bento Cards (Stats) */}
+          {/* Progress Split Row */}
           <View style={styles.bentoRow}>
-            <Card style={[styles.bentoCardHalf, { flex: 1.1 }]} variant="glass">
-              <View style={[styles.bentoIconWrapper, { backgroundColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(15, 23, 42, 0.04)' }]}>
-                <Ionicons name="checkbox-outline" size={22} color={colors.primary} />
+            {/* License Rules */}
+            <Card style={[styles.bentoCardHalf, { flex: 1 }]} variant="glass" onPress={handleResumeReading}>
+              <View style={styles.cardHeaderRow}>
+                 <View style={[styles.bentoIconWrapper, { backgroundColor: `${colors.primary}15` }]}>
+                   <Ionicons name="clipboard-outline" size={22} color={colors.primary} />
+                 </View>
+                 <Text style={[styles.cardTitle, { color: colors.text }]}>{t("home.licenseRulesTitle")}</Text>
               </View>
-              <Text style={[styles.bentoVal, { color: colors.text }]}>{completedQuizzes}</Text>
-              <Text style={[styles.bentoLbl, { color: colors.textSecondary }]}>{t('home.quizzesCompleted')}</Text>
+              <Text style={[styles.cardDesc, { color: colors.textSecondary }]}>{t("home.licenseRulesSub")}</Text>
+              
+              <View style={styles.progressSection}>
+                 <View style={styles.progressHeader}>
+                   <Text style={[styles.progressLbl, { color: colors.textSecondary }]}>{t("home.progress")}</Text>
+                   <Text style={[styles.progressVal, {color: colors.text}]}>{studyProgressPercent}%</Text>
+                 </View>
+                 <ProgressBar progress={studyProgressPercent / 100} style={{marginBottom: 12, height: 6}} />
+                 <View style={styles.cardActionRow}>
+                    <Text style={[styles.cardActionText, { color: colors.primary }]}>{resumeTitle ? t('home.resumeReading') : t('home.startLearning')}</Text>
+                    <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+                 </View>
+              </View>
             </Card>
 
-            <Card style={[styles.bentoCardHalf, { flex: 0.9 }]} variant="glass">
-              <View style={[styles.bentoIconWrapper, { backgroundColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(15, 23, 42, 0.04)' }]}>
-                <Ionicons name="star-outline" size={22} color={colors.success} />
+            {/* Traffic Quizzes */}
+            <Card style={[styles.bentoCardHalf, { flex: 1 }]} variant="glass" onPress={() => onNavigateToTab?.('quiz')}>
+              <View style={styles.cardHeaderRow}>
+                 <View style={[styles.bentoIconWrapper, { backgroundColor: `${colors.error}15` }]}>
+                   <Ionicons name="help-circle-outline" size={24} color={colors.error} />
+                 </View>
+                 <Text style={[styles.cardTitle, { color: colors.text }]}>{t("home.trafficQuizzesTitle")}</Text>
               </View>
-              <Text style={[styles.bentoVal, { color: colors.text }]}>{avgScore}%</Text>
-              <Text style={[styles.bentoLbl, { color: colors.textSecondary }]}>{t('quiz.averageScore')}</Text>
+              <Text style={[styles.cardDesc, { color: colors.textSecondary }]}>{t("home.trafficQuizzesSub")}</Text>
+              
+              <View style={styles.progressSection}>
+                 <View style={styles.progressHeader}>
+                   <Text style={[styles.progressLbl, { color: colors.textSecondary }]}>{t("home.progress")}</Text>
+                   <Text style={[styles.progressVal, {color: colors.text}]}>{avgScore}%</Text>
+                 </View>
+                 <ProgressBar progress={avgScore / 100} style={{marginBottom: 12, height: 6}} />
+                 <View style={styles.cardActionRow}>
+                    <Text style={[styles.cardActionText, { color: colors.error }]}>{t("home.startPracticing")}</Text>
+                    <Ionicons name="arrow-forward" size={16} color={colors.error} />
+                 </View>
+              </View>
             </Card>
           </View>
 
-          {/* Row 3: Bookmarks & Streak / Resume */}
-          <View style={styles.bentoRow}>
-            <Card onPress={handleGoToBookmarks} style={[styles.bentoCardHalf, { flex: 0.8, padding: 16 }]} variant="glass">
-              <View style={[styles.bentoIconWrapper, { backgroundColor: `${colors.warning}15` }]}>
-                <Ionicons name="bookmark" size={20} color={colors.warning} />
-              </View>
-              <Text style={[styles.bentoTitleSmall, { color: colors.text }]}>{t('quiz.bookmarkedQuestions')}</Text>
-              <Text style={[styles.bentoSubSmall, { color: colors.textSecondary }]}>
-                {bookmarkedQuestions.length} saved
-              </Text>
-            </Card>
-
-            {resumeTitle ? (
-              <Card style={[styles.bentoCardHalf, { flex: 1.2 }]} onPress={handleResumeReading} variant="glass">
-                <View style={[styles.bentoIconWrapper, { backgroundColor: `${colors.primary}15` }]}>
-                  <Ionicons name="play" size={20} color={colors.primary} />
-                </View>
-                <Text style={[styles.bentoTitleSmall, { color: colors.text }]}>{t('home.resumeReading')}</Text>
-                <Text style={[styles.bentoSubSmall, { color: colors.textSecondary }]} numberOfLines={1}>
-                  {resumeTitle}
-                </Text>
-              </Card>
-            ) : (
-              <Card style={[styles.bentoCardHalf, { flex: 1.2 }]} variant="glass">
-                <View style={[styles.bentoIconWrapper, { backgroundColor: `${colors.warning}15` }]}>
-                  <Ionicons name="flame" size={20} color={colors.warning} />
-                </View>
-                <Text style={[styles.bentoTitleSmall, { color: colors.text }]}>{t('home.dailyStreak')}</Text>
-                <Text style={[styles.bentoSubSmall, { color: colors.textSecondary }]}>
-                  {t('home.daysActive', { count: streak })}
-                </Text>
-              </Card>
-            )}
-          </View>
-
-          {/* Row 4: Large Study Progress Card (Full Width) */}
-          <Card style={styles.bentoProgressCard} variant="glass">
-            <View style={styles.progressHeader}>
-              <Text style={[styles.progressTitle, { color: colors.text }]}>{t('progress.studyProgress')}</Text>
-              <Text style={[styles.progressPercent, { color: colors.primary }]}>{studyProgressPercent}%</Text>
+          {/* Safety Tip */}
+          <Card style={styles.safetyTipCard} variant="glass">
+            <View style={styles.safetyIconWrapper}>
+              <Ionicons name="shield-checkmark" size={24} color="#FFF" />
             </View>
-            <ProgressBar progress={studyProgressPercent / 100} style={styles.progressBar} />
-            <View style={styles.progressFooter}>
-              <Ionicons name="book-outline" size={16} color={colors.textSecondary} />
-              <Text style={[styles.progressFooterText, { color: colors.textSecondary, marginLeft: 6 }]}>
-                {t('home.topicsRead', { completed: completedSubtopics, total: totalSubtopics })}
+            <View style={styles.safetyContent}>
+              <Text style={[styles.safetyTitle, { color: colors.primary }]}>{t("home.safetyTipTitle")}</Text>
+              <Text style={[styles.safetyDesc, { color: colors.text }]}>
+                {t('home.safetyTipMessage')}
               </Text>
             </View>
+            <Ionicons name="car-outline" size={48} color={colors.textSecondary} style={{ opacity: 0.2, position: 'absolute', right: 20, bottom: 20 }} />
           </Card>
+
+          {/* Huge Call to Action Row */}
+          <TouchableOpacity activeOpacity={0.9} onPress={() => onNavigateToTab?.('study')} style={{ marginTop: 8 }}>
+            <View style={[styles.ctaContainer, { backgroundColor: colors.backgroundElement, borderColor: colors.border, borderWidth: 1 }]}>
+               <View style={styles.ctaIconBg}>
+                  <Ionicons name="steering-wheel" size={32} color={colors.primary} />
+               </View>
+               <View style={styles.ctaTextContainer}>
+                 <Text style={[styles.ctaTitle, { color: colors.text }]}>{t("home.ctaTitle")}</Text>
+                 <Text style={[styles.ctaSub, { color: colors.textSecondary }]}>{t("home.ctaSub")}</Text>
+               </View>
+               <View style={[styles.ctaButton, { backgroundColor: colors.primary }]}>
+                  <Text style={styles.ctaButtonText}>{t("home.ctaButton")}</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
+               </View>
+            </View>
+          </TouchableOpacity>
+
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -185,75 +275,187 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: 'relative',
-  },
-  gradientOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     paddingBottom: 40,
-    zIndex: 2,
   },
-  header: {
+  topNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 20,
+    marginTop: Platform.OS === 'ios' ? 0 : 20,
+    zIndex: 100,
+    elevation: 10,
   },
-  welcomeText: {
-    fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  nameText: {
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-    marginTop: 2,
-  },
-  streakContainer: {
+  langSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
     paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  langText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  langDropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    marginTop: 8,
+    width: 80,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    zIndex: 999,
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
+      android: { elevation: 20 },
+      web: { boxShadow: '0 8px 24px rgba(0,0,0,0.12)' } as any,
+    }),
+  },
+  langDropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  langDropdownText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  heroBackground: {
+    width: '100%',
+    height: 380,
+    marginBottom: 16,
+    borderRadius: 28,
+  },
+  heroOverlay: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 28,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  heroLocationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
     gap: 6,
   },
-  streakText: {
-    fontSize: 13,
+  heroLocationText: {
+    fontSize: 11,
     fontWeight: '700',
+    letterSpacing: 1,
+  },
+  heroBottomContent: {
+    marginTop: 'auto',
+  },
+  heroTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    lineHeight: 38,
+    marginBottom: 12,
+  },
+  heroSubtitle: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.85)',
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  langPills: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  langPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  langPillText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '600',
   },
   bentoGrid: {
     gap: 16,
   },
-  bentoBanner: {
-    padding: 24,
+  practiceQuizCard: {
+    padding: 20,
     borderRadius: 24,
-    // Add soft shadow glow
-    ...Platform.select({
-      web: { boxShadow: '0 8px 32px rgba(227, 24, 55, 0.08)' } as any,
-    }),
   },
-  bannerTitle: {
-    fontSize: 22,
+  practiceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 24,
+  },
+  trophyIconBg: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  practiceTitle: {
+    fontSize: 20,
     fontWeight: '800',
-    marginBottom: 8,
-    letterSpacing: 0.5,
+    marginBottom: 4,
   },
-  bannerSubtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 20,
+  practiceSub: {
+    fontSize: 13,
+    lineHeight: 18,
   },
-  bannerBadge: {
-    alignSelf: 'flex-start',
+  practiceStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  statBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  statLabel: {
+    fontSize: 10,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
+    marginHorizontal: 12,
+  },
+  takeQuizBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  takeQuizText: {
+    fontSize: 11,
+    fontWeight: '700',
+    textAlign: 'left',
   },
   bentoRow: {
     flexDirection: 'row',
@@ -261,66 +463,126 @@ const styles = StyleSheet.create({
   },
   bentoCardHalf: {
     padding: 20,
-    borderRadius: 20,
-    minHeight: 140,
-    justifyContent: 'space-between',
+    borderRadius: 24,
+  },
+  cardHeaderRow: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    marginBottom: 12,
   },
   bentoIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'flex-start',
+    marginBottom: 12,
   },
-  bentoVal: {
-    fontSize: 28,
-    fontWeight: '900',
-    marginTop: 12,
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '800',
   },
-  bentoLbl: {
+  cardDesc: {
     fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
+    lineHeight: 18,
+    marginBottom: 20,
   },
-  bentoTitleSmall: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginTop: 12,
-  },
-  bentoSubSmall: {
-    fontSize: 11,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  bentoProgressCard: {
-    padding: 24,
-    borderRadius: 24,
+  progressSection: {
+    marginTop: 'auto',
   },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
-  progressTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+  progressLbl: {
+    fontSize: 12,
+    fontWeight: '600',
   },
-  progressPercent: {
-    fontSize: 15,
+  progressVal: {
+    fontSize: 14,
     fontWeight: '800',
   },
-  progressBar: {
-    marginBottom: 16,
-  },
-  progressFooter: {
+  cardActionRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  cardActionText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  safetyTipCard: {
+    padding: 20,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 16,
+  },
+  safetyIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E11D48',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  progressFooterText: {
+  safetyContent: {
+    flex: 1,
+  },
+  safetyTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  safetyDesc: {
     fontSize: 13,
-    fontWeight: '500',
+    lineHeight: 20,
+  },
+  ctaContainer: {
+    borderRadius: 24,
+    padding: 24,
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  ctaIconBg: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(225, 29, 72, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  ctaTextContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  ctaTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  ctaSub: {
+    fontSize: 13,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  ctaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    width: '100%',
+  },
+  ctaButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
   },
 });
