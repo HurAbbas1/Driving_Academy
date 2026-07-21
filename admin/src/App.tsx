@@ -683,8 +683,7 @@ export default function App() {
               text: opt,
               isCorrect: idx === q.correctOptionIndex
             })),
-            explanation: q.explanation,
-            ref_chapter_id: dynamicChapterId
+            explanation: q.explanation
           };
         });
 
