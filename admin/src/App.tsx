@@ -631,7 +631,7 @@ export default function App() {
 
       // 0. Insert Chapter
       if (parsedData.chapter) {
-        const { data: existingChapters } = await supabase.from('handbook_chapters')
+        const { data: existingChapters } = await supabase.from('chapters')
           .select('order_num')
           .eq('book_id', visualBookId)
           .order('order_num', { ascending: false })
@@ -639,7 +639,7 @@ export default function App() {
           
         const chapterOrder = (existingChapters && existingChapters.length > 0) ? (existingChapters[0].order_num + 1) : 1;
 
-        const { error: chapterError } = await supabase.from('handbook_chapters').insert({
+        const { error: chapterError } = await supabase.from('chapters').insert({
           id: dynamicChapterId,
           book_id: visualBookId,
           title: parsedData.chapter.title,
