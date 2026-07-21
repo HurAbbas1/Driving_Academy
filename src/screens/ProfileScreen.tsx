@@ -53,13 +53,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateToLangua
           style: 'destructive', 
           onPress: async () => {
             try {
-              useQuizStore.setState({ history: [] });
+              useQuizStore.setState({ history: [], wrongQuestions: [], bookmarkedQuestions: [] });
               await AsyncStorage.removeItem('quiz-history');
+              await AsyncStorage.removeItem('quiz-storage'); // Depending on your persist name, usually cleared by setting state but safe to reset
               const userId = user?.uid;
               if (userId && userId !== 'mock-user-123') {
                 const { data: record } = await supabase
                   .from('user_data')
-                  .select('data')
+                  .select('data, wrongQuestions, bookmarkedQuestions')
                   .eq('user_id', userId)
                   .single();
                   
@@ -71,7 +72,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateToLangua
                     data: {
                       ...existingData,
                       history: []
-                    }
+                    },
+                    wrongQuestions: [],
+                    bookmarkedQuestions: []
                   });
               }
               Alert.alert(t('profile.clearHistorySuccessTitle'), t('profile.clearHistorySuccessMessage'));

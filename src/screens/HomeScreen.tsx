@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, SafeAreaView, ScrollView, Platform, ImageBackground, TouchableOpacity, Image, Pressable } from 'react-native';
+import { View, StyleSheet, Text, SafeAreaView, ScrollView, Platform, ImageBackground, TouchableOpacity, Image, Pressable, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';
@@ -17,6 +17,8 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
+  const { width } = useWindowDimensions();
+  const isMobile = width < 500;
   const { t } = useTranslation();
   const theme = useThemeStore((state) => state.theme);
   const colors = Colors[theme];
@@ -134,17 +136,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
              </View>
              
              <View style={styles.heroBottomContent}>
-                <Text style={styles.heroTitle}>{t('home.bannerTitle')}</Text>
+                <Text style={[styles.heroTitle, isMobile && { fontSize: 24, lineHeight: 32 }]}>{t('home.bannerTitle')}</Text>
                 <Text style={styles.heroSubtitle}>{t('home.bannerSub')}</Text>
                 
                 {/* Language Pills */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.langPills}>
+                <View style={[styles.langPills, { flexWrap: 'wrap' }]}>
                    <View style={[styles.langPill, {borderColor: colors.primary, backgroundColor: `${colors.primary}20`}]}><Text style={[styles.langPillText, {color: colors.primary}]}>Hello</Text></View>
                    <View style={styles.langPill}><Text style={styles.langPillText}>こんにちは</Text></View>
                    <View style={styles.langPill}><Text style={styles.langPillText}>你好</Text></View>
                    <View style={styles.langPill}><Text style={styles.langPillText}>Xin chào</Text></View>
                    <View style={styles.langPill}><Text style={styles.langPillText}>안녕하세요</Text></View>
-                </ScrollView>
+                </View>
              </View>
           </View>
         </ImageBackground>
@@ -163,23 +165,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                    <Text style={[styles.practiceSub, { color: colors.textSecondary }]}>{t("home.practiceQuizSub")}</Text>
                 </View>
              </View>
-             <View style={styles.practiceStatsRow}>
-                <View style={styles.statBox}>
-                   <Ionicons name="checkmark-circle-outline" size={20} color={colors.primary} style={{marginRight: 6}} />
-                   <View>
-                     <Text style={[styles.statValue, { color: colors.text }]}>{completedQuizzes}</Text>
-                     <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("home.quizzesCompleted")}</Text>
-                   </View>
+             <View style={[styles.practiceStatsRow, { flexWrap: 'wrap', gap: 16 }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={styles.statBox}>
+                     <Ionicons name="checkmark-circle-outline" size={20} color={colors.primary} style={{marginRight: 6}} />
+                     <View>
+                       <Text style={[styles.statValue, { color: colors.text }]}>{completedQuizzes}</Text>
+                       <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("home.quizzesCompleted")}</Text>
+                     </View>
+                  </View>
+                  <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+                  <View style={styles.statBox}>
+                     <Ionicons name="star" size={20} color={colors.warning} style={{marginRight: 6}} />
+                     <View>
+                       <Text style={[styles.statValue, { color: colors.text }]}>{avgScore}%</Text>
+                       <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("quiz.averageScore")}</Text>
+                     </View>
+                  </View>
                 </View>
-                <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-                <View style={styles.statBox}>
-                   <Ionicons name="star" size={20} color={colors.warning} style={{marginRight: 6}} />
-                   <View>
-                     <Text style={[styles.statValue, { color: colors.text }]}>{avgScore}%</Text>
-                     <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("quiz.averageScore")}</Text>
-                   </View>
-                </View>
-                <View style={[styles.takeQuizBtn, { borderColor: colors.primary }]}>
+                <View style={[styles.takeQuizBtn, { borderColor: colors.primary, alignSelf: 'flex-start' }]}>
                   <Text style={[styles.takeQuizText, { color: colors.primary }]}>{t('home.takeFirstQuiz')}</Text>
                   <Ionicons name="arrow-forward" size={16} color={colors.primary} style={{ marginLeft: 6 }} />
                 </View>
@@ -187,9 +191,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
           </Card>
 
           {/* Progress Split Row */}
-          <View style={styles.bentoRow}>
+          <View style={[styles.bentoRow, { flexWrap: 'wrap' }]}>
             {/* License Rules */}
-            <Card style={[styles.bentoCardHalf, { flex: 1 }]} variant="glass" onPress={handleResumeReading}>
+            <Card style={[styles.bentoCardHalf, { flex: 1, minWidth: 280 }]} variant="glass" onPress={handleResumeReading}>
               <View style={styles.cardHeaderRow}>
                  <View style={[styles.bentoIconWrapper, { backgroundColor: `${colors.primary}15` }]}>
                    <Ionicons name="clipboard-outline" size={22} color={colors.primary} />
