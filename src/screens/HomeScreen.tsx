@@ -257,7 +257,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
           <TouchableOpacity activeOpacity={0.9} onPress={() => onNavigateToTab?.('study')} style={{ marginTop: 8 }}>
             <View style={[styles.ctaContainer, { backgroundColor: colors.backgroundElement, borderColor: colors.border, borderWidth: 1 }]}>
                <View style={styles.ctaIconBg}>
-                  <Ionicons name="steering-wheel" size={32} color={colors.primary} />
+                  <Ionicons name="car-sport" size={32} color={colors.primary} />
                </View>
                <View style={styles.ctaTextContainer}>
                  <Text style={[styles.ctaTitle, { color: colors.text }]}>{t("home.ctaTitle")}</Text>

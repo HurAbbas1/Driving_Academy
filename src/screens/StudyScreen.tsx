@@ -61,7 +61,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
     const langStrings: any = {
       en: {
         title: "Chapter Overview & Explanation",
-        intro: `This chapter covers the rules and safety guidelines for **${loc(selectedChapter.title)}**.`,
+        intro: `This chapter covers the rules and safety guidelines for "${loc(selectedChapter.title)}".`,
         topicsHeader: "Key learning topics:",
         carFocus: "🚗 Car Driving Focus",
         carText: "Keep vehicle dimensions in mind. Ensure all passenger seatbelts are fastened, maintain correct lane alignment, and check blind spots thoroughly before changing lanes.",
@@ -70,7 +70,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
       },
       ja: {
         title: "章の概要と解説",
-        intro: `この章では、**${loc(selectedChapter.title)}**に関する規則と安全ガイドラインについて説明します。`,
+        intro: `この章では、「${loc(selectedChapter.title)}」に関する規則と安全ガイドラインについて説明します。`,
         topicsHeader: "主な学習項目：",
         carFocus: "🚗 普通乗用車のポイント",
         carText: "車両の大きさを意識してください。すべての同乗者のシートベルト着用を確認し、正しい車線維持を行い、車線変更時は死角を十分に確認してください。",
@@ -79,7 +79,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
       },
       zh: {
         title: "章节概述与要点讲解",
-        intro: `本章详细介绍了关于 **${loc(selectedChapter.title)}** 的法规和安全准则。`,
+        intro: `本章详细介绍了关于“${loc(selectedChapter.title)}”的法规和安全准则。`,
         topicsHeader: "核心学习内容：",
         carFocus: "🚗 乘用汽车驾驶要点",
         carText: "时刻注意车辆的车宽和盲区。确保所有乘员系好安全带，保持规范的车道居中行驶，变道时务必侧头扭头观察后方死角。",
@@ -88,7 +88,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
       },
       pt: {
         title: "Visão Geral e Explicação do Capítulo",
-        intro: `Este capítulo descreve as regras e diretrizes de segurança para **${loc(selectedChapter.title)}**.`,
+        intro: `Este capítulo descreve as regras e diretrizes de segurança para "${loc(selectedChapter.title)}".`,
         topicsHeader: "Tópicos importantes de aprendizagem:",
         carFocus: "🚗 Foco em Condução de Carro",
         carText: "Tenha em mente o tamanho do veículo. Garanta que todos os cintos de segurança dos passageiros estejam afivelados, mantenha o alinhamento adequado e verifique os pontos cegos ao mudar de faixa.",
@@ -146,6 +146,17 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           </View>
         )}
       </Card>
+    );
+  };
+
+  const renderEmptySubtopics = () => {
+    return (
+      <View style={{ padding: 20, alignItems: 'center' }}>
+        <Ionicons name="document-text-outline" size={48} color={colors.textSecondary} style={{ opacity: 0.5, marginBottom: 16 }} />
+        <Text style={{ color: colors.textSecondary, fontSize: 16, textAlign: 'center', lineHeight: 24 }}>
+          {t('study.noSubtopics', 'The AI is still processing content for this chapter, or no subtopics were generated. Try re-ingesting the content.')}
+        </Text>
+      </View>
     );
   };
 
@@ -392,6 +403,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
             ListHeaderComponent={renderChapterExplanation}
+            ListEmptyComponent={renderEmptySubtopics}
             renderItem={({ item, index }) => {
               const isRead = progress.completedSubtopics.includes(item.id);
               return (
