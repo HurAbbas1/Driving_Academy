@@ -650,32 +650,42 @@ export default function App() {
 
       // 1. Insert subtopic
       if (parsedData.subtopic) {
+        const enhancedContent = Object.keys(parsedData.subtopic.content).reduce((acc: any, key) => {
+          acc[key] = parsedData.subtopic.content[key] + `\n\n![Visual Context](${uploadedImageUrls[0]})`;
+          return acc;
+        }, {});
+
         const { error: subtopicError } = await supabase.from('subtopics').insert({
           chapter_id: dynamicChapterId,
           title: parsedData.subtopic.title,
-          content: parsedData.subtopic.content,
-          order_num: 1, // First subtopic in this dynamically created chapter
-          image_url: uploadedImageUrls[0] // Use the first image for the subtopic
+          content: enhancedContent,
+          order_num: 1 // First subtopic in this dynamically created chapter
         });
         if (subtopicError) throw subtopicError;
       }
 
       // 2. Insert questions
       if (parsedData.questions && parsedData.questions.length > 0) {
-        const questionsToInsert = parsedData.questions.map((q: any) => ({
-          id: `q_${Math.random().toString(36).substring(2, 11)}`,
-          book_id: visualBookId,
-          category: 'Visual Quiz',
-          difficulty: 'medium',
-          text: q.question,
-          options: q.options.map((opt: any, idx: number) => ({
-            text: opt,
-            isCorrect: idx === q.correctOptionIndex
-          })),
-          explanation: q.explanation,
-          ref_chapter_id: dynamicChapterId,
-          image_url: uploadedImageUrls[0] // Attach the main image to the questions
-        }));
+        const questionsToInsert = parsedData.questions.map((q: any) => {
+          const enhancedText = Object.keys(q.question).reduce((acc: any, key) => {
+            acc[key] = q.question[key] + `\n\n![Visual Context](${uploadedImageUrls[0]})`;
+            return acc;
+          }, {});
+
+          return {
+            id: `q_${Math.random().toString(36).substring(2, 11)}`,
+            book_id: visualBookId,
+            category: 'Visual Quiz',
+            difficulty: 'medium',
+            text: enhancedText,
+            options: q.options.map((opt: any, idx: number) => ({
+              text: opt,
+              isCorrect: idx === q.correctOptionIndex
+            })),
+            explanation: q.explanation,
+            ref_chapter_id: dynamicChapterId
+          };
+        });
 
         const { error: questionsError } = await supabase.from('questions').insert(questionsToInsert);
         if (questionsError) throw questionsError;
