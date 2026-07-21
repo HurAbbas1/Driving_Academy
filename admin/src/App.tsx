@@ -643,7 +643,6 @@ export default function App() {
           id: dynamicChapterId,
           book_id: visualBookId,
           title: parsedData.chapter.title,
-          description: parsedData.chapter.description,
           order_num: chapterOrder
         });
         if (chapterError) throw chapterError;
