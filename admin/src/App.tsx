@@ -656,6 +656,7 @@ export default function App() {
         }, {});
 
         const { error: subtopicError } = await supabase.from('subtopics').insert({
+          id: `sub_${Math.random().toString(36).substring(2, 11)}`,
           chapter_id: dynamicChapterId,
           title: parsedData.subtopic.title,
           content: enhancedContent,
