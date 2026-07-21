@@ -332,7 +332,7 @@ export default function App() {
       setIngestionStep(2);
       console.log("[Ingestion] Launching concurrent Multimodal Ingestion pipelines via OpenRouter...");
 
-      const model = 'google/gemini-2.5-flash-lite';
+      const model = 'openai/gpt-4o-mini';
 
       // Build the message contents array containing the prompt text and images
       const chapterContent: any[] = [
@@ -371,6 +371,7 @@ export default function App() {
         },
         body: JSON.stringify({
           model: model,
+          max_tokens: 8000,
           response_format: { type: "json_object" },
           messages: [
             {
@@ -392,6 +393,7 @@ export default function App() {
         },
         body: JSON.stringify({
           model: model,
+          max_tokens: 8000,
           response_format: { type: "json_object" },
           messages: [
             {
@@ -579,7 +581,7 @@ export default function App() {
 
       setVisualStatus("Analyzing images with AI...");
 
-      const model = 'google/gemini-2.5-flash-lite';
+      const model = 'openai/gpt-4o-mini';
       
       const promptContent: any[] = [
         {
@@ -605,6 +607,7 @@ export default function App() {
         },
         body: JSON.stringify({
           model,
+          max_tokens: 8000,
           messages: [{ role: 'user', content: promptContent }],
           response_format: { type: 'json_object' },
         })
