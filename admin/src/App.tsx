@@ -621,7 +621,7 @@ export default function App() {
       
       let parsedData;
       try {
-        parsedData = extractAndParseJSON(contentStr);
+        parsedData = cleanAndParseJSON(contentStr);
       } catch (err: any) {
         throw new Error(`AI returned malformed JSON: ${err.message}`);
       }
