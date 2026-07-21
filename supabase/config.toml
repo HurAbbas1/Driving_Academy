@@ -1,0 +1,2 @@
+[functions.ingest-book]
+verify_jwt = false
