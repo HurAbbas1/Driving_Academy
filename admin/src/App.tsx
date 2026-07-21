@@ -332,7 +332,7 @@ export default function App() {
       setIngestionStep(2);
       console.log("[Ingestion] Launching concurrent Multimodal Ingestion pipelines via OpenRouter...");
 
-      const model = 'openrouter/free';
+      const model = 'nvidia/nemotron-nano-12b-v2-vl:free';
 
       // Build the message contents array containing the prompt text and images
       const chapterContent: any[] = [
@@ -582,7 +582,7 @@ export default function App() {
 
       setVisualStatus("Analyzing images with AI...");
 
-      const model = 'openrouter/free';
+      const model = 'nvidia/nemotron-nano-12b-v2-vl:free';
       
       const promptContent: any[] = [
         {
