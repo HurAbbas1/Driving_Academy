@@ -254,7 +254,7 @@ export const QuizScreen: React.FC = () => {
 
           {(() => {
             const rawText = loc(currentQ.text || (currentQ as any).question);
-            const imgMatch = rawText.match(/!\[.*?\]\((.*?)\)/);
+            const imgMatch = rawText.match(/!\[.*?\]\(([^)\s]+).*?\)/);
             const cleanText = rawText.replace(/!\[.*?\]\(.*?\)/, '').trim();
             const displayImageUrl = currentQ.imageUrl || (imgMatch ? imgMatch[1] : null);
 

@@ -50,8 +50,8 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ content, fontS
     const lines = text.split('\n');
     return lines.map((line, index) => {
       // Image
-      if (line.match(/^!\[.*?\]\((.*?)\)/)) {
-        const match = line.match(/^!\[.*?\]\((.*?)\)/);
+      if (line.match(/^\s*!\[.*?\]\((.*?)\)/)) {
+        const match = line.match(/^\s*!\[.*?\]\(([^)\s]+).*?\)/);
         if (match && match[1]) {
           return (
             <Image 
