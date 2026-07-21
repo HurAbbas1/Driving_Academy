@@ -252,18 +252,27 @@ export const QuizScreen: React.FC = () => {
             {t('quiz.questionCount', { current: activeSession.currentIndex + 1, total: totalQuestions })}
           </Text>
 
-          {/* Question Text */}
-          <Text style={[styles.qText, { color: colors.text }]}>
-            {loc(currentQ.text || (currentQ as any).question)}
-          </Text>
+          {(() => {
+            const rawText = loc(currentQ.text || (currentQ as any).question);
+            const imgMatch = rawText.match(/!\[.*?\]\((.*?)\)/);
+            const cleanText = rawText.replace(/!\[.*?\]\(.*?\)/, '').trim();
+            const displayImageUrl = currentQ.imageUrl || (imgMatch ? imgMatch[1] : null);
 
-          {currentQ.imageUrl && (
-            <Image 
-              source={{ uri: currentQ.imageUrl }} 
-              style={{ width: '100%', height: 200, borderRadius: 12, marginBottom: 24, backgroundColor: 'rgba(255,255,255,0.05)' }}
-              resizeMode="contain"
-            />
-          )}
+            return (
+              <>
+                <Text style={[styles.qText, { color: colors.text }]}>
+                  {cleanText}
+                </Text>
+                {displayImageUrl && (
+                  <Image 
+                    source={{ uri: displayImageUrl }} 
+                    style={{ width: '100%', height: 200, borderRadius: 12, marginBottom: 24, backgroundColor: 'rgba(255,255,255,0.05)' }}
+                    resizeMode="contain"
+                  />
+                )}
+              </>
+            );
+          })()}
 
           {/* Answer Options */}
           <View style={styles.optionsList}>

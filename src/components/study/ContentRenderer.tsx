@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { Colors } from '../../constants/theme';
 import { useThemeStore } from '../../stores/themeStore';
 
@@ -49,6 +49,20 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ content, fontS
   const parseMarkdown = (text: string) => {
     const lines = text.split('\n');
     return lines.map((line, index) => {
+      // Image
+      if (line.match(/^!\[.*?\]\((.*?)\)/)) {
+        const match = line.match(/^!\[.*?\]\((.*?)\)/);
+        if (match && match[1]) {
+          return (
+            <Image 
+              key={index}
+              source={{ uri: match[1] }} 
+              style={{ width: '100%', height: 200, borderRadius: 12, marginVertical: 16, backgroundColor: 'rgba(255,255,255,0.05)' }}
+              resizeMode="contain"
+            />
+          );
+        }
+      }
       // Heading 3
       if (line.startsWith('### ')) {
         return (
