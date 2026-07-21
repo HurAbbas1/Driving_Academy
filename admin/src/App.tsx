@@ -473,7 +473,6 @@ export default function App() {
         return {
           id: `q_${Date.now()}_${idx}`,
           book_id: book_id,
-          chapter_id: linkedChapterId,
           category: "Rules of the Road",
           difficulty: "medium",
           text: q.question,
