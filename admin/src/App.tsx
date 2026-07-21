@@ -109,7 +109,7 @@ export default function App() {
   // Visual AI Ingestion States
   const [visualFiles, setVisualFiles] = useState<File[]>([]);
   const [visualBookId, setVisualBookId] = useState('');
-  const [visualChapterId, setVisualChapterId] = useState('');
+
   const [isVisualIngesting, setIsVisualIngesting] = useState(false);
   const [visualStatus, setVisualStatus] = useState('');
 
@@ -531,8 +531,8 @@ export default function App() {
 
   const handleStartVisualIngestion = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!visualBookId || !visualChapterId) {
-      alert("Please select a Book and a Chapter to attach the images.");
+    if (!visualBookId) {
+      alert("Please select a Book to attach the images.");
       return;
     }
     if (visualFiles.length === 0) {
@@ -542,6 +542,8 @@ export default function App() {
 
     setIsVisualIngesting(true);
     setVisualStatus("Uploading images to Supabase Storage...");
+    
+    const dynamicChapterId = `chap_${Math.random().toString(36).substring(2, 9)}`;
     
     try {
       const uploadedImageUrls: string[] = [];
@@ -562,7 +564,7 @@ export default function App() {
         // Upload to Supabase Storage
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const filePath = `${visualChapterId}/${fileName}`;
+        const filePath = `${visualBookId}/${dynamicChapterId}/${fileName}`;
         
         const { error: uploadError, data } = await supabase.storage
           .from('handbook-images')
@@ -586,7 +588,7 @@ export default function App() {
       const promptContent: any[] = [
         {
           type: 'text',
-          text: 'Analyze the attached pictures. Generate an explanation related to these pictures, and also include a real-life driving example for better user understanding. Generate exactly 3 multilingual multiple choice questions (MCQs) based on the visual concepts shown. All explanations, questions, and options must be fully localized into en, ja, zh, and pt. Output a single JSON object matching this schema: {"subtopic": {"title": {"en": "", "ja": "", "zh": "", "pt": ""}, "content": {"en": "", "ja": "", "zh": "", "pt": ""}}, "questions": [{"question": {"en": "", "ja": "", "zh": "", "pt": ""}, "options": [{"en": "", "ja": "", "zh": "", "pt": ""}], "correctOptionIndex": 0, "explanation": {"en": "", "ja": "", "zh": "", "pt": ""}}]}'
+          text: 'Analyze the attached pictures. Generate a new chapter title and description based on the pictures. Then generate an explanation related to these pictures, and also include a real-life driving example for better user understanding. Generate exactly 3 multilingual multiple choice questions (MCQs) based on the visual concepts shown. All text must be fully localized into en, ja, zh, and pt. Output a single JSON object matching this schema: {"chapter": {"title": {"en": "", "ja": "", "zh": "", "pt": ""}, "description": {"en": "", "ja": "", "zh": "", "pt": ""}}, "subtopic": {"title": {"en": "", "ja": "", "zh": "", "pt": ""}, "content": {"en": "", "ja": "", "zh": "", "pt": ""}}, "questions": [{"question": {"en": "", "ja": "", "zh": "", "pt": ""}, "options": [{"en": "", "ja": "", "zh": "", "pt": ""}], "correctOptionIndex": 0, "explanation": {"en": "", "ja": "", "zh": "", "pt": ""}}]}'
         }
       ];
 
@@ -627,31 +629,42 @@ export default function App() {
 
       setVisualStatus("Saving generated content to database...");
 
-      // 1. Get max order for subtopics in this chapter
-      const { data: existingSubtopics } = await supabase
-        .from('subtopics')
-        .select('order_num')
-        .eq('chapter_id', visualChapterId)
-        .order('order_num', { ascending: false })
-        .limit(1);
-        
-      const nextOrder = (existingSubtopics && existingSubtopics.length > 0) ? (existingSubtopics[0].order_num + 1) : 1;
+      // 0. Insert Chapter
+      if (parsedData.chapter) {
+        const { data: existingChapters } = await supabase.from('handbook_chapters')
+          .select('order_num')
+          .eq('book_id', visualBookId)
+          .order('order_num', { ascending: false })
+          .limit(1);
+          
+        const chapterOrder = (existingChapters && existingChapters.length > 0) ? (existingChapters[0].order_num + 1) : 1;
 
-      // 2. Insert subtopic
+        const { error: chapterError } = await supabase.from('handbook_chapters').insert({
+          id: dynamicChapterId,
+          book_id: visualBookId,
+          title: parsedData.chapter.title,
+          description: parsedData.chapter.description,
+          order_num: chapterOrder
+        });
+        if (chapterError) throw chapterError;
+      }
+
+      // 1. Insert subtopic
       if (parsedData.subtopic) {
         const { error: subtopicError } = await supabase.from('subtopics').insert({
-          chapter_id: visualChapterId,
+          chapter_id: dynamicChapterId,
           title: parsedData.subtopic.title,
           content: parsedData.subtopic.content,
-          order_num: nextOrder,
+          order_num: 1, // First subtopic in this dynamically created chapter
           image_url: uploadedImageUrls[0] // Use the first image for the subtopic
         });
         if (subtopicError) throw subtopicError;
       }
 
-      // 3. Insert questions
+      // 2. Insert questions
       if (parsedData.questions && parsedData.questions.length > 0) {
         const questionsToInsert = parsedData.questions.map((q: any) => ({
+          id: `q_${Math.random().toString(36).substring(2, 11)}`,
           book_id: visualBookId,
           category: 'Visual Quiz',
           difficulty: 'medium',
@@ -661,7 +674,7 @@ export default function App() {
             isCorrect: idx === q.correctOptionIndex
           })),
           explanation: q.explanation,
-          ref_chapter_id: visualChapterId,
+          ref_chapter_id: dynamicChapterId,
           image_url: uploadedImageUrls[0] // Attach the main image to the questions
         }));
 
@@ -1379,14 +1392,13 @@ export default function App() {
                 Upload images of handbook pages or specific signs. The AI will analyze them, provide a real-life explanation, and generate related quizzes.
               </p>
               <form onSubmit={handleStartVisualIngestion} style={styles.crudForm}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ gap: '16px' }}>
                   <div>
                     <label style={styles.fieldLabel}>Select Book</label>
                     <select 
                       value={visualBookId} 
                       onChange={(e) => {
                         setVisualBookId(e.target.value);
-                        setVisualChapterId('');
                       }} 
                       style={styles.select}
                       required
@@ -1394,21 +1406,6 @@ export default function App() {
                       <option value="">-- Choose a Book --</option>
                       {books.map(b => (
                         <option key={b.id} value={b.id}>{renderLocalized(b.title)}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label style={styles.fieldLabel}>Select Chapter (to attach images)</label>
-                    <select 
-                      value={visualChapterId} 
-                      onChange={(e) => setVisualChapterId(e.target.value)} 
-                      style={styles.select}
-                      required
-                      disabled={!visualBookId}
-                    >
-                      <option value="">-- Choose a Chapter --</option>
-                      {chapters.filter(c => c.book_id === visualBookId).map(c => (
-                        <option key={c.id} value={c.id}>{renderLocalized(c.title)}</option>
                       ))}
                     </select>
                   </div>
