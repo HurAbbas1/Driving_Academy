@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Dimensions, SafeAreaView, Pressable } from 'react-native';
+import {View, StyleSheet, Dimensions, SafeAreaView, Pressable} from 'react-native';
+import { Text } from '../components/ui/Text';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
@@ -72,6 +74,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       </View>
 
       <View style={styles.slideContainer}>
+        {/* Logo at the top of onboarding */}
+        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 40}}>
+          <Text style={{color: colors.primary, fontSize: 42, fontWeight: '900', fontStyle: 'italic', letterSpacing: -2}}>N<Text style={{color: colors.text}}>S</Text></Text>
+          <View style={{marginLeft: 12}}>
+            <Text style={{color: colors.text, fontWeight: '800', fontSize: 20, letterSpacing: 1.5}}>NEW SUNSHINE</Text>
+            <Text style={{color: colors.primary, fontWeight: '700', fontSize: 12, letterSpacing: 2}}>DRIVING ACADEMY</Text>
+          </View>
+        </View>
         {/* Animated icon wrapper with circular branding design */}
         <View style={[styles.iconWrapper, { backgroundColor: `${colors.primary}15`, borderColor: `${colors.primary}30` }]}>
           <Ionicons name={slides[activeSlide].icon as any} size={80} color={colors.primary} />
@@ -131,21 +141,26 @@ const styles = StyleSheet.create({
   iconWrapper: {
     width: 160,
     height: 160,
-    borderRadius: 80,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 40,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 28,
+    fontWeight: '900',
     textAlign: 'center',
     marginBottom: 16,
-    lineHeight: 32,
+    lineHeight: 36,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: 12,

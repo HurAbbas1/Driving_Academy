@@ -62,21 +62,21 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       pool = pool.filter(q => questionIdsFilter.includes(q.id));
     }
 
-    // Chapter Quiz Randomizer (20 MCQs from the chapter)
-    if (chapterIdFilter) {
-      let chapterPool = pool.filter(q => q.chapterId === chapterIdFilter);
-      
-      // Fallback: If no questions are found for this specific chapter, load questions for the entire book
-      if (chapterPool.length === 0) {
-        console.log(`[QuizStore] No questions found for chapter ${chapterIdFilter}. Falling back to book questions...`);
-        const studyState = useStudyStore.getState();
-        const book = studyState.books.find(b => b.chapters.some(c => c.id === chapterIdFilter));
-        if (book) {
-          chapterPool = pool.filter(q => q.bookId === book.id);
+      // Chapter Quiz Randomizer (5 MCQs from the chapter)
+      if (chapterIdFilter) {
+        let chapterPool = pool.filter(q => q.chapterId === chapterIdFilter);
+        
+        // Fallback: If no questions are found for this specific chapter, load questions for the entire book
+        if (chapterPool.length === 0) {
+          console.log(`[QuizStore] No questions found for chapter ${chapterIdFilter}. Falling back to book questions...`);
+          const studyState = useStudyStore.getState();
+          const book = studyState.books.find(b => b.chapters.some(c => c.id === chapterIdFilter));
+          if (book) {
+            chapterPool = pool.filter(q => q.bookId === book.id);
+          }
         }
-      }
-
-      let selected = shuffleArray(chapterPool).slice(0, 20);
+  
+        let selected = shuffleArray(chapterPool).slice(0, 5);
       
       selected = selected.map(q => {
         const originalOptions = [...q.options];

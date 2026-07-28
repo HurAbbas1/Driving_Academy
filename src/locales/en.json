@@ -179,6 +179,7 @@
     },
     "home": {
         "welcome": "Welcome,",
+        "featuredHandbooks": "Featured Handbooks",
         "streakDays": "{{days}} Days",
         "bannerTitle": "Master Japan's Driving Rules in Your Language",
         "bannerSub": "From confused to confident—one quiz at a time.",

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, SafeAreaView, ScrollView, Platform, ImageBackground, TouchableOpacity, Image, Pressable, useWindowDimensions } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Text, SafeAreaView, ScrollView, Platform, ImageBackground, TouchableOpacity, Image, Pressable, useWindowDimensions, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';
@@ -26,10 +26,74 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
 
   // Store data
   const { history, bookmarkedQuestions, setViewMode } = useQuizStore();
-  const { chapters, progress } = useStudyStore();
+  const { chapters, progress, books } = useStudyStore();
+  const setSelectedBookId = useStudyStore((state) => state.setSelectedBookId);
 
   const streak = profile?.streak?.current ?? 0;
   const username = profile?.displayName ?? 'Learner';
+
+  const flatListRef = useRef<FlatList>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (!books || books.length === 0) return;
+    const interval = setInterval(() => {
+      let nextIndex = activeIndex + 1;
+      if (nextIndex >= books.length) {
+        nextIndex = 0;
+      }
+      setActiveIndex(nextIndex);
+      if (flatListRef.current) {
+        flatListRef.current.scrollToIndex({ index: nextIndex, animated: true });
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [activeIndex, books]);
+
+
+  const currentLangLoc = useLanguageStore((state) => state.language);
+
+  const loc = (field: any): string => {
+    if (!field) return '';
+    if (typeof field === 'string') {
+      try {
+        const parsed = JSON.parse(field);
+        if (typeof parsed === 'object' && parsed !== null) {
+          return loc(parsed);
+        }
+      } catch (e) {
+        const translated = t(field);
+        if (translated && translated !== field) return translated;
+        const lowerField = field.trim().toLowerCase();
+        if (currentLangLoc === 'zh') {
+           if (lowerField === 'rules of the road') return '道路规则';
+           if (lowerField === 'federal rules of the road') return '联邦交通规则';
+           if (lowerField === 'traffic rules') return '交通法规';
+        }
+        if (currentLangLoc === 'ja') {
+           if (lowerField === 'rules of the road') return '道路交通法';
+           if (lowerField === 'federal rules of the road') return '連邦交通法';
+           if (lowerField === 'traffic rules') return '交通ルール';
+        }
+        if (currentLangLoc === 'pt') {
+           if (lowerField === 'rules of the road') return 'Regras da Estrada';
+           if (lowerField === 'federal rules of the road') return 'Regras Federais';
+           if (lowerField === 'traffic rules') return 'Regras de Trânsito';
+        }
+      }
+      return field;
+    }
+    if (typeof field === 'object') {
+      const val = field[currentLangLoc] ?? field.en ?? Object.values(field)[0] ?? '';
+      if (typeof val === 'object') {
+        const valInner = val[currentLangLoc] ?? val.en ?? Object.values(val)[0] ?? '';
+        if (typeof valInner === 'object') return JSON.stringify(valInner);
+        return String(valInner);
+      }
+      return String(val);
+    }
+    return String(field);
+  };
 
   const handleGoToBookmarks = () => {
     setViewMode('bookmarks');
@@ -117,39 +181,95 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
            </View>
         </View>
 
-        {/* Huge Hero Image Section */}
-        <ImageBackground 
-           source={require('../../assets/images/hero_fuji_night.jpg')} 
-           style={styles.heroBackground}
-           imageStyle={{ borderRadius: 28, opacity: 0.85 }}
-        >
-          <View style={styles.heroOverlay}>
-             <View style={styles.heroTopRow}>
-                <View style={[styles.heroLocationBadge, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-                  <Ionicons name="location" size={14} color={colors.primary} />
-                  <Text style={[styles.heroLocationText, { color: '#FFF' }]}>ACROSS JAPAN</Text>
-                </View>
-                <View style={[styles.heroLocationBadge, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-                  <Ionicons name="globe" size={14} color={'#FFF'} />
-                  <Text style={[styles.heroLocationText, { color: '#FFF' }]}>5 LANGS</Text>
-                </View>
-             </View>
-             
-             <View style={styles.heroBottomContent}>
-                <Text style={[styles.heroTitle, isMobile && { fontSize: 24, lineHeight: 32 }]}>{t('home.bannerTitle')}</Text>
-                <Text style={styles.heroSubtitle}>{t('home.bannerSub')}</Text>
-                
-                {/* Language Pills */}
-                <View style={[styles.langPills, { flexWrap: 'wrap' }]}>
-                   <View style={[styles.langPill, {borderColor: colors.primary, backgroundColor: `${colors.primary}20`}]}><Text style={[styles.langPillText, {color: colors.primary}]}>Hello</Text></View>
-                   <View style={styles.langPill}><Text style={styles.langPillText}>こんにちは</Text></View>
-                   <View style={styles.langPill}><Text style={styles.langPillText}>你好</Text></View>
-                   <View style={styles.langPill}><Text style={styles.langPillText}>Xin chào</Text></View>
-                   <View style={styles.langPill}><Text style={styles.langPillText}>안녕하세요</Text></View>
-                </View>
-             </View>
-          </View>
-        </ImageBackground>
+        
+
+        
+        
+        {/* Top Netflix/Airbnb Style Featured Banner (Auto-Scrolling Pictures) */}
+        <View style={{ marginTop: 16, marginBottom: 20 }}>
+          <FlatList
+            ref={flatListRef}
+            data={books && books.length > 0 ? books : []}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => 'hero-' + item.id}
+            getItemLayout={(data, index) => ({ length: width - 32, offset: (width - 32) * index, index })}
+            onScrollToIndexFailed={(info) => {
+              flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+            }}
+            renderItem={({ item: book }) => (
+              <View style={{ width: width - 32, marginRight: 16 }}>
+                <TouchableOpacity 
+                  activeOpacity={0.9} 
+                  onPress={() => {
+                    setSelectedBookId(book.id);
+                    if (onNavigateToTab) onNavigateToTab('study');
+                  }}
+                  style={{ height: 180, borderRadius: 24, overflow: 'hidden', backgroundColor: colors.backgroundElement }}
+                >
+                  <Image 
+                    source={{ uri: book.coverImage || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800' }} 
+                    style={[StyleSheet.absoluteFill]} 
+                    resizeMode="cover" 
+                  />
+                  <View style={{ padding: 20, flex: 1, justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.45)' }}>
+                    <View style={{ backgroundColor: `${colors.primary}90`, alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
+                      <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '800', letterSpacing: 1 }}>FEATURED</Text>
+                    </View>
+                    <View>
+                      <Text style={{ fontSize: 22, fontWeight: '900', color: '#FFF' }} numberOfLines={1}>{loc(book.title)}</Text>
+                      <Text style={{ fontSize: 13, color: '#DDD', marginTop: 4 }}>{t('home.startLearning')}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+        </View>
+
+        {/* Stable Manual Scrollable Handbooks Cards (Users scroll left/right) */}
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, marginBottom: 16, paddingHorizontal: 16 }}>
+            {t('home.featuredHandbooks')}
+          </Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
+          >
+             {books.map((book) => (
+                 <View key={'card-' + book.id} style={{ width: 220 }}>
+                   <Card 
+                     variant="glass" 
+                     onPress={() => {
+                       setSelectedBookId(book.id);
+                       if (onNavigateToTab) {
+                           onNavigateToTab('study');
+                       }
+                     }} 
+                     style={{ height: 160, padding: 0, justifyContent: 'space-between', margin: 0, overflow: 'hidden', borderRadius: 20 }}
+                   >
+                     {book.coverImage ? (
+                       <Image source={{ uri: book.coverImage }} style={[StyleSheet.absoluteFill]} resizeMode="cover" />
+                     ) : null}
+                     <View style={{ padding: 16, flex: 1, justifyContent: 'space-between', backgroundColor: book.coverImage ? 'rgba(0,0,0,0.4)' : 'transparent' }}>
+                       <View>
+                          <View style={{ backgroundColor: `${colors.primary}40`, alignSelf: 'flex-start', padding: 8, borderRadius: 12 }}>
+                            <Ionicons name={book.icon as any || 'book'} size={20} color="#FFF" />
+                          </View>
+                          <Text style={{ fontSize: 16, fontWeight: '800', color: '#fff', marginTop: 10 }} numberOfLines={2}>{loc(book.title)}</Text>
+                       </View>
+                       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Text style={{ color: '#eee', fontSize: 13, fontWeight: '600' }}>{t('study.chaptersCount', { count: book.chapters.length })}</Text>
+                          <Ionicons name="arrow-forward-circle" size={24} color="#eee" />
+                       </View>
+                     </View>
+                   </Card>
+                 </View>
+             ))}
+          </ScrollView>
+        </View>
 
         {/* Bento Grid Layout */}
         <View style={styles.bentoGrid}>
@@ -239,19 +359,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
             </Card>
           </View>
 
-          {/* Safety Tip */}
-          <Card style={styles.safetyTipCard} variant="glass">
-            <View style={styles.safetyIconWrapper}>
-              <Ionicons name="shield-checkmark" size={24} color="#FFF" />
-            </View>
-            <View style={styles.safetyContent}>
-              <Text style={[styles.safetyTitle, { color: colors.primary }]}>{t("home.safetyTipTitle")}</Text>
-              <Text style={[styles.safetyDesc, { color: colors.text }]}>
-                {t('home.safetyTipMessage')}
-              </Text>
-            </View>
-            <Ionicons name="car-outline" size={48} color={colors.textSecondary} style={{ opacity: 0.2, position: 'absolute', right: 20, bottom: 20 }} />
-          </Card>
+          
 
           {/* Huge Call to Action Row */}
           <TouchableOpacity activeOpacity={0.9} onPress={() => onNavigateToTab?.('study')} style={{ marginTop: 8 }}>

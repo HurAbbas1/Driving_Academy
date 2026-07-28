@@ -9,7 +9,9 @@ import {
   Edit, 
   Globe, 
   Settings, 
-  Users 
+  Users,
+  Database,
+  Loader
 } from 'lucide-react';
 import { supabase } from './supabase';
 
@@ -112,6 +114,13 @@ export default function App() {
 
   const [isVisualIngesting, setIsVisualIngesting] = useState(false);
   const [visualStatus, setVisualStatus] = useState('');
+
+  // Manual Ingestion States
+  const [manualBookTitle, setManualBookTitle] = useState('');
+  const [manualBookCover, setManualBookCover] = useState('');
+  const [manualChapters, setManualChapters] = useState<{title: string, content: string, imageUrl: string, licenseType: 'car' | 'bike' | 'both'}[]>([{title: '', content: '', imageUrl: '', licenseType: 'both'}]);
+  const [isManualIngesting, setIsManualIngesting] = useState(false);
+  const [manualStatus, setManualStatus] = useState('');
 
   // States and refs for dual-pane matched scrolling and sentence highlighting
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
@@ -528,6 +537,196 @@ export default function App() {
     }
   };
 
+  const handleStartManualIngestion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualBookTitle) {
+      alert("Please provide a Book Title.");
+      return;
+    }
+    const validChapters = manualChapters.filter(c => c.title.trim() && c.content.trim());
+    if (validChapters.length === 0) {
+      alert("Please provide at least one chapter with title and content.");
+      return;
+    }
+
+    setIsManualIngesting(true);
+    setManualStatus("Processing chapters via AI...");
+
+    try {
+      const model = 'nvidia/nemotron-nano-12b-v2-vl:free';
+
+      const promptContent = [
+        {
+          type: 'text',
+          text: `You are an expert translator and exam question generator. Direct Translation Only: The AI must directly convert/translate the provided chapter titles and contents into the 4 target language keys (en, ja, zh, pt). Strictly prohibit any conversational intros, extra explanations, markdown commentary, or AI fluff. Fixed Question Generator: The AI must generate EXACTLY 15 multiple-choice questions (MCQs) per chapter section testing the material.
+          
+Payload Schema requirement:
+{
+  "bookTitle": "${manualBookTitle}",
+  "chapters": [
+    {
+      "chapterIndex": 1,
+      "title": { "en": "...", "ja": "...", "zh": "...", "pt": "..." },
+      "content": { "en": "...", "ja": "...", "zh": "...", "pt": "..." },
+      "questions": [
+        {
+          "question": { "en": "...", "ja": "...", "zh": "...", "pt": "..." },
+          "options": [
+            { "en": "...", "ja": "...", "zh": "...", "pt": "..." },
+            { "en": "...", "ja": "...", "zh": "...", "pt": "..." },
+            { "en": "...", "ja": "...", "zh": "...", "pt": "..." },
+            { "en": "...", "ja": "...", "zh": "...", "pt": "..." }
+          ],
+          "correctOptionIndex": 0,
+          "explanation": { "en": "...", "ja": "...", "zh": "...", "pt": "..." },
+          "imageUrl": "optional_image_url_if_provided_in_chapter"
+        }
+      ]
+    }
+  ]
+}
+
+Input data to process:
+Book Title: ${manualBookTitle}
+Chapters:
+${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${c.content}\nImage URL: ${c.imageUrl || 'none'}`).join('\n\n')}
+`
+        }
+      ];
+
+      // Attach images to the prompt if provided
+      validChapters.forEach(c => {
+        if (c.imageUrl && c.imageUrl.trim().length > 0) {
+          promptContent.push({
+            type: 'image_url',
+            image_url: { url: c.imageUrl.trim() }
+          } as any);
+        }
+      });
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'http://localhost:3000',
+          'X-Title': 'NCS Admin Manual Ingestion'
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 8000,
+          messages: [{ role: 'user', content: promptContent }],
+          response_format: { type: 'json_object' },
+        })
+      });
+
+      if (!response.ok) throw new Error(`OpenRouter API error: ${response.statusText}`);
+      
+      const result = await response.json();
+      const contentStr = result.choices[0].message.content || '{}';
+      
+      let parsedData;
+      try {
+        parsedData = cleanAndParseJSON(contentStr);
+      } catch (err: any) {
+        throw new Error(`AI returned malformed JSON: ${err.message}`);
+      }
+
+      setManualStatus("Saving to database...");
+
+      const book_id = `book_m_${Math.random().toString(36).substr(2, 7)}`;
+      const books_payload = [{
+        id: book_id,
+        title: { en: manualBookTitle, ja: manualBookTitle, zh: manualBookTitle, pt: manualBookTitle },
+        description: {
+          en: `Manual study guide for ${manualBookTitle}`,
+          ja: `${manualBookTitle}の学習ガイド (マニュアル)`,
+          zh: `${manualBookTitle}的学习指南 (手动)`,
+          pt: `Guia de estudo para ${manualBookTitle} (Manual)`
+        },
+        icon: "book-outline",
+        cover_image: manualBookCover || null
+      }];
+
+      const chapters_payload: any[] = [];
+      const subtopics_payload: any[] = [];
+      const questions_payload: any[] = [];
+
+      (parsedData.chapters || []).forEach((ch: any, idx: number) => {
+        const chapter_id = `ch_m_${Date.now()}_${idx}`;
+        chapters_payload.push({
+          id: chapter_id,
+          book_id: book_id,
+          title: ch.title || { en: `Chapter ${idx + 1}` },
+          license_type: manualChapters[idx]?.licenseType || 'both',
+          order_num: idx + 1
+        });
+        
+        subtopics_payload.push({
+          id: `sub_m_${Date.now()}_${idx}`,
+          chapter_id: chapter_id,
+          title: ch.title || { en: `Chapter ${idx + 1}` },
+          content: ch.content || { en: "" },
+          image_url: ch.imageUrl || null,
+          order_num: 1
+        });
+
+        (ch.questions || []).forEach((q: any, qIdx: number) => {
+          const correctIdx = q.correctOptionIndex || 0;
+          const options_mapped = (q.options || []).map((opt: any, oIdx: number) => ({
+            text: opt,
+            isCorrect: oIdx === correctIdx
+          }));
+          questions_payload.push({
+            id: `q_m_${Date.now()}_${idx}_${qIdx}`,
+            book_id: book_id,
+            chapter_id: chapter_id,
+            category: "Manual Rules",
+            difficulty: "medium",
+            text: q.question,
+            options: options_mapped,
+            explanation: q.explanation,
+            image_url: q.imageUrl || null
+          });
+        });
+      });
+
+      const { error: invokeError } = await supabase.functions.invoke('ingest-book', {
+        body: {
+          books: books_payload,
+          chapters: chapters_payload,
+          subtopics: subtopics_payload,
+          questions: questions_payload
+        }
+      });
+
+      if (invokeError) {
+        throw new Error(`Edge function invocation failed: ${invokeError.message || invokeError}`);
+      }
+
+      alert("🎉 Manual Handbook successfully compiled and loaded!");
+      
+      const newBook = {
+        id: book_id,
+        title: manualBookTitle,
+        chapters: chapters_payload.length,
+        questions: questions_payload.length
+      };
+
+      setBooks(prevBooks => [...prevBooks, newBook]);
+      setManualBookTitle('');
+      setManualBookCover('');
+      setManualChapters([{title: '', content: '', imageUrl: ''}]);
+      fetchData();
+    } catch (error: any) {
+      console.error("[Manual Ingestion Error]", error);
+      alert(`Manual Ingestion failed: ${error.message}`);
+    } finally {
+      setIsManualIngesting(false);
+      setManualStatus('');
+    }
+  };
+
   const handleStartVisualIngestion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!visualBookId) {
@@ -543,6 +742,7 @@ export default function App() {
     setVisualStatus("Uploading images to Supabase Storage...");
     
     const dynamicChapterId = `chap_${Math.random().toString(36).substring(2, 9)}`;
+    const dynamicSubtopicId = `sub_${Math.random().toString(36).substring(2, 11)}`;
     
     try {
       const uploadedImageUrls: string[] = [];
@@ -649,17 +849,13 @@ export default function App() {
 
       // 1. Insert subtopic
       if (parsedData.subtopic) {
-        const enhancedContent = Object.keys(parsedData.subtopic.content).reduce((acc: any, key) => {
-          acc[key] = parsedData.subtopic.content[key] + `\n\n![Visual Context](${uploadedImageUrls[0]})`;
-          return acc;
-        }, {});
-
         const { error: subtopicError } = await supabase.from('subtopics').insert({
-          id: `sub_${Math.random().toString(36).substring(2, 11)}`,
+          id: dynamicSubtopicId,
           chapter_id: dynamicChapterId,
           title: parsedData.subtopic.title,
-          content: enhancedContent,
-          order_num: 1 // First subtopic in this dynamically created chapter
+          content: parsedData.subtopic.content,
+          image_url: uploadedImageUrls[0],
+          order_num: 1
         });
         if (subtopicError) throw subtopicError;
       }
@@ -667,17 +863,14 @@ export default function App() {
       // 2. Insert questions
       if (parsedData.questions && parsedData.questions.length > 0) {
         const questionsToInsert = parsedData.questions.map((q: any) => {
-          const enhancedText = Object.keys(q.question).reduce((acc: any, key) => {
-            acc[key] = q.question[key] + `\n\n![Visual Context](${uploadedImageUrls[0]})`;
-            return acc;
-          }, {});
-
           return {
             id: `q_${Math.random().toString(36).substring(2, 11)}`,
             book_id: visualBookId,
+            chapter_id: dynamicChapterId,
+            subtopic_id: dynamicSubtopicId,
             category: 'Visual Quiz',
             difficulty: 'medium',
-            text: enhancedText,
+            text: q.question,
             options: q.options.map((opt: any, idx: number) => ({
               text: opt,
               isCorrect: idx === q.correctOptionIndex
@@ -1393,6 +1586,144 @@ export default function App() {
               </div>
             </div>
 
+            {/* Manual Book Ingestion Form */}
+            <div style={{ ...styles.card, marginTop: '24px' }}>
+              <h2 style={styles.cardTitle}>Manual Book Ingestion System</h2>
+              <p style={{ color: '#B0B0B0', marginBottom: 24, fontSize: 14 }}>
+                Manually build a book by providing a title and chapter texts. The AI will translate it into 4 languages and generate exactly 15 MCQs per chapter.
+              </p>
+              <form onSubmit={handleStartManualIngestion} style={styles.crudForm}>
+                <div style={{ gap: '16px' }}>
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={styles.fieldLabel}>Book Title</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Japan Passenger Car License Handbook"
+                        value={manualBookTitle}
+                        onChange={(e) => setManualBookTitle(e.target.value)}
+                        style={styles.fieldInput}
+                        required
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={styles.fieldLabel}>Cover Image URL (Optional)</label>
+                      <input
+                        type="text"
+                        placeholder="https://example.com/cover.jpg"
+                        value={manualBookCover}
+                        onChange={(e) => setManualBookCover(e.target.value)}
+                        style={styles.fieldInput}
+                      />
+                    </div>
+                  </div>
+
+                  {manualChapters.map((chapter, index) => (
+                    <div key={index} style={{ marginTop: '24px', padding: '24px', backgroundColor: '#1E1E1E', borderRadius: '12px', border: '1px solid #333', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <label style={{ ...styles.fieldLabel, margin: 0, fontSize: '15px', color: '#FFF' }}>Chapter {index + 1}</label>
+                        {manualChapters.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newChapters = [...manualChapters];
+                              newChapters.splice(index, 1);
+                              setManualChapters(newChapters);
+                            }}
+                            style={{ background: 'transparent', border: 'none', color: '#FF1744', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <Trash2 size={16} /> Remove
+                          </button>
+                        )}
+                      </div>
+                      
+                      <input
+                        type="text"
+                        placeholder="Chapter Title (e.g. Chapter 1: Rules of the Road)"
+                        value={chapter.title}
+                        onChange={(e) => {
+                          const newChapters = [...manualChapters];
+                          newChapters[index].title = e.target.value;
+                          setManualChapters(newChapters);
+                        }}
+                        style={{ ...styles.fieldInput, marginBottom: '8px' }}
+                        required
+                      />
+                      
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                        <input
+                          type="text"
+                          placeholder="Related Image URL (Optional - AI will use this to generate questions)"
+                          value={chapter.imageUrl}
+                          onChange={(e) => {
+                            const newChapters = [...manualChapters];
+                            newChapters[index].imageUrl = e.target.value;
+                            setManualChapters(newChapters);
+                          }}
+                          style={{ ...styles.fieldInput, flex: 2, marginBottom: 0 }}
+                        />
+                        <select
+                          value={chapter.licenseType}
+                          onChange={(e) => {
+                            const newChapters = [...manualChapters];
+                            newChapters[index].licenseType = e.target.value as any;
+                            setManualChapters(newChapters);
+                          }}
+                          style={{ ...styles.fieldInput, flex: 1, marginBottom: 0, appearance: 'auto', backgroundColor: '#222' }}
+                        >
+                          <option value="both">🚦 Both (Car & Bike)</option>
+                          <option value="car">🚗 Car Only</option>
+                          <option value="bike">🏍️ Bike Only</option>
+                        </select>
+                      </div>
+                      
+                      {chapter.imageUrl && (
+                        <div style={{ marginBottom: '16px', width: '120px', height: '120px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#222', border: '1px solid #444' }}>
+                          <img src={chapter.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.currentTarget.style.display = 'none'} />
+                        </div>
+                      )}
+
+                      <textarea
+                        placeholder="Paste handbook section text here..."
+                        value={chapter.content}
+                        onChange={(e) => {
+                          const newChapters = [...manualChapters];
+                          newChapters[index].content = e.target.value;
+                          setManualChapters(newChapters);
+                        }}
+                        style={{ ...styles.fieldInput, minHeight: '100px', resize: 'vertical' }}
+                        required
+                      />
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setManualChapters([...manualChapters, { title: '', content: '', imageUrl: '', licenseType: 'both' }]);
+                    }}
+                    style={{ ...styles.btnPrimary, backgroundColor: '#2A2A2A', backgroundImage: 'none', boxShadow: 'none', border: '1px solid #444', marginTop: '16px', width: 'auto', alignSelf: 'flex-start' }}
+                  >
+                    <Plus size={18} /> Add Chapter
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
+                  <button
+                    type="submit"
+                    disabled={isManualIngesting}
+                    style={{ ...styles.btnPrimary, opacity: isManualIngesting ? 0.7 : 1 }}
+                  >
+                    {isManualIngesting ? 'AI is Processing...' : 'Process & Save Handbook'}
+                    {!isManualIngesting && <Database size={20} />}
+                  </button>
+                  {isManualIngesting && (
+                    <span style={{ color: '#E31837', fontWeight: 600 }}>{manualStatus}</span>
+                  )}
+                </div>
+              </form>
+            </div>
+
             {/* Visual AI Ingestion Form */}
             <div style={{ ...styles.card, marginTop: '24px' }}>
               <h2 style={styles.cardTitle}>Visual AI Ingestion (Upload Pictures)</h2>
@@ -2032,5 +2363,35 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: 'rgba(0,200,83,0.1)',
     padding: '4px 8px',
     borderRadius: '4px'
+  },
+  fieldInput: {
+    backgroundColor: '#2A2A2A',
+    border: '1px solid #3A3A3A',
+    borderRadius: '8px',
+    padding: '12px 16px',
+    color: '#FFFFFF',
+    fontSize: '14px',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit',
+    transition: 'border-color 0.2s',
+  },
+  btnPrimary: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    backgroundColor: '#E31837',
+    backgroundImage: 'linear-gradient(135deg, #E31837 0%, #B71C1C 100%)',
+    color: '#FFFFFF',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '12px 24px',
+    fontSize: '15px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'transform 0.1s, box-shadow 0.2s',
+    boxShadow: '0 4px 14px rgba(227, 24, 55, 0.4)'
   }
 };

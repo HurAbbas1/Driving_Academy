@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, ScrollView, SafeAreaView, Pressable, Platform } from 'react-native';
+import {View, StyleSheet, ScrollView, SafeAreaView, Pressable, Platform} from 'react-native';
+import { Text } from '../components/ui/Text';
+
 import { Alert } from '../utils/alert';
 import { sendPasswordResetEmail } from '../services/supabase/auth';
 const auth = {};

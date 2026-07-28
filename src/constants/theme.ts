@@ -23,10 +23,10 @@ export const Colors = {
     text: '#FFFFFF',
     background: '#0D0D0D', // Dark Background from logo
     backgroundElement: '#1A1A1A',
-    backgroundSelected: '#2A2A2A',
+    backgroundSelected: '#1A1A1A',
     textSecondary: '#B0B0B0',
-    primary: '#E11D48', // Accent Red from logo
-    primaryLight: '#F43F5E',
+    primary: '#E31837', // Accent Red from logo
+    primaryLight: '#FF3B55',
     success: '#00C853',
     warning: '#FFB300',
     error: '#FF1744',

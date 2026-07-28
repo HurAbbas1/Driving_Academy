@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, Text, SafeAreaView, ScrollView, Switch, Pressable } from 'react-native';
+import {View, StyleSheet, SafeAreaView, ScrollView, Switch, Pressable} from 'react-native';
+import { Text } from '../components/ui/Text';
+
 import { Alert } from '../utils/alert';
 import { signOut } from '../services/supabase/auth';
 import { supabase } from '../services/supabase/config';
@@ -10,6 +12,7 @@ import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';
 import { useAuthStore } from '../stores/authStore';
 import { useLanguageStore } from '../stores/languageStore';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useQuizStore } from '../stores/quizStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -104,73 +107,80 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateToLangua
         <Text style={[styles.title, { color: colors.text }]}>{t('tabs.profile')}</Text>
 
         {/* User Profile Card */}
-        <Card style={styles.userCard}>
-          <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-            <Text style={styles.avatarText}>
-              {profile?.displayName?.charAt(0).toUpperCase() || 'U'}
+        <Animated.View entering={FadeInUp.delay(100).springify()}>
+          <Card style={styles.userCard}>
+            <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+              <Text style={styles.avatarText}>
+                {profile?.displayName?.charAt(0).toUpperCase() || 'U'}
+              </Text>
+            </View>
+            <Text style={[styles.userName, { color: colors.text }]}>
+              {profile?.displayName || t('profile.student')}
             </Text>
-          </View>
-          <Text style={[styles.userName, { color: colors.text }]}>
-            {profile?.displayName || t('profile.student')}
-          </Text>
-          <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
-            {profile?.email || user?.email || 'student@sunshine.com'}
-          </Text>
-        </Card>
+            <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
+              {profile?.email || user?.email || 'student@sunshine.com'}
+            </Text>
+          </Card>
+        </Animated.View>
 
         {/* Settings */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('profile.settings')}</Text>
 
-        {/* Theme Select */}
-        <Card style={styles.settingCard}>
-          <View style={styles.settingRow}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="moon-outline" size={22} color={colors.text} />
-              <Text style={[styles.settingLabel, { color: colors.text }]}>{t('profile.darkMode')}</Text>
+        {/* Settings Group */}
+        <Animated.View entering={FadeInUp.delay(200).springify()}>
+          <Card style={styles.settingsGroupCard}>
+            {/* Theme Select */}
+            <View style={styles.settingRow}>
+              <View style={styles.settingLeft}>
+                <Ionicons name="moon-outline" size={22} color={colors.text} />
+                <Text style={[styles.settingLabel, { color: colors.text }]}>{t('profile.darkMode')}</Text>
+              </View>
+              <Switch
+                value={theme === 'dark'}
+                onValueChange={toggleTheme}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor={theme === 'dark' ? '#FFFFFF' : '#F4F3F4'}
+              />
             </View>
-            <Switch
-              value={theme === 'dark'}
-              onValueChange={toggleTheme}
-              trackColor={{ false: colors.border, true: colors.primary }}
-              thumbColor={theme === 'dark' ? '#FFFFFF' : '#F4F3F4'}
-            />
-          </View>
-        </Card>
 
-        {/* Language Selection */}
-        <Card onPress={onNavigateToLanguageSelect} style={styles.settingCard}>
-          <View style={styles.settingRow}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="language-outline" size={22} color={colors.text} />
-              <Text style={[styles.settingLabel, { color: colors.text }]}>{t('profile.appLanguage')}</Text>
-            </View>
-            <View style={styles.settingRight}>
-              <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
-                {getLanguageLabel(currentLang)}
-              </Text>
+            <View style={[styles.settingDivider, { backgroundColor: colors.border }]} />
+
+            {/* Language Selection */}
+            <Pressable onPress={onNavigateToLanguageSelect} style={styles.settingRow}>
+              <View style={styles.settingLeft}>
+                <Ionicons name="language-outline" size={22} color={colors.text} />
+                <Text style={[styles.settingLabel, { color: colors.text }]}>{t('profile.appLanguage')}</Text>
+              </View>
+              <View style={styles.settingRight}>
+                <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
+                  {getLanguageLabel(currentLang)}
+                </Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+              </View>
+            </Pressable>
+
+            <View style={[styles.settingDivider, { backgroundColor: colors.border }]} />
+
+            {/* Clear Quiz History */}
+            <Pressable onPress={handleClearHistory} style={styles.settingRow}>
+              <View style={styles.settingLeft}>
+                <Ionicons name="trash-outline" size={22} color={colors.error} />
+                <Text style={[styles.settingLabel, { color: colors.error }]}>{t('profile.clearQuizHistory')}</Text>
+              </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-            </View>
-          </View>
-        </Card>
-
-        {/* Clear Quiz History */}
-        <Card onPress={handleClearHistory} style={styles.settingCard}>
-          <View style={styles.settingRow}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="trash-outline" size={22} color={colors.error} />
-              <Text style={[styles.settingLabel, { color: colors.error }]}>{t('profile.clearQuizHistory')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-          </View>
-        </Card>
+            </Pressable>
+          </Card>
+        </Animated.View>
 
         {/* Logout */}
-        <Button
-          title={t('common.logout')}
-          onPress={handleLogout}
-          variant="danger"
-          style={styles.logoutBtn}
-        />
+        <Animated.View entering={FadeInUp.delay(300).springify()}>
+          <Button
+            title={t('common.logout')}
+            onPress={handleLogout}
+            variant="danger"
+            style={styles.logoutBtn}
+          />
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -221,14 +231,22 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 14,
   },
-  settingCard: {
-    padding: 16,
-    marginBottom: 12,
+  settingGroupCard: {
+    paddingVertical: 8,
+    paddingHorizontal: 0,
+    marginBottom: 24,
   },
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  settingDivider: {
+    height: 1,
+    width: '100%',
+    marginVertical: 4,
   },
   settingLeft: {
     flexDirection: 'row',

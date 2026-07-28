@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Animated, Easing, Text, Platform } from 'react-native';
+import {View, StyleSheet, Animated, Easing, Platform} from 'react-native';
+import { Text } from './Text';
+
 import { useThemeStore } from '../../stores/themeStore';
 import { Colors } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';

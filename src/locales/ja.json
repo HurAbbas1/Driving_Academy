@@ -179,6 +179,7 @@
     },
     "home": {
         "welcome": "ようこそ、",
+        "featuredHandbooks": "おすすめのハンドブック",
         "streakDays": "{{days}}日連続",
         "bannerTitle": "日本の運転免許ハンドブック",
         "bannerSub": "母国語で交通ルールや道路標識を学習しましょう。",

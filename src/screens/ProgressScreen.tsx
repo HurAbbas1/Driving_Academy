@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, Text, SafeAreaView, ScrollView } from 'react-native';
+import {View, StyleSheet, SafeAreaView, ScrollView} from 'react-native';
+import { Text } from '../components/ui/Text';
+
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';
@@ -8,6 +10,7 @@ import { useStudyStore } from '../stores/studyStore';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, withDelay, FadeInUp } from 'react-native-reanimated';
 
 export const ProgressScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -54,73 +57,98 @@ export const ProgressScreen: React.FC = () => {
 
   const readiness = getReadinessStatus(readinessValue);
 
+  const fillAnim = useSharedValue(0);
+
+  React.useEffect(() => {
+    fillAnim.value = withDelay(300, withTiming(readinessValue, { duration: 1200, easing: Easing.out(Easing.cubic) }));
+  }, [readinessValue]);
+
+  const animatedFillStyle = useAnimatedStyle(() => ({
+    width: `${fillAnim.value}%`,
+  }));
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={[styles.title, { color: colors.text }]}>{t('tabs.progress')}</Text>
 
         {/* Readiness Meter Card */}
-        <Card style={styles.readinessCard}>
-          <Text style={[styles.readinessTitle, { color: colors.textSecondary }]}>{t('progress.examReadiness')}</Text>
-          <View style={styles.meterContainer}>
-            <View style={[styles.gaugeBg, { backgroundColor: colors.backgroundSelected }]}>
-              <View style={[styles.gaugeFill, { backgroundColor: readiness.color, width: `${readinessValue}%` }]} />
+        <Animated.View entering={FadeInUp.delay(100).springify()}>
+          <Card style={styles.readinessCard}>
+            <Text style={[styles.readinessTitle, { color: colors.textSecondary }]}>{t('progress.examReadiness')}</Text>
+            <View style={styles.meterContainer}>
+              <View style={[styles.gaugeBg, { backgroundColor: colors.backgroundSelected }]}>
+                <Animated.View style={[styles.gaugeFill, { backgroundColor: readiness.color }, animatedFillStyle]} />
+              </View>
+              <Text style={[styles.gaugeText, { color: colors.text }]}>{readinessValue}%</Text>
             </View>
-            <Text style={[styles.gaugeText, { color: colors.text }]}>{readinessValue}%</Text>
-          </View>
-          <Text style={[styles.readinessLabel, { color: readiness.color }]}>
-            {readiness.label}
-          </Text>
-          <Text style={[styles.readinessDesc, { color: colors.textSecondary }]}>
-            {t('progress.readinessDesc', { quizScore: Math.round(avgScore), studyScore: Math.round(studyProgressPercent * 100) })}
-          </Text>
-        </Card>
+            <Text style={[styles.readinessLabel, { color: readiness.color }]}>
+              {readiness.label}
+            </Text>
+            <Text style={[styles.readinessDesc, { color: colors.textSecondary }]}>
+              {t('progress.readinessDesc', { quizScore: Math.round(avgScore), studyScore: Math.round(studyProgressPercent * 100) })}
+            </Text>
+          </Card>
+        </Animated.View>
 
-        {/* Study Analytics */}
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('progress.studyAnalytics')}</Text>
+        {/* Study Analytics Bento Grid */}
+        <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 12 }]}>{t('progress.studyAnalytics')}</Text>
 
-        <Card style={styles.statsCard}>
-          <View style={styles.statRow}>
-            <Text style={[styles.statLbl, { color: colors.textSecondary }]}>{t('progress.quizzesCompleted')}</Text>
-            <Text style={[styles.statVal, { color: colors.text }]}>{totalQuizzes}</Text>
-          </View>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
-          
-          <View style={styles.statRow}>
-            <Text style={[styles.statLbl, { color: colors.textSecondary }]}>{t('progress.averageScore')}</Text>
-            <Text style={[styles.statVal, { color: colors.text }]}>{Math.round(avgScore)}%</Text>
-          </View>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        <View style={styles.bentoGrid}>
+          {/* Row 1: Big Scores */}
+          <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.bentoRow}>
+            <Card style={[styles.bentoCard, styles.flex1]}>
+              <View style={[styles.bentoIcon, { backgroundColor: `${colors.primary}15` }]}>
+                <Ionicons name="analytics" size={24} color={colors.primary} />
+              </View>
+              <Text style={[styles.bentoLabel, { color: colors.textSecondary }]}>{t('progress.averageScore')}</Text>
+              <Text style={[styles.bentoValue, { color: colors.text }]}>{Math.round(avgScore)}%</Text>
+            </Card>
+            
+            <Card style={[styles.bentoCard, styles.flex1]}>
+              <View style={[styles.bentoIcon, { backgroundColor: '#10B98115' }]}>
+                <Ionicons name="trophy" size={24} color="#10B981" />
+              </View>
+              <Text style={[styles.bentoLabel, { color: colors.textSecondary }]}>{t('progress.bestPracticeScore')}</Text>
+              <Text style={[styles.bentoValue, { color: '#10B981' }]}>{bestScore}%</Text>
+            </Card>
+          </Animated.View>
 
-          <View style={styles.statRow}>
-            <Text style={[styles.statLbl, { color: colors.textSecondary }]}>{t('progress.bestPracticeScore')}</Text>
-            <Text style={[styles.statVal, { color: colors.success }]}>{bestScore}%</Text>
-          </View>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
-          
-          <View style={styles.statRow}>
-            <Text style={[styles.statLbl, { color: colors.textSecondary }]}>{t('progress.correctAnswers')}</Text>
-            <Text style={[styles.statVal, { color: colors.success }]}>{totalCorrect}</Text>
-          </View>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
-          
-          <View style={styles.statRow}>
-            <Text style={[styles.statLbl, { color: colors.textSecondary }]}>{t('progress.incorrectAnswers')}</Text>
-            <Text style={[styles.statVal, { color: colors.error }]}>{totalIncorrect}</Text>
-          </View>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          {/* Row 2: Stats Trio */}
+          <Animated.View entering={FadeInUp.delay(300).springify()} style={styles.bentoRow}>
+            <Card style={[styles.bentoCard, styles.flex1]}>
+              <Text style={[styles.bentoLabelSmall, { color: colors.textSecondary }]}>{t('progress.quizzesCompleted')}</Text>
+              <Text style={[styles.bentoValueSmall, { color: colors.text }]}>{totalQuizzes}</Text>
+            </Card>
+            <Card style={[styles.bentoCard, styles.flex1]}>
+              <Text style={[styles.bentoLabelSmall, { color: colors.textSecondary }]}>{t('progress.correctAnswers')}</Text>
+              <Text style={[styles.bentoValueSmall, { color: '#10B981' }]}>{totalCorrect}</Text>
+            </Card>
+            <Card style={[styles.bentoCard, styles.flex1]}>
+              <Text style={[styles.bentoLabelSmall, { color: colors.textSecondary }]}>{t('progress.incorrectAnswers')}</Text>
+              <Text style={[styles.bentoValueSmall, { color: colors.error }]}>{totalIncorrect}</Text>
+            </Card>
+          </Animated.View>
 
-          <View style={styles.statRow}>
-            <Text style={[styles.statLbl, { color: colors.textSecondary }]}>{t('quiz.bookmarkedQuestions')}</Text>
-            <Text style={[styles.statVal, { color: colors.text }]}>{bookmarkedQuestions.length}</Text>
-          </View>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
-          <View style={styles.statRow}>
-            <Text style={[styles.statLbl, { color: colors.textSecondary }]}>{t('progress.reviewQueue')}</Text>
-            <Text style={[styles.statVal, { color: colors.error }]}>{wrongQuestions.length}</Text>
-          </View>
-        </Card>
+          {/* Row 3: Actionable Queues */}
+          <Animated.View entering={FadeInUp.delay(400).springify()} style={styles.bentoRow}>
+            <Card style={[styles.bentoCard, styles.flex1, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+              <View>
+                <Text style={[styles.bentoLabel, { color: colors.textSecondary }]}>{t('quiz.bookmarkedQuestions')}</Text>
+                <Text style={[styles.bentoValue, { color: colors.text }]}>{bookmarkedQuestions.length}</Text>
+              </View>
+              <Ionicons name="heart" size={32} color={colors.primary} style={{ opacity: 0.2 }} />
+            </Card>
+            
+            <Card style={[styles.bentoCard, styles.flex1, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+              <View>
+                <Text style={[styles.bentoLabel, { color: colors.textSecondary }]}>{t('progress.reviewQueue')}</Text>
+                <Text style={[styles.bentoValue, { color: colors.error }]}>{wrongQuestions.length}</Text>
+              </View>
+              <Ionicons name="alert-circle" size={32} color={colors.error} style={{ opacity: 0.2 }} />
+            </Card>
+          </Animated.View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -188,25 +216,48 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 14,
   },
-  statsCard: {
-    padding: 20,
+  bentoGrid: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
   },
-  statRow: {
+  bentoRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 12,
+  },
+  flex1: {
+    flex: 1,
+  },
+  bentoCard: {
+    padding: 16,
+    justifyContent: 'center',
+  },
+  bentoIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 12,
+    marginBottom: 16,
   },
-  statLbl: {
-    fontSize: 14,
+  bentoLabel: {
+    fontSize: 13,
     fontWeight: '600',
+    marginBottom: 4,
   },
-  statVal: {
-    fontSize: 16,
-    fontWeight: '700',
+  bentoValue: {
+    fontSize: 28,
+    fontWeight: '800',
   },
-  divider: {
-    height: 1,
-    width: '100%',
+  bentoLabelSmall: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  bentoValueSmall: {
+    fontSize: 20,
+    fontWeight: '800',
+    textAlign: 'center',
   },
 });

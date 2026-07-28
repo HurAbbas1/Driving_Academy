@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, SafeAreaView, FlatList, TextInput, Pressable, ScrollView, Platform, Image } from 'react-native';
+import {View, StyleSheet, SafeAreaView, FlatList, TextInput, Pressable, ScrollView, Platform, Image} from 'react-native';
+import { Text } from '../components/ui/Text';
+
 import { Alert } from '../utils/alert';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
@@ -14,6 +16,8 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { ContentRenderer } from '../components/study/ContentRenderer';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolate, Extrapolation, FadeInUp, FadeInDown } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 type FontSize = 'small' | 'medium' | 'large';
 
@@ -45,7 +49,20 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
   };
 
   // Store States
-  const { books, chapters, bookmarkedPages, progress, downloadedChapters, toggleBookmark, markAsRead, setLastRead, downloadChapter, deleteDownload } = useStudyStore();
+  const { 
+    books, 
+    chapters, 
+    bookmarkedPages, 
+    progress, 
+    downloadedChapters, 
+    selectedBookId, 
+    setSelectedBookId, 
+    toggleBookmark, 
+    markAsRead, 
+    setLastRead, 
+    downloadChapter, 
+    deleteDownload 
+  } = useStudyStore();
 
   // Local navigation states
   const [activeSection, setActiveSection] = useState<'car' | 'bike' | null>(null);
@@ -54,6 +71,41 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
   const [selectedSubtopic, setSelectedSubtopic] = useState<Subtopic | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [fontSize, setFontSize] = useState<FontSize>('medium');
+
+  // Handle global routing selection
+  useEffect(() => {
+    if (selectedBookId && books.length > 0) {
+      const book = books.find(b => b.id === selectedBookId);
+      if (book) {
+        setSelectedBook(book);
+        setActiveSection(prev => prev || 'car');
+        // Clear global state so back navigation works normally next time
+        setSelectedBookId(null);
+      }
+    }
+  }, [selectedBookId, books, setSelectedBookId]);
+
+  // Parallax Scroll Animation State
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: interpolate(scrollY.value, [-100, 0, 100], [-50, 0, 50], Extrapolation.CLAMP),
+        },
+        {
+          scale: interpolate(scrollY.value, [-100, 0, 100], [1.2, 1, 1], Extrapolation.CLAMP),
+        }
+      ],
+      opacity: interpolate(scrollY.value, [0, 150], [1, 0.3], Extrapolation.CLAMP),
+    };
+  });
 
   const renderChapterExplanation = () => {
     if (!selectedChapter) return null;
@@ -486,7 +538,25 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
             )}
           />
         ) : (
-          <ScrollView contentContainerStyle={styles.listContent}>
+          <Animated.ScrollView 
+            onScroll={scrollHandler} 
+            scrollEventThrottle={16}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Cinematic Parallax Header for Selected Book */}
+            {selectedBook && (
+              <Animated.View style={[{ height: 220, marginBottom: 24, borderRadius: 16, overflow: 'hidden', backgroundColor: `${colors.primary}15`, justifyContent: 'flex-end', padding: 20 }, headerAnimatedStyle]}>
+                <Ionicons name="book" size={64} color={colors.primary} style={{ opacity: 0.2, position: 'absolute', top: -10, right: -10, transform: [{ scale: 2 }] }} />
+                <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text, marginBottom: 4 }}>
+                  {loc(selectedBook.title)}
+                </Text>
+                <Text style={{ fontSize: 16, color: colors.textSecondary }}>
+                  {t('study.chaptersCount', { count: selectedBook.chapters?.length || 0 })}
+                </Text>
+              </Animated.View>
+            )}
+
             {/* Continue Reading Banner */}
             {!selectedBook && progress.lastReadSubtopicId && (
               <Card onPress={handleResumeReading} variant="glass" style={styles.resumeCard}>
@@ -507,86 +577,93 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
             {!activeSection ? (
               <View style={styles.selectorContainer}>
                 {/* Car Card */}
-                <Card
-                  onPress={() => setActiveSection('car')}
-                  style={[
-                    styles.selectorCard,
-                    {
-                      borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.35)' : 'rgba(227, 24, 55, 0.16)',
-                      ...Platform.select({
-                        web: {
-                          boxShadow: theme === 'dark' ? '0 0 16px rgba(227, 24, 55, 0.12)' : '0 0 16px rgba(227, 24, 55, 0.05)',
-                        } as any,
-                        default: {
-                          shadowColor: colors.primary,
-                          shadowOpacity: theme === 'dark' ? 0.22 : 0.05,
-                          shadowRadius: 10,
-                          elevation: 3,
-                        }
-                      })
-                    }
-                  ]}
-                >
-                  <View style={[styles.selectorIconWrapper, { backgroundColor: `${colors.primary}12` }]}>
-                    <Ionicons name="car-sport-sharp" size={32} color={colors.primary} />
-                  </View>
-                  <View style={styles.selectorTextInfo}>
-                    <Text style={[styles.selectorCardTitle, { color: colors.text }]}>
-                      {t('study.carTitle')}
-                    </Text>
-                    <Text style={[styles.selectorCardSub, { color: colors.textSecondary }]}>
-                      {t('study.carSub')}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                </Card>
+                <Animated.View entering={FadeInUp.delay(100).springify()}>
+                  <Card
+                    onPress={() => setActiveSection('car')}
+                    style={[
+                      styles.selectorCard,
+                      {
+                        borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.35)' : 'rgba(227, 24, 55, 0.16)',
+                        ...Platform.select({
+                          web: {
+                            boxShadow: theme === 'dark' ? '0 0 16px rgba(227, 24, 55, 0.12)' : '0 0 16px rgba(227, 24, 55, 0.05)',
+                          } as any,
+                          default: {
+                            shadowColor: colors.primary,
+                            shadowOpacity: theme === 'dark' ? 0.22 : 0.05,
+                            shadowRadius: 10,
+                            elevation: 3,
+                          }
+                        })
+                      }
+                    ]}
+                  >
+                    <View style={[styles.selectorIconWrapper, { backgroundColor: `${colors.primary}12` }]}>
+                      <Ionicons name="car-sport-sharp" size={32} color={colors.primary} />
+                    </View>
+                    <View style={styles.selectorTextInfo}>
+                      <Text style={[styles.selectorCardTitle, { color: colors.text }]}>
+                        {t('study.carTitle')}
+                      </Text>
+                      <Text style={[styles.selectorCardSub, { color: colors.textSecondary }]}>
+                        {t('study.carSub')}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                  </Card>
+                </Animated.View>
 
                 {/* Bike Card */}
-                <Card
-                  onPress={() => setActiveSection('bike')}
-                  style={[
-                    styles.selectorCard,
-                    {
-                      borderColor: theme === 'dark' ? 'rgba(255, 179, 0, 0.35)' : 'rgba(245, 158, 11, 0.16)',
-                      ...Platform.select({
-                        web: {
-                          boxShadow: theme === 'dark' ? '0 0 16px rgba(255, 179, 0, 0.12)' : '0 0 16px rgba(245, 158, 11, 0.05)',
-                        } as any,
-                        default: {
-                          shadowColor: '#FFB300',
-                          shadowOpacity: theme === 'dark' ? 0.22 : 0.05,
-                          shadowRadius: 10,
-                          elevation: 3,
-                        }
-                      })
-                    }
-                  ]}
-                >
-                  <View style={[styles.selectorIconWrapper, { backgroundColor: '#FFB30015' }]}>
-                    <Ionicons name="bicycle-sharp" size={32} color="#FFB300" />
-                  </View>
-                  <View style={styles.selectorTextInfo}>
-                    <Text style={[styles.selectorCardTitle, { color: colors.text }]}>
-                      {t('study.bikeTitle')}
-                    </Text>
-                    <Text style={[styles.selectorCardSub, { color: colors.textSecondary }]}>
-                      {t('study.bikeSub')}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                </Card>
+                <Animated.View entering={FadeInUp.delay(200).springify()}>
+                  <Card
+                    onPress={() => setActiveSection('bike')}
+                    style={[
+                      styles.selectorCard,
+                      {
+                        borderColor: theme === 'dark' ? 'rgba(255, 179, 0, 0.35)' : 'rgba(245, 158, 11, 0.16)',
+                        ...Platform.select({
+                          web: {
+                            boxShadow: theme === 'dark' ? '0 0 16px rgba(255, 179, 0, 0.12)' : '0 0 16px rgba(245, 158, 11, 0.05)',
+                          } as any,
+                          default: {
+                            shadowColor: '#FFB300',
+                            shadowOpacity: theme === 'dark' ? 0.22 : 0.05,
+                            shadowRadius: 10,
+                            elevation: 3,
+                          }
+                        })
+                      }
+                    ]}
+                  >
+                    <View style={[styles.selectorIconWrapper, { backgroundColor: '#FFB30015' }]}>
+                      <Ionicons name="bicycle-sharp" size={32} color="#FFB300" />
+                    </View>
+                    <View style={styles.selectorTextInfo}>
+                      <Text style={[styles.selectorCardTitle, { color: colors.text }]}>
+                        {t('study.bikeTitle')}
+                      </Text>
+                      <Text style={[styles.selectorCardSub, { color: colors.textSecondary }]}>
+                        {t('study.bikeSub')}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                  </Card>
+                </Animated.View>
               </View>
             ) : (
               <>
                 {/* Back button if book is selected */}
                 {selectedBook && (
-                  <View style={[styles.chapterHeader, { marginBottom: 8 }]}>
-                    <Pressable onPress={() => setSelectedBook(null)} style={styles.backBtn}>
+                  <View style={[styles.chapterHeader, { marginBottom: 16 }]}>
+                    <Pressable 
+                      onPress={() => {
+                        Haptics.selectionAsync();
+                        setSelectedBook(null);
+                      }} 
+                      style={[styles.backBtn, { backgroundColor: colors.backgroundElement, borderRadius: 20, padding: 8 }]}
+                    >
                       <Ionicons name="arrow-back" size={24} color={colors.text} />
                     </Pressable>
-                    <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
-                      {loc(selectedBook.title)}
-                    </Text>
                   </View>
                 )}
 
@@ -604,7 +681,10 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
 
                 {/* If selectedBook is active, render its chapters */}
                 {selectedBook ? (
-                  (selectedBook.chapters || []).map((chapter: any) => {
+                  (selectedBook.chapters || []).filter((ch: any) => {
+                    if (!activeSection) return true;
+                    return ch.licenseType === activeSection || ch.licenseType === 'both' || !ch.licenseType;
+                  }).map((chapter: any, index: number) => {
                     const compPercent = getChapterProgress(chapter);
                     const isDownloaded = downloadedChapters.includes(chapter.id);
 
@@ -626,11 +706,14 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                     };
 
                     return (
-                      <Card 
-                        key={chapter.id} 
-                        onPress={() => setSelectedChapter(chapter)} 
-                        style={styles.chapterCard}
-                      >
+                      <Animated.View key={chapter.id} entering={FadeInDown.delay(index * 100).springify()}>
+                        <Card 
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            setSelectedChapter(chapter);
+                          }} 
+                          style={styles.chapterCard}
+                        >
                         <View style={styles.chapterHeaderRow}>
                           <View style={[styles.chapterIconBox, { backgroundColor: `${colors.primary}10` }]}>
                             <Ionicons name="book-outline" size={24} color={colors.primary} />
@@ -663,43 +746,45 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                           </Text>
                         </View>
                       </Card>
+                    </Animated.View>
                     );
                   })
                 ) : (
                   /* Render Books list if no book is selected */
-                  books.map((book) => {
+                  books.map((book, index) => {
                     const totalChapters = book.chapters?.length || 0;
                     return (
-                      <Card 
-                        key={book.id} 
-                        onPress={() => setSelectedBook(book)} 
-                        style={styles.chapterCard}
-                      >
-                        <View style={styles.chapterHeaderRow}>
-                          <View style={[styles.chapterIconBox, { backgroundColor: activeSection === 'car' ? `${colors.primary}10` : '#FFB30015' }]}>
-                            <Ionicons 
-                              name={activeSection === 'car' ? "car-sport-outline" : "bicycle-outline"} 
-                              size={24} 
-                              color={activeSection === 'car' ? colors.primary : "#FFB300"} 
-                            />
+                      <Animated.View key={book.id} entering={FadeInDown.delay(index * 100).springify()}>
+                        <Card 
+                          onPress={() => setSelectedBook(book)} 
+                          style={styles.chapterCard}
+                        >
+                          <View style={styles.chapterHeaderRow}>
+                            <View style={[styles.chapterIconBox, { backgroundColor: activeSection === 'car' ? `${colors.primary}10` : '#FFB30015' }]}>
+                              <Ionicons 
+                                name={activeSection === 'car' ? "car-sport-outline" : "bicycle-outline"} 
+                                size={24} 
+                                color={activeSection === 'car' ? colors.primary : "#FFB300"} 
+                              />
+                            </View>
+                            <View style={styles.chapterInfo}>
+                              <Text style={[styles.chapterCardTitle, { color: colors.text }]}>
+                                {loc(book.title)}
+                              </Text>
+                              <Text style={[styles.chapterCardSub, { color: colors.textSecondary }]}>
+                                {loc(book.description)} | {t('study.chaptersCount', { count: totalChapters })}
+                              </Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
                           </View>
-                          <View style={styles.chapterInfo}>
-                            <Text style={[styles.chapterCardTitle, { color: colors.text }]}>
-                              {loc(book.title)}
-                            </Text>
-                            <Text style={[styles.chapterCardSub, { color: colors.textSecondary }]}>
-                              {loc(book.description)} | {t('study.chaptersCount', { count: totalChapters })}
-                            </Text>
-                          </View>
-                          <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-                        </View>
-                      </Card>
+                        </Card>
+                      </Animated.View>
                     );
                   })
                 )}
               </>
             )}
-          </ScrollView>
+          </Animated.ScrollView>
         )}
       </View>
     </SafeAreaView>

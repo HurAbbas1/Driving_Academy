@@ -179,6 +179,7 @@
     },
     "home": {
         "welcome": "Bem-vindo,",
+        "featuredHandbooks": "Manuais em Destaque",
         "streakDays": "{{days}} Dias",
         "bannerTitle": "Manual de Condução Japonês",
         "bannerSub": "Estude as regras de trânsito e sinalização em seu idioma nativo.",

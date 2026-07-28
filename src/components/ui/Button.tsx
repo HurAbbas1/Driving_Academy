@@ -1,5 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, ActivityIndicator, ViewStyle, TextStyle, Animated, Platform } from 'react-native';
+import {Pressable, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, Animated, Platform} from 'react-native';
+import { Text } from './Text';
+
 import * as Haptics from 'expo-haptics';
 import { Colors } from '../../constants/theme';
 import { useThemeStore } from '../../stores/themeStore';

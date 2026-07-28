@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, SafeAreaView } from 'react-native';
+import {View, StyleSheet, SafeAreaView} from 'react-native';
+import { Text } from '../components/ui/Text';
+
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';

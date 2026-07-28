@@ -39,6 +39,7 @@ export interface Chapter {
   };
   icon: string; // Ionicons name
   order: number;
+  licenseType?: 'car' | 'bike' | 'both';
   subtopics: Subtopic[];
 }
 
@@ -57,6 +58,7 @@ export interface Book {
     pt: string;
   };
   icon: string;
+  coverImage?: string;
   chapters: Chapter[];
 }
 

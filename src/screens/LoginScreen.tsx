@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, ScrollView, SafeAreaView, Pressable, Platform, ImageBackground, KeyboardAvoidingView } from 'react-native';
+import {View, StyleSheet, ScrollView, SafeAreaView, Pressable, Platform, ImageBackground, KeyboardAvoidingView} from 'react-native';
+import { Text } from '../components/ui/Text';
+
 import { Alert } from '../utils/alert';
 import { authenticateOrRegisterUser } from '../services/supabase/auth';
 import { useTranslation } from 'react-i18next';
@@ -117,8 +119,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
               {/* Logo & Welcome Area */}
               <View style={styles.headerArea}>
-                <View style={[styles.iconBox, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.logoLetter}>N<Text style={{color: '#fff'}}>S</Text></Text>
+                <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 24}}>
+                  <Text style={{color: colors.primary, fontSize: 42, fontWeight: '900', fontStyle: 'italic', letterSpacing: -2}}>N<Text style={{color: '#FFF'}}>S</Text></Text>
+                  <View style={{marginLeft: 12}}>
+                    <Text style={{color: '#FFF', fontWeight: '800', fontSize: 20, letterSpacing: 1.5}}>NEW SUNSHINE</Text>
+                    <Text style={{color: colors.primary, fontWeight: '700', fontSize: 12, letterSpacing: 2}}>DRIVING ACADEMY</Text>
+                  </View>
                 </View>
                 <Text style={styles.welcomeTitle}>{t("auth.welcomeBack")}</Text>
                 <Text style={styles.welcomeSubtitle}>{t("auth.academyName")}</Text>
@@ -146,13 +152,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   error={errors.password}
                   style={styles.input}
                 />
-                <Text style={[styles.passwordHint, { color: 'rgba(255,255,255,0.6)' }]}>
-                  {t("auth.passwordHint")}
-                </Text>
-
-                <Pressable onPress={onNavigateToForgotPassword} style={styles.forgotPassword}>
-                  <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>{t("auth.forgotPassword")}</Text>
-                </Pressable>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                  <Text style={[styles.passwordHint, { color: 'rgba(255,255,255,0.6)', marginBottom: 0, marginTop: 0 }]}>
+                    {t("auth.passwordHint")}
+                  </Text>
+                  <Pressable onPress={onNavigateToForgotPassword}>
+                    <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>{t("auth.forgotPassword")}</Text>
+                  </Pressable>
+                </View>
 
                 <Button
                   title={loading ? t('auth.login') + '...' : t('auth.signInRegister')}
@@ -174,12 +181,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   style={styles.socialBtn}
                 />
 
-                <Button
-                  title={t("auth.appleSignInComingSoon")}
-                  onPress={handleAppleSignIn}
-                  variant="secondary"
-                  style={styles.socialBtn}
-                />
+
 
                 <Text style={[styles.hintText, { color: colors.textSecondary }]}>
                   Type any name and password. If the name is new, we will automatically register a new profile for you!
@@ -289,15 +291,10 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
   },
   welcomeTitle: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '900',
     color: '#FFFFFF',
     marginBottom: 8,
-    ...Platform.select({
-      ios: { textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 10 },
-      android: { textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 10 },
-      web: { textShadow: '0px 2px 10px rgba(0,0,0,0.75)' } as any
-    }),
   },
   welcomeSubtitle: {
     fontSize: 14,

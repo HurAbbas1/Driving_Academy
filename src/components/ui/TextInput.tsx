@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { View, TextInput as RNTextInput, StyleSheet, Text, Animated, TextInputProps as RNTextInputProps, ViewStyle, TextStyle, Pressable } from 'react-native';
+import {View, TextInput as RNTextInput, StyleSheet, Animated, TextInputProps as RNTextInputProps, ViewStyle, TextStyle, Pressable} from 'react-native';
+import { Text } from './Text';
+
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/theme';
 import { useThemeStore } from '../../stores/themeStore';

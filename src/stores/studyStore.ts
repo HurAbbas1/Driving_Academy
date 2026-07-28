@@ -17,8 +17,10 @@ interface StudyState {
   progress: ReadingProgress;
   downloadedChapters: string[]; // chapterIds
   loading: boolean;
+  selectedBookId: string | null;
 
   // Actions
+  setSelectedBookId: (id: string | null) => void;
   toggleBookmark: (subtopicId: string) => Promise<void>;
   markAsRead: (subtopicId: string, chapterId: string) => Promise<void>;
   setLastRead: (subtopicId: string, chapterId: string) => Promise<void>;
@@ -39,6 +41,9 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   },
   downloadedChapters: [],
   loading: false,
+  selectedBookId: null,
+
+  setSelectedBookId: (id) => set({ selectedBookId: id }),
 
   toggleBookmark: async (subtopicId) => {
     const { bookmarkedPages } = get();
@@ -183,6 +188,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
               sub: ch.title,
               icon: 'book-outline',
               order: ch.order_num || 1,
+              licenseType: ch.license_type || 'both',
               subtopics: subs
             };
           });
@@ -198,6 +204,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
               title: b.title,
               description: b.description || { en: '', ja: '', zh: '', pt: '' },
               icon: b.icon || 'car-sport-outline',
+              coverImage: b.cover_image,
               chapters: chs
             };
           });

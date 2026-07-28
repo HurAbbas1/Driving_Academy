@@ -179,6 +179,7 @@
     },
     "home": {
         "welcome": "欢迎，",
+        "featuredHandbooks": "精选交通手册",
         "streakDays": "连续学习 {{days}} 天",
         "bannerTitle": "日本驾驶执照手册",
         "bannerSub": "使用您的母语学习交通规则和道路标志。",

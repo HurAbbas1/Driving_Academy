@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, SafeAreaView, ScrollView, Pressable, FlatList, ActivityIndicator, Platform, Image } from 'react-native';
+import {View, StyleSheet, SafeAreaView, ScrollView, Pressable, FlatList, ActivityIndicator, Platform, Image} from 'react-native';
+import { Text } from '../components/ui/Text';
+
 import { Alert } from '../utils/alert';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
@@ -12,6 +14,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { ProgressBar } from '../components/ui/ProgressBar';
+import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 
 type ViewMode = QuizViewMode;
@@ -186,7 +189,8 @@ export const QuizScreen: React.FC = () => {
     }
     const totalQuestions = activeSession.questions.length;
     const selectedOptionIndex = activeSession.userAnswers[currentQ.id];
-    const isFlagged = activeSession.flaggedQuestions.includes(currentQ.id);
+    const isBookmarked = bookmarkedQuestions.includes(currentQ.id);
+    const isFlagged = activeSession.flaggedQuestions?.includes(currentQ.id);
 
     const handleNext = () => {
       if (activeSession.currentIndex < totalQuestions - 1) {
@@ -234,11 +238,11 @@ export const QuizScreen: React.FC = () => {
           <Text style={[styles.timerText, { color: colors.text }]}>
             {formatTime(activeSession.elapsedSeconds)}
           </Text>
-          <Pressable onPress={() => toggleFlagQuestion(currentQ.id)} style={styles.headerBtn}>
+          <Pressable onPress={() => toggleBookmarkQuestion(currentQ.id)} style={styles.headerBtn}>
             <Ionicons 
-              name={isFlagged ? 'bookmark' : 'bookmark-outline'} 
+              name={isBookmarked ? 'bookmark' : 'bookmark-outline'} 
               size={22} 
-              color={isFlagged ? colors.primary : colors.text} 
+              color={isBookmarked ? colors.primary : colors.text} 
             />
           </Pressable>
         </View>
@@ -248,34 +252,37 @@ export const QuizScreen: React.FC = () => {
 
         <ScrollView contentContainerStyle={styles.quizContent}>
           {/* Question Indicator */}
-          <Text style={[styles.qIndexText, { color: colors.textSecondary }]}>
-            {t('quiz.questionCount', { current: activeSession.currentIndex + 1, total: totalQuestions })}
+          <View style={styles.questionHeader}>
+            <Text style={[styles.qIndexText, { color: colors.textSecondary }]}>
+              {t('quiz.questionCount', { current: activeSession.currentIndex + 1, total: totalQuestions })}
+            </Text>
+            {/* Flag Question Button */}
+            <Pressable 
+              style={[styles.actionBtn, isFlagged ? { backgroundColor: colors.warning } : { borderColor: colors.border, borderWidth: 1 }]} 
+              onPress={() => toggleFlagQuestion(activeSession.id, currentQ.id)}
+            >
+              <Ionicons name={isFlagged ? "flag" : "flag-outline"} size={20} color={isFlagged ? '#000' : colors.textSecondary} />
+            </Pressable>
+          </View>
+
+          {/* Question Image (If applicable) */}
+          {currentQ.imageUrl ? (
+            <View style={styles.questionImageContainer}>
+              <Image 
+                source={{ uri: currentQ.imageUrl }} 
+                style={styles.questionImage} 
+                resizeMode="contain" 
+              />
+            </View>
+          ) : null}
+
+          {/* Question Text */}
+          <Text style={[styles.questionText, { color: colors.text }]}>
+            {loc(currentQ.text || (currentQ as any).question)}
           </Text>
 
-          {(() => {
-            const rawText = loc(currentQ.text || (currentQ as any).question);
-            const imgMatch = rawText.match(/!\[.*?\]\(([^)\s]+).*?\)/);
-            const cleanText = rawText.replace(/!\[.*?\]\(.*?\)/, '').trim();
-            const displayImageUrl = currentQ.imageUrl || (imgMatch ? imgMatch[1] : null);
-
-            return (
-              <>
-                <Text style={[styles.qText, { color: colors.text }]}>
-                  {cleanText}
-                </Text>
-                {displayImageUrl && (
-                  <Image 
-                    source={{ uri: displayImageUrl }} 
-                    style={{ width: '100%', height: 200, borderRadius: 12, marginBottom: 24, backgroundColor: 'rgba(255,255,255,0.05)' }}
-                    resizeMode="contain"
-                  />
-                )}
-              </>
-            );
-          })()}
-
           {/* Answer Options */}
-          <View style={styles.optionsList}>
+          <View style={styles.optionsContainer}>
             {currentQ.options.map((opt, index) => {
               const isSelected = selectedOptionIndex === index;
               const hasAnswered = selectedOptionIndex !== undefined;
@@ -308,7 +315,10 @@ export const QuizScreen: React.FC = () => {
               return (
                 <Card
                   key={index}
-                  onPress={hasAnswered ? undefined : () => selectAnswer(currentQ.id, index)}
+                  onPress={hasAnswered ? undefined : () => {
+                    Haptics.selectionAsync().catch(() => {});
+                    selectAnswer(currentQ.id, index);
+                  }}
                   style={[
                     styles.optionCard,
                     { 
@@ -1057,19 +1067,40 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
   },
+  questionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  actionBtn: {
+    padding: 6,
+    borderRadius: 8,
+  },
   qIndexText: {
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1,
-    marginBottom: 12,
   },
-  qText: {
+  questionText: {
     fontSize: 20,
-    fontWeight: '800',
+    fontWeight: '700',
     lineHeight: 28,
-    marginBottom: 28,
+    marginBottom: 24,
   },
-  optionsList: {
+  questionImageContainer: {
+    width: '100%',
+    height: 200,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 20,
+    backgroundColor: 'rgba(150,150,150,0.1)',
+  },
+  questionImage: {
+    width: '100%',
+    height: '100%',
+  },
+  optionsContainer: {
     gap: 12,
   },
   optionCard: {

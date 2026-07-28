@@ -1,4 +1,6 @@
-import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
+import {Platform, StyleSheet, type TextProps} from 'react-native';
+import { Text } from './ui/Text';
+
 
 import { Fonts, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -35,35 +37,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontWeight: 500,
+    fontFamily: 'Outfit_500Medium',
   },
   smallBold: {
     fontSize: 14,
     lineHeight: 20,
     fontWeight: 700,
+    fontFamily: 'Outfit_700Bold',
   },
   default: {
     fontSize: 16,
     lineHeight: 24,
     fontWeight: 500,
+    fontFamily: 'Outfit_500Medium',
   },
   title: {
     fontSize: 48,
     fontWeight: 600,
     lineHeight: 52,
+    fontFamily: 'Outfit_600SemiBold',
   },
   subtitle: {
     fontSize: 32,
     lineHeight: 44,
     fontWeight: 600,
+    fontFamily: 'Outfit_600SemiBold',
   },
   link: {
     lineHeight: 30,
     fontSize: 14,
+    fontFamily: 'Outfit_400Regular',
   },
   linkPrimary: {
     lineHeight: 30,
     fontSize: 14,
     color: '#3c87f7',
+    fontFamily: 'Outfit_500Medium',
   },
   code: {
     fontFamily: Fonts.mono,

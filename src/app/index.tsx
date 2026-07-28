@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, Pressable, Platform } from 'react-native';
+import {View, StyleSheet, Pressable, Platform} from 'react-native';
+import { Text } from '../components/ui/Text';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +27,51 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 import { LoadingScreen } from '../components/ui/LoadingScreen';
 import { AnimatedSplashScreen } from '../components/ui/AnimatedSplashScreen';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
+
+const TabButton = ({ icon, label, isActive, onPress, color, isCenter }: any) => {
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }]
+  }));
+
+  return (
+    <Animated.View style={[styles.tabItem, animatedStyle, isCenter ? { marginTop: -20 } : {}]}>
+      <Pressable
+        onPressIn={() => {
+          scale.value = withSpring(0.85, { damping: 15, stiffness: 300 });
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+        }}
+        onPress={onPress}
+        style={{ alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}
+      >
+        {isCenter ? (
+          <View style={[
+            styles.quizTabCircle, 
+            { 
+              backgroundColor: color,
+              ...Platform.select({
+                web: { boxShadow: `0 4px 12px ${color}80` },
+                default: { shadowColor: color, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 8 },
+              }),
+            }
+          ]}>
+            <Ionicons name={icon} size={26} color="#FFFFFF" />
+          </View>
+        ) : (
+          <Ionicons name={icon} size={24} color={color} />
+        )}
+        <Text style={[styles.tabLabel, { color: color, marginTop: isCenter ? 6 : 4, fontWeight: isActive ? '800' : '600' }]}>
+          {label}
+        </Text>
+      </Pressable>
+    </Animated.View>
+  );
+};
 
 type ActiveTab = 'home' | 'study' | 'quiz' | 'progress' | 'profile';
 type AuthRoute = 'login' | 'signup' | 'forgotPassword';
@@ -138,80 +185,57 @@ export default function IndexScreen() {
       {/* Active Tab Screen */}
       <View style={styles.tabContent}>{renderTabContent()}</View>
 
-      {/* Premium Theme Tab Bar */}
+      {/* Premium Floating Glass Tab Bar */}
       {!(activeTab === 'quiz' && (quizViewMode === 'active' || quizViewMode === 'countdown')) && (
-        <SafeAreaView style={[styles.tabBar, { backgroundColor: colors.backgroundElement, borderTopColor: colors.border }]} edges={['bottom']}>
-          {/* Tab: Home */}
-          <Pressable onPress={() => setActiveTab('home')} style={styles.tabItem}>
-            <Ionicons
-              name={activeTab === 'home' ? 'home' : 'home-outline'}
-              size={22}
-              color={activeTab === 'home' ? colors.primary : colors.textSecondary}
+        <View style={styles.floatingTabBarContainer}>
+          <View style={[
+            styles.floatingTabBar, 
+            { 
+              backgroundColor: theme === 'dark' ? 'rgba(26,26,26,0.85)' : 'rgba(255,255,255,0.9)',
+              borderColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+              ...Platform.select({
+                web: { backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' } as any,
+              })
+            }
+          ]}>
+            <TabButton 
+              icon={activeTab === 'home' ? 'home' : 'home-outline'} 
+              label={t('tabs.home')} 
+              isActive={activeTab === 'home'} 
+              onPress={() => setActiveTab('home')} 
+              color={activeTab === 'home' ? colors.primary : colors.textSecondary} 
             />
-            <Text style={[styles.tabLabel, { color: activeTab === 'home' ? colors.primary : colors.textSecondary }]}>
-              {t('tabs.home')}
-            </Text>
-          </Pressable>
-
-          {/* Tab: Study */}
-          <Pressable onPress={() => setActiveTab('study')} style={styles.tabItem}>
-            <Ionicons
-              name={activeTab === 'study' ? 'book' : 'book-outline'}
-              size={22}
-              color={activeTab === 'study' ? colors.primary : colors.textSecondary}
+            <TabButton 
+              icon={activeTab === 'study' ? 'book' : 'book-outline'} 
+              label={t('tabs.study')} 
+              isActive={activeTab === 'study'} 
+              onPress={() => setActiveTab('study')} 
+              color={activeTab === 'study' ? colors.primary : colors.textSecondary} 
             />
-            <Text style={[styles.tabLabel, { color: activeTab === 'study' ? colors.primary : colors.textSecondary }]}>
-              {t('tabs.study')}
-            </Text>
-          </Pressable>
-
-          {/* Tab: Quiz (Center Elevated Button) */}
-          <Pressable onPress={() => setActiveTab('quiz')} style={styles.tabItem}>
-            <View style={[
-              styles.quizTabCircle, 
-              { 
-                backgroundColor: colors.primary,
-                ...Platform.select({
-                  web: { boxShadow: `0 4px 10px ${colors.primary}66` },
-                  default: { shadowColor: colors.primary },
-                }),
-              }
-            ]}>
-              <Ionicons
-                name="school"
-                size={24}
-                color="#FFFFFF"
-              />
-            </View>
-            <Text style={[styles.tabLabel, { color: activeTab === 'quiz' ? colors.primary : colors.textSecondary, marginTop: 4 }]}>
-              {t('tabs.quiz')}
-            </Text>
-          </Pressable>
-
-          {/* Tab: Progress */}
-          <Pressable onPress={() => setActiveTab('progress')} style={styles.tabItem}>
-            <Ionicons
-              name={activeTab === 'progress' ? 'stats-chart' : 'stats-chart-outline'}
-              size={22}
-              color={activeTab === 'progress' ? colors.primary : colors.textSecondary}
+            <TabButton 
+              icon="school" 
+              label={t('tabs.quiz')} 
+              isActive={activeTab === 'quiz'} 
+              onPress={() => setActiveTab('quiz')} 
+              color={colors.primary} 
+              isCenter 
             />
-            <Text style={[styles.tabLabel, { color: activeTab === 'progress' ? colors.primary : colors.textSecondary }]}>
-              {t('tabs.progress')}
-            </Text>
-          </Pressable>
-
-          {/* Tab: Profile */}
-          <Pressable onPress={() => setActiveTab('profile')} style={styles.tabItem}>
-            <Ionicons
-              name={activeTab === 'profile' ? 'person' : 'person-outline'}
-              size={22}
-              color={activeTab === 'profile' ? colors.primary : colors.textSecondary}
+            <TabButton 
+              icon={activeTab === 'progress' ? 'stats-chart' : 'stats-chart-outline'} 
+              label={t('tabs.progress')} 
+              isActive={activeTab === 'progress'} 
+              onPress={() => setActiveTab('progress')} 
+              color={activeTab === 'progress' ? colors.primary : colors.textSecondary} 
             />
-            <Text style={[styles.tabLabel, { color: activeTab === 'profile' ? colors.primary : colors.textSecondary }]}>
-              {t('tabs.profile')}
-            </Text>
-          </Pressable>
-        </SafeAreaView>
+            <TabButton 
+              icon={activeTab === 'profile' ? 'person' : 'person-outline'} 
+              label={t('tabs.profile')} 
+              isActive={activeTab === 'profile'} 
+              onPress={() => setActiveTab('profile')} 
+              color={activeTab === 'profile' ? colors.primary : colors.textSecondary} 
+            />
+          </View>
+        </View>
       )}
     </View>
   );
@@ -223,15 +247,30 @@ const styles = StyleSheet.create({
   },
   tabContent: {
     flex: 1,
+    paddingBottom: 90, // Pad for the floating tab bar
   },
-  tabBar: {
+  floatingTabBarContainer: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 24 : 16,
+    left: 16,
+    right: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  floatingTabBar: {
     flexDirection: 'row',
-    height: Platform.OS === 'ios' ? 84 : 64,
-    borderTopWidth: 1,
-    paddingTop: 8,
+    height: 72,
+    borderRadius: 36,
     paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'space-around',
+    borderWidth: 1,
+    width: '100%',
+    maxWidth: 500,
+    ...Platform.select({
+      web: { boxShadow: '0 8px 32px rgba(0,0,0,0.2)' } as any,
+      default: { shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 16, elevation: 10 },
+    }),
   },
   tabItem: {
     flex: 1,
@@ -245,12 +284,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   quizTabCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -22,
     ...Platform.select({
       web: { boxShadow: '0 4px 10px rgba(0,0,0,0.4)' } as any,
       default: {
