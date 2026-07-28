@@ -526,17 +526,36 @@ export default function App() {
 
       console.log("[Ingestion] Invoking Supabase edge function to load mapped data packages...");
       
-      const { error: invokeError } = await supabase.functions.invoke('ingest-book', {
-        body: {
-          books: books_payload,
-          chapters: chapters_payload,
-          subtopics: subtopics_payload,
-          questions: questions_payload
+      try {
+        if (books_payload.length > 0) {
+          const { error: booksErr } = await supabase.from('books').upsert(books_payload);
+          if (booksErr) throw booksErr;
         }
-      });
-
-      if (invokeError) {
-        throw new Error(`Edge function invocation failed: ${invokeError.message || invokeError}`);
+        if (chapters_payload.length > 0) {
+          const { error: chErr } = await supabase.from('chapters').upsert(chapters_payload);
+          if (chErr) throw chErr;
+        }
+        if (subtopics_payload.length > 0) {
+          const { error: subErr } = await supabase.from('subtopics').upsert(subtopics_payload);
+          if (subErr) throw subErr;
+        }
+        if (questions_payload.length > 0) {
+          const { error: qErr } = await supabase.from('questions').upsert(questions_payload);
+          if (qErr) throw qErr;
+        }
+      } catch (directErr: any) {
+        console.warn("Direct DB save failed, trying edge function...", directErr);
+        const { error: invokeError } = await supabase.functions.invoke('ingest-book', {
+          body: {
+            books: books_payload,
+            chapters: chapters_payload,
+            subtopics: subtopics_payload,
+            questions: questions_payload
+          }
+        });
+        if (invokeError) {
+          throw new Error(`Save failed: ${directErr.message || invokeError.message}`);
+        }
       }
 
       console.log('🎉 Ingestion pipeline complete! Visual PDF elements fully processed.');
@@ -722,17 +741,36 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
         });
       });
 
-      const { error: invokeError } = await supabase.functions.invoke('ingest-book', {
-        body: {
-          books: books_payload,
-          chapters: chapters_payload,
-          subtopics: subtopics_payload,
-          questions: questions_payload
+      try {
+        if (books_payload.length > 0) {
+          const { error: booksErr } = await supabase.from('books').upsert(books_payload);
+          if (booksErr) throw booksErr;
         }
-      });
-
-      if (invokeError) {
-        throw new Error(`Edge function invocation failed: ${invokeError.message || invokeError}`);
+        if (chapters_payload.length > 0) {
+          const { error: chErr } = await supabase.from('chapters').upsert(chapters_payload);
+          if (chErr) throw chErr;
+        }
+        if (subtopics_payload.length > 0) {
+          const { error: subErr } = await supabase.from('subtopics').upsert(subtopics_payload);
+          if (subErr) throw subErr;
+        }
+        if (questions_payload.length > 0) {
+          const { error: qErr } = await supabase.from('questions').upsert(questions_payload);
+          if (qErr) throw qErr;
+        }
+      } catch (directErr: any) {
+        console.warn("Direct DB save failed, trying edge function...", directErr);
+        const { error: invokeError } = await supabase.functions.invoke('ingest-book', {
+          body: {
+            books: books_payload,
+            chapters: chapters_payload,
+            subtopics: subtopics_payload,
+            questions: questions_payload
+          }
+        });
+        if (invokeError) {
+          throw new Error(`Save failed: ${directErr.message || invokeError.message}`);
+        }
       }
 
       alert("🎉 Manual Handbook successfully compiled and loaded!");
