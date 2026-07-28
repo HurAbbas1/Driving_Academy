@@ -652,7 +652,7 @@ export default function App() {
       const promptContent = [
         {
           type: 'text',
-          text: `You are an expert translator and exam question generator. Direct Translation Only: The AI must directly convert/translate the provided chapter titles and contents into the 4 target language keys (en, ja, zh, pt). Strictly prohibit any conversational intros, extra explanations, markdown commentary, or AI fluff. Fixed Question Generator: The AI must generate EXACTLY 15 multiple-choice questions (MCQs) per chapter section testing the material.
+          text: `You are an expert translator and exam question generator. Direct Translation Only: The AI must directly convert/translate the provided chapter titles and contents into the 4 target language keys (en, ja, zh, pt). Strictly prohibit any conversational intros, extra explanations, markdown commentary, or AI fluff. Question Generator: The AI must generate 3 to 5 concise multiple-choice questions (MCQs) per chapter testing the material. You MUST process and include EVERY chapter provided in the input. Do NOT skip any chapters.
           
 Payload Schema requirement:
 {
