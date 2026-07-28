@@ -546,12 +546,16 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           >
             {/* Cinematic Parallax Header for Selected Book */}
             {selectedBook && (
-              <Animated.View style={[{ height: 220, marginBottom: 24, borderRadius: 16, overflow: 'hidden', backgroundColor: `${colors.primary}15`, justifyContent: 'flex-end', padding: 20 }, headerAnimatedStyle]}>
-                <Ionicons name="book" size={64} color={colors.primary} style={{ opacity: 0.2, position: 'absolute', top: -10, right: -10, transform: [{ scale: 2 }] }} />
-                <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text, marginBottom: 4 }}>
+              <Animated.View style={[{ height: 220, marginBottom: 24, borderRadius: 20, overflow: 'hidden', backgroundColor: `${colors.primary}15`, justifyContent: 'flex-end', padding: 20 }, headerAnimatedStyle]}>
+                {selectedBook.coverImage ? (
+                  <Image source={{ uri: selectedBook.coverImage }} style={[StyleSheet.absoluteFill]} resizeMode="cover" />
+                ) : null}
+                <View style={[StyleSheet.absoluteFillObject, { backgroundColor: selectedBook.coverImage ? 'rgba(0,0,0,0.55)' : 'transparent' }]} />
+                <Ionicons name="book" size={64} color={selectedBook.coverImage ? '#FFF' : colors.primary} style={{ opacity: 0.25, position: 'absolute', top: -10, right: -10, transform: [{ scale: 2 }] }} />
+                <Text style={{ fontSize: 28, fontWeight: '900', color: selectedBook.coverImage ? '#FFFFFF' : colors.text, marginBottom: 4 }}>
                   {loc(selectedBook.title)}
                 </Text>
-                <Text style={{ fontSize: 16, color: colors.textSecondary }}>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: selectedBook.coverImage ? '#EEEEEE' : colors.textSecondary }}>
                   {t('study.chaptersCount', { count: selectedBook.chapters?.length || 0 })}
                 </Text>
               </Animated.View>
