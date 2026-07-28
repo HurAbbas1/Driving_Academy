@@ -745,7 +745,6 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
           chapter_id: chapter_id,
           title: ch.title || { en: `Chapter ${idx + 1}` },
           content: ch.content || { en: "" },
-          image_url: fixImageUrl(ch.imageUrl) || null,
           order_num: 1
         });
 
@@ -948,7 +947,6 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
           chapter_id: dynamicChapterId,
           title: parsedData.subtopic.title,
           content: parsedData.subtopic.content,
-          image_url: uploadedImageUrls[0],
           order_num: 1
         });
         if (subtopicError) throw subtopicError;
