@@ -80,24 +80,49 @@ const cleanAndParseJSON = (rawText: string) => {
   try {
     return JSON.parse(cleanStr);
   } catch (initialError: any) {
-    // Structural repair for cut-off responses
-    try {
-      if (!cleanStr.endsWith("}")) {
-        // If it got cut off mid-subtopic array element
-        if (cleanStr.includes('"subtopics": [')) {
-          const lastValidIndex = cleanStr.lastIndexOf('}');
-          if (lastValidIndex !== -1) {
-            cleanStr = cleanStr.substring(0, lastValidIndex + 1) + ']}';
-          }
-        } else {
-          cleanStr += "}";
+    // Robust stack-based repair for cut-off / truncated AI responses
+    let searchPos = cleanStr.length;
+    while (searchPos > 0) {
+      const lastCloseIndex = cleanStr.lastIndexOf('}', searchPos - 1);
+      if (lastCloseIndex === -1) break;
+      searchPos = lastCloseIndex;
+
+      let candidate = cleanStr.substring(0, lastCloseIndex + 1).trim();
+      candidate = candidate.replace(/,\s*$/, '');
+
+      let stack: string[] = [];
+      let inString = false;
+      let isEscaped = false;
+
+      for (let i = 0; i < candidate.length; i++) {
+        const char = candidate[i];
+        if (char === '\\' && !isEscaped) {
+          isEscaped = true;
+          continue;
         }
+        if (char === '"' && !isEscaped) {
+          inString = !inString;
+        } else if (!inString) {
+          if (char === '{') stack.push('}');
+          else if (char === '}') { if (stack.length && stack[stack.length - 1] === '}') stack.pop(); }
+          else if (char === '[') stack.push(']');
+          else if (char === ']') { if (stack.length && stack[stack.length - 1] === ']') stack.pop(); }
+        }
+        isEscaped = false;
       }
-      return JSON.parse(cleanStr);
-    } catch (repairError: any) {
-      console.error("Targeted parsing extraction failed. Raw text received was:", rawText);
-      throw new Error(`JSON Structural Mismatch: ${repairError.message}`);
+
+      const padding = stack.reverse().join('');
+
+      try {
+        const parsed = JSON.parse(candidate + padding);
+        if (parsed && typeof parsed === 'object') {
+          console.warn("Successfully repaired truncated AI JSON response payload!");
+          return parsed;
+        }
+      } catch (repairErr) {}
     }
+    console.error("Targeted parsing extraction failed. Raw text received was:", rawText);
+    throw new Error(`JSON Structural Mismatch: ${initialError.message}`);
   }
 };
 
