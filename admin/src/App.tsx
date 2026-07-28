@@ -30,6 +30,43 @@ interface AdminChapter {
   order: number;
 }
 
+
+const fixImageUrl = (url: any): string | undefined => {
+  if (!url || typeof url !== 'string') return undefined;
+  let clean = url.trim();
+  if (!clean) return undefined;
+  if (clean.includes('wikimedia.org/wiki/File:') || clean.includes('wikipedia.org/wiki/File:')) {
+    const fileName = clean.split('File:')[1];
+    if (fileName) {
+      return `https://commons.wikimedia.org/wiki/Special:FilePath/${fileName.trim()}`;
+    }
+  }
+  if (clean.startsWith('//')) {
+    clean = 'https:' + clean;
+  }
+  return clean;
+};
+
+const safeMapOptions = (rawOptions: any, correctIdx: number = 0) => {
+  let list: any[] = [];
+  if (Array.isArray(rawOptions)) {
+    list = rawOptions;
+  } else if (rawOptions && typeof rawOptions === 'object') {
+    list = Object.values(rawOptions);
+  } else if (typeof rawOptions === 'string') {
+    try {
+      const parsed = JSON.parse(rawOptions);
+      list = Array.isArray(parsed) ? parsed : Object.values(parsed);
+    } catch (e) {
+      list = [rawOptions];
+    }
+  }
+  return list.map((opt: any, oIdx: number) => ({
+    text: typeof opt === 'object' && opt !== null ? (opt.text || JSON.stringify(opt)) : String(opt || ''),
+    isCorrect: oIdx === correctIdx
+  }));
+};
+
 const cleanAndParseJSON = (rawText: string) => {
   let cleanStr = rawText.trim();
   
@@ -473,10 +510,7 @@ export default function App() {
 
       const questions_payload = (quizQuestionsObject.questions || []).map((q: any, idx: number) => {
         const correctIdx = q.correctOptionIndex || 0;
-        const options_mapped = (q.options || []).map((opt: any, oIdx: number) => ({
-          text: opt,
-          isCorrect: oIdx === correctIdx
-        }));
+        const options_mapped = safeMapOptions(q?.options, correctIdx);
         const chCount = chapters_payload.length;
         const linkedChapterId = chCount > 0 ? chapters_payload[idx % chCount].id : null;
         return {
@@ -645,7 +679,7 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
           pt: `Guia de estudo para ${manualBookTitle} (Manual)`
         },
         icon: "book-outline",
-        cover_image: manualBookCover || null
+        cover_image: fixImageUrl(manualBookCover) || null
       }];
 
       const chapters_payload: any[] = [];
@@ -667,16 +701,13 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
           chapter_id: chapter_id,
           title: ch.title || { en: `Chapter ${idx + 1}` },
           content: ch.content || { en: "" },
-          image_url: ch.imageUrl || null,
+          image_url: fixImageUrl(ch.imageUrl) || null,
           order_num: 1
         });
 
         (ch.questions || []).forEach((q: any, qIdx: number) => {
           const correctIdx = q.correctOptionIndex || 0;
-          const options_mapped = (q.options || []).map((opt: any, oIdx: number) => ({
-            text: opt,
-            isCorrect: oIdx === correctIdx
-          }));
+          const options_mapped = safeMapOptions(q?.options, correctIdx);
           questions_payload.push({
             id: `q_m_${Date.now()}_${idx}_${qIdx}`,
             book_id: book_id,
@@ -686,7 +717,7 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
             text: q.question,
             options: options_mapped,
             explanation: q.explanation,
-            image_url: q.imageUrl || null
+            image_url: fixImageUrl(q.imageUrl) || null
           });
         });
       });
@@ -871,10 +902,7 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
             category: 'Visual Quiz',
             difficulty: 'medium',
             text: q.question,
-            options: q.options.map((opt: any, idx: number) => ({
-              text: opt,
-              isCorrect: idx === q.correctOptionIndex
-            })),
+            options: safeMapOptions(q?.options, q?.correctOptionIndex || 0),
             explanation: q.explanation
           };
         });
@@ -1679,7 +1707,7 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
                       
                       {chapter.imageUrl && (
                         <div style={{ marginBottom: '16px', width: '120px', height: '120px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#222', border: '1px solid #444' }}>
-                          <img src={chapter.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.currentTarget.style.display = 'none'} />
+                          <img src={fixImageUrl(chapter.imageUrl)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.currentTarget.style.display = 'none'} />
                         </div>
                       )}
 
