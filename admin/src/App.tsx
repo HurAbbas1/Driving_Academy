@@ -47,6 +47,13 @@ const fixImageUrl = (url: any): string | undefined => {
   return clean;
 };
 
+const defaultExp = {
+  en: "Always observe official traffic signs and road safety regulations.",
+  ja: "常に公式の交通標識と道路安全規則を守ってください。",
+  zh: "请务必遵守官方交通标志和道路安全法规。",
+  pt: "Sempre observe as placas de trânsito oficiais e regras de segurança rodoviária."
+};
+
 const safeMapOptions = (rawOptions: any, correctIdx: number = 0) => {
   let list: any[] = [];
   if (Array.isArray(rawOptions)) {
@@ -543,9 +550,12 @@ export default function App() {
           book_id: book_id,
           category: "Rules of the Road",
           difficulty: "medium",
-          text: q.question,
-          options: options_mapped,
-          explanation: q.explanation
+          text: q.question || { en: `Question ${idx + 1}` },
+          options: options_mapped.length > 0 ? options_mapped : [
+            { text: { en: "Yes", ja: "はい", zh: "是", pt: "Sim" }, isCorrect: true },
+            { text: { en: "No", ja: "いいえ", zh: "否", pt: "Não" }, isCorrect: false }
+          ],
+          explanation: q.explanation || defaultExp
         };
       });
 
@@ -757,9 +767,12 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
             chapter_id: chapter_id,
             category: "Manual Rules",
             difficulty: "medium",
-            text: q.question,
-            options: options_mapped,
-            explanation: q.explanation
+            text: q.question || { en: `Question ${qIdx + 1}` },
+            options: options_mapped.length > 0 ? options_mapped : [
+              { text: { en: "Yes", ja: "はい", zh: "是", pt: "Sim" }, isCorrect: true },
+              { text: { en: "No", ja: "いいえ", zh: "否", pt: "Não" }, isCorrect: false }
+            ],
+            explanation: q.explanation || defaultExp
           };
           const imgUrl = fixImageUrl(q.imageUrl);
           if (imgUrl && imgUrl !== 'none') {
