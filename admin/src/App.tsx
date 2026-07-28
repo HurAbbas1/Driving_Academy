@@ -502,8 +502,14 @@ export default function App() {
       const chapterData = await chapterRes.json();
       const quizData = await quizRes.json();
 
-      const synthesisData = cleanAndParseJSON(chapterData.choices[0].message.content);
-      const quizQuestionsObject = cleanAndParseJSON(quizData.choices[0].message.content);
+      if (chapterData.error) throw new Error(`AI Synthesis Error: ${chapterData.error.message || JSON.stringify(chapterData.error)}`);
+      if (quizData.error) throw new Error(`AI Quiz Error: ${quizData.error.message || JSON.stringify(quizData.error)}`);
+
+      const synthesisStr = chapterData.choices?.[0]?.message?.content || '{}';
+      const quizStr = quizData.choices?.[0]?.message?.content || '{}';
+
+      const synthesisData = cleanAndParseJSON(synthesisStr);
+      const quizQuestionsObject = cleanAndParseJSON(quizStr);
 
       setIngestionStep(5);
 
@@ -708,10 +714,12 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
         })
       });
 
-      if (!response.ok) throw new Error(`OpenRouter API error: ${response.statusText}`);
-      
       const result = await response.json();
-      const contentStr = result.choices[0].message.content || '{}';
+      if (!response.ok || result.error) {
+        throw new Error(`AI Provider Error: ${result.error?.message || response.statusText || 'Request failed'}`);
+      }
+      
+      const contentStr = result.choices?.[0]?.message?.content || '{}';
       
       let parsedData;
       try {
@@ -932,10 +940,12 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
         })
       });
 
-      if (!response.ok) throw new Error(`OpenRouter API error: ${response.statusText}`);
-      
       const result = await response.json();
-      const contentStr = result.choices[0].message.content || '{}';
+      if (!response.ok || result.error) {
+        throw new Error(`AI Provider Error: ${result.error?.message || response.statusText || 'Request failed'}`);
+      }
+      
+      const contentStr = result.choices?.[0]?.message?.content || '{}';
       
       let parsedData;
       try {
