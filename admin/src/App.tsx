@@ -751,7 +751,7 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
         (ch.questions || []).forEach((q: any, qIdx: number) => {
           const correctIdx = q.correctOptionIndex || 0;
           const options_mapped = safeMapOptions(q?.options, correctIdx);
-          questions_payload.push({
+          const qObj: any = {
             id: `q_m_${Date.now()}_${idx}_${qIdx}`,
             book_id: book_id,
             chapter_id: chapter_id,
@@ -759,9 +759,13 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
             difficulty: "medium",
             text: q.question,
             options: options_mapped,
-            explanation: q.explanation,
-            image_url: fixImageUrl(q.imageUrl) || null
-          });
+            explanation: q.explanation
+          };
+          const imgUrl = fixImageUrl(q.imageUrl);
+          if (imgUrl && imgUrl !== 'none') {
+            qObj.image_url = imgUrl;
+          }
+          questions_payload.push(qObj);
         });
       });
 
@@ -780,7 +784,13 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
         }
         if (questions_payload.length > 0) {
           const { error: qErr } = await supabase.from('questions').upsert(questions_payload);
-          if (qErr) throw qErr;
+          if (qErr && qErr.message?.includes('image_url')) {
+            const cleanQuestions = questions_payload.map(({ image_url, ...rest }) => rest);
+            const { error: retryErr } = await supabase.from('questions').upsert(cleanQuestions);
+            if (retryErr) throw retryErr;
+          } else if (qErr) {
+            throw qErr;
+          }
         }
       } catch (directErr: any) {
         console.warn("Direct DB save failed, trying edge function...", directErr);
