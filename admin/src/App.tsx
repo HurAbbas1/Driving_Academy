@@ -722,18 +722,20 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
 
       setManualStatus("Saving to database...");
 
-      const book_id = `book_m_${Math.random().toString(36).substr(2, 7)}`;
+      const existingBook = books.find(b => renderLocalized(b.title).toLowerCase().trim() === manualBookTitle.toLowerCase().trim());
+      const book_id = existingBook ? existingBook.id : `book_m_${Math.random().toString(36).substr(2, 7)}`;
+      
       const books_payload = [{
         id: book_id,
-        title: { en: manualBookTitle, ja: manualBookTitle, zh: manualBookTitle, pt: manualBookTitle },
-        description: {
+        title: existingBook?.title || { en: manualBookTitle, ja: manualBookTitle, zh: manualBookTitle, pt: manualBookTitle },
+        description: existingBook?.description || {
           en: `Manual study guide for ${manualBookTitle}`,
           ja: `${manualBookTitle}の学習ガイド (マニュアル)`,
           zh: `${manualBookTitle}的学习指南 (手动)`,
           pt: `Guia de estudo para ${manualBookTitle} (Manual)`
         },
         icon: "book-outline",
-        cover_image: fixImageUrl(manualBookCover) || null
+        cover_image: fixImageUrl(manualBookCover) || existingBook?.cover_image || null
       }];
 
       const chapters_payload: any[] = [];
