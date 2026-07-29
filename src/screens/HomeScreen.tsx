@@ -41,7 +41,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
       title: { en: 'Master Japanese Traffic Signs', ja: '日本の道路標識をマスターしよう', zh: '掌握日本交通标志', pt: 'Domine os Sinais de Trânsito do Japão' },
       subtitle: { en: 'Stop signs, speed limits & warning indicators', ja: '一時停止、速度制限、警告標識', zh: '停止标志、限速与警告标志', pt: 'Sinais de paragem e limites de velocidade' },
       image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1000&q=80',
-      targetBookId: 'book_traffic_rules_full',
+      targetBookId: 'book_jaf_guide',
       badge: 'ESSENTIAL',
     },
     {
@@ -49,7 +49,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
       title: { en: 'Expressway & ETC Toll Gate Rules', ja: '高速道路とETC料金所規則', zh: '高速公路与ETC收费站规则', pt: 'Regras de Vias Rápidas e Portagens ETC' },
       subtitle: { en: 'Speed controls, merging lanes & breakdown safety', ja: '速度規制、車線合流、故障安全策', zh: '速度控制、车道汇入与故障安全', pt: 'Limites de velocidade e manobras' },
       image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1000&q=80',
-      targetBookId: 'book_rules_of_road_part2',
+      targetBookId: 'book_jaf_guide',
       badge: 'PRO GUIDE',
     },
     {
@@ -57,7 +57,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
       title: { en: 'Zero Tolerance Traffic Laws', ja: '交通安全ゼロ容認ルール', zh: '零容忍交通安全法规', pt: 'Leis de Trânsito de Tolerância Zero' },
       subtitle: { en: 'DUI laws, phone restrictions & emergency contacts', ja: '飲酒運転禁止、スマホ規制、緊急通報110/119', zh: '严禁酒驾、手机限制与紧急电话', pt: 'Regras sobre álcool e telemóvel' },
       image: 'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=1000&q=80',
-      targetBookId: 'book_traffic_rules_full',
+      targetBookId: 'book_jaf_guide',
       badge: 'SAFETY',
     }
   ], []);

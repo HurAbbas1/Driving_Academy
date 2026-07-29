@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase/config';
 import { useAuthStore } from './authStore';
 import { Book, Chapter } from '../types/study';
+import { mockBooks, mockChapters } from '../services/studyData';
 
 interface ReadingProgress {
   completedSubtopics: string[]; // subtopicIds
@@ -216,8 +217,16 @@ export const useStudyStore = create<StudyState>((set, get) => ({
       }
 
       if (finalBooks.length === 0) {
-        finalBooks = [];
-        finalChapters = [];
+        finalBooks = mockBooks;
+        finalChapters = mockChapters;
+      } else {
+        const existingIds = new Set(finalBooks.map((b) => b.id));
+        for (const mb of mockBooks) {
+          if (!existingIds.has(mb.id)) {
+            finalBooks.push(mb);
+            finalChapters.push(...mb.chapters);
+          }
+        }
       }
 
       set({

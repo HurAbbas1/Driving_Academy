@@ -1,110 +1,526 @@
 import { Chapter, Book } from '../types/study';
 
-export const mockChapters: Chapter[] = [
-  {
-    id: 'ch1',
-    title: {
-      en: 'Chapter 1: General Traffic Rules',
-      ja: '第1章：一般交通規則',
-      zh: '第一章：通用交通规则',
-      pt: 'Capítulo 1: Regras Gerais de Trânsito',
-    },
-    sub: {
-      en: 'Fundamental rules of Japanese roads, driving sides, and pedestrian priorities.',
-      ja: '日本の道路の基本原則、通行区分、歩行者の優先について。',
-      zh: '日本道路的基本原则、通行区分以及行人优先规则。',
-      pt: 'Princípios básicos das estradas japonesas, lados de condução e prioridades dos pedestres.',
-    },
-    icon: 'car-sport-outline',
-    order: 1,
-    subtopics: [
-      {
-        id: 'sub1_1',
-        chapterId: 'ch1',
-        title: {
-          en: '1.1 Keep Left Principle',
-          ja: '1.1 左側通行の原則',
-          zh: '1.1 左侧通行原则',
-          pt: '1.1 Princípio de Manter-se à Esquerda',
-        },
-        order: 1,
-        content: {
-          en: 'In Japan, vehicles must keep to the **left side** of the road, while pedestrians keep to the right. This is a fundamental rule of traffic safety.\n\n### Core Rules:\n* **Left Side**: Automobiles, motorcycles, and bicycles must use the left side of the road.\n* **Exemptions**: Passing a slow vehicle, moving around road obstacles, or on one-way streets.',
-          ja: '日本では、車両は道路の**左側**を通行し、歩行者は右側を通行しなければなりません。これは交通安全の基本原則です。\n\n### 主な規則：\n* **左側通行**：自動車、バイク、自転車は道路の左側を通行しなければなりません。\n* **例外**：遅い車両の追い越し、障害物の回避、または一方通行の道路。',
-          zh: '在日本，车辆必须在道路的**左侧**通行，而行人则在右侧通行。这是交通安全的基本原则。\n\n### 核心规则：\n* **左侧通行**：汽车、摩托车和自行车必须使用道路的左侧。\n* **例外情况**：超越慢行车辆、绕过道路障碍物或在单行道上。',
-          pt: 'No Japão, os veículos devem manter-se no **lado esquerdo** da estrada, enquanto os pedestres mantêm-se à direita. Esta é uma regra fundamental de segurança no trânsito.\n\n### Regras Principais:\n* **Lado Esquerdo**: Automóveis, motocicletas e bicicletas devem usar o lado esquerdo da estrada.\n* **Exceções**: Ultrapassagem de veículo lento, desvio de obstáculos na pista ou em ruas de sentido único.',
-        },
-        tip: {
-          en: 'Always keep left, especially when entering roundabouts or turning at intersections!',
-          ja: '交差点を曲がる時やラウンドアバウトに入る時は、常に左側を意識しましょう！',
-          zh: '在进入环岛或在十字路口转弯时，务必保持靠左！',
-          pt: 'Mantenha-se sempre à esquerda, especialmente ao entrar em rotatórias ou ao virar em cruzamentos!',
-        },
-      },
-      {
-        id: 'sub1_2',
-        chapterId: 'ch1',
-        title: {
-          en: '1.2 Pedestrians First',
-          ja: '1.2 歩行者優先の原則',
-          zh: '1.2 行人优先原则',
-          pt: '1.2 Prioridade para Pedestres',
-        },
-        order: 2,
-        content: {
-          en: 'Pedestrians always have the **highest priority** on Japanese roads. Drivers must show extreme caution near crosswalks.\n\n### Regulations:\n1. **Unregulated Crosswalks**: You must stop if a pedestrian is waiting to cross.\n2. **Sidewalks**: Vehicles crossing sidewalks to enter buildings must stop before crossing.',
-          ja: '歩行者は常に日本の道路において**最優先**されます。ドライバーは横断歩道付近で細心の注意を払わなければなりません。\n\n### 規制：\n1. **信号のない横断歩道**：歩行者が横断しようとしている場合は、一時停止しなければなりません。\n2. **歩道**：建物に入るために歩道を横切る場合、その前に一時停止しなければなりません。',
-          zh: '行人在日本道路上始终享有**最高优先级**。驾驶员在人行横道附近必须极其小心。\n\n### 相关法规：\n1. **无信号灯人行横道**：如果有行人准备过马路，你必须停车让行。\n2. **人行道**：车辆穿过人行道进入建筑物前，必须先停车。',
-          pt: 'Os pedestres sempre têm a **prioridade máxima** nas estradas japonesas. Os motoristas devem demonstrar extremo cuidado perto de faixas de pedestres.\n\n### Regulamentações:\n1. **Faixas de Pedestres sem Semáforo**: Você deve parar se um pedestre estiver esperando para atravessar.\n2. **Calçadas**: Veículos que cruzam calçadas para entrar em prédios devem parar totalmente antes de prosseguir.',
-        },
-        tip: {
-          en: 'Failing to stop for pedestrians at a crosswalk can result in heavy fines and points deduction.',
-          ja: '横断歩道で歩行者に道を譲らないと、厳しい反則金と違反点数の減点対象となります。',
-          zh: '在人行横道前不停车避让行人可能会导致重罚并扣分。',
-          pt: 'Não parar para pedestres na faixa pode resultar em multas pesadas e perda de pontos na carteira.',
-        },
-      },
-    ],
+export const jafBook: Book = {
+  id: 'book_jaf_guide',
+  title: {
+    en: 'JAF Rules of the Road Guide',
+    ja: 'JAF 道路交通ルールガイド',
+    zh: 'JAF 道路交通规则指南',
+    pt: 'Guia de Regras de Trânsito JAF',
   },
-  {
-    id: 'ch2',
-    title: {
-      en: 'Chapter 2: Signals and Signs',
-      ja: '第2章：信号と標識',
-      zh: '第二章：信号与标志',
-      pt: 'Capítulo 2: Sinais e Placas',
-    },
-    sub: {
-      en: 'Interpretation of traffic signals, regulatory signs, and road markers.',
-      ja: '交通信号、規制標識、道路表示の解釈について。',
-      zh: '交通信号灯、指示标志和路面标记的含义与解读。',
-      pt: 'Interpretação de sinais de trânsito, placas regulamentares e marcações na pista.',
-    },
-    icon: 'warning-outline',
-    order: 2,
-    subtopics: [
-      {
-        id: 'sub2_1',
-        chapterId: 'ch2',
-        title: {
-          en: '2.1 Traffic Light Signals',
-          ja: '2.1 信号機の信号',
-          zh: '2.1 交通信号灯',
-          pt: '2.1 Sinais Semafóricos',
-        },
-        order: 1,
-        content: {
-          en: 'Japanese traffic lights follow standard color rules, but have unique arrow layouts for turns.\n\n### Signal Meanings:\n* **Green**: Go (if safe).\n* **Yellow**: Stop (unless you cannot stop safely before the line).\n* **Red**: Stop completely.\n* **Green Arrows**: You may proceed in the direction of the arrow even if the circular signal is red.',
-          ja: '日本の信号機は標準的な色の規則に従いますが、右左折用の独自の矢印信号があります。\n\n### 信号の意味：\n* **青色**：進むことができる（安全な場合）。\n* **黄色**：停止位置で停止しなければならない（安全に停止できない場合を除く）。\n* **赤色**：停止しなければならない。\n* **青色の矢印**：丸信号が赤であっても、矢印の方向へ進むことができます。',
-          zh: '日本的交通信号灯遵循标准颜色规则，但对于转弯有特殊的箭头指示设计。\n\n### 信号灯含义：\n* **绿灯**：允许通行（在安全情况下）。\n* **黄灯**：必须停车（除非由于距离太近无法在停止线前安全停车）。\n* **红灯**：必须停止。\n* **绿色箭头灯**：即使圆形红灯亮起，车辆也可以按照箭头指示方向行驶。',
-          pt: 'Os semáforos japoneses seguem as regras de cores padrão, mas possuem layouts de seta exclusivos para conversões.\n\n### Significados dos Sinais:\n* **Verde**: Siga (se estiver seguro).\n* **Amarelo**: Pare (a menos que não consiga parar com segurança antes da linha de parada).\n* **Vermelho**: Pare totalmente.\n* **Setas Verdes**: Você pode prosseguir na direção da seta, mesmo se o sinal circular principal estiver vermelho.',
-        },
-      },
-    ],
+  description: {
+    en: 'Official JAF traffic rules, road safety regulations, driving maneuvers, and vehicle operations guide in Japan.',
+    ja: '日本の交通規則、安全規制、運転操作、車両取扱いの公式JAFガイド。',
+    zh: '日本官方JAF交通规则、安全法规、驾驶操作与车辆运行指南。',
+    pt: 'Guia oficial JAF de regras de trânsito, segurança rodoviária e operação de veículos no Japão.',
   },
-];
+  icon: 'book-outline',
+  chapters: [
+    {
+      id: 'jaf_ch1',
+      licenseType: 'both',
+      order: 1,
+      icon: 'shield-checkmark-outline',
+      title: {
+        en: 'Chapter 1: Common Rules for Pedestrians and Drivers',
+        ja: '第1章：歩行者とドライバーの共通ルール',
+        zh: '第一章：行人与驾驶员的通用规则',
+        pt: 'Capítulo 1: Regras Comuns para Pedestres e Motoristas',
+      },
+      sub: {
+        en: 'Basic duties of all road users to maintain safety and traffic order.',
+        ja: '安全と交通秩序を維持するためのすべての道路利用者の基本的義務。',
+        zh: '维持安全和交通秩序的所有道路使用者的基本职责。',
+        pt: 'Deveres básicos de todos os usuários da via para manter a segurança e a ordem no trânsito.',
+      },
+      subtopics: [
+        {
+          id: 'jaf_sub1_1',
+          chapterId: 'jaf_ch1',
+          order: 1,
+          title: {
+            en: '1.1 Social Responsibilities & Compliance',
+            ja: '1.1 社会的責任と法令順守',
+            zh: '1.1 社会责任与合规',
+            pt: '1.1 Responsabilidades Sociais e Conformidade',
+          },
+          content: {
+            en: '### Explanation\nThis chapter outlines the basic duties of all road users to maintain a safe, respectful, and smooth traffic environment.\n\n### Basic Social Responsibilities\nAll road users must move with consideration for others and avoid causing disturbance or noise for roadside residents.\n\n### Signals & Signs Compliance\nEvery driver and rider must follow traffic lights, regulatory signs, and pavement markings.\n\n### Police Authority\nInstructions and hand/flashlight signals given by police officers or traffic wardens take priority over traffic lights or posted signs.\n\n### Prohibited Road Behaviors\nThrowing objects, littering, throwing cigarette butts out of vehicles, dazzle-lighting drivers, playing games in traffic, or serving alcohol to someone who will be operating a vehicle are strictly illegal.',
+            ja: '### 解説\nすべての道路利用者が安全で円滑な交通環境を維持するための基本的義務を定めています。\n\n### 社会的責任\n他の利用者に配慮し、沿道住民への騒音や迷惑行為を避けて通行しなければなりません。\n\n### 信号・標識の順守\nすべての運転者は信号機、規制標識、道路表示に従う義務があります。\n\n### 警察官の優先権\n警察官や交通巡視員の現場での手信号や灯火信号は、信号機や道路標識に優先します。\n\n### 禁止行為\n物の投げ捨て、吸い殻のポイ捨て、対向車へのハイビーム眩惑、交通の場での遊戯、運転者への酒類提供は厳禁です。',
+            zh: '### 讲解\n本章概述了所有道路使用者维持安全、文明和顺畅交通环境的基本职责。\n\n### 基本社会责任\n所有道路使用者在出行时必须体谅他人，避免对路旁居民造成骚扰或噪音。\n\n### 服从信号与标志\n每位驾驶员和骑行人员都必须遵守交通信号灯、指示标志和路面标线。\n\n### 警察执法权威\n交通警察或交通督导员给出的手势或手电筒信号优先于交通信号灯或路旁标志。\n\n### 严禁的道路行为\n抛掷物品、乱扔垃圾、从车内抛掷烟头、高光眩目、在交通流中嬉戏或向即将驾驶车辆的人员提供酒精均属违法行为。',
+            pt: '### Explicação\nEste capítulo descreve os deveres básicos de todos os usuários das vias para manter um ambiente de trânsito seguro e respeitoso.\n\n### Responsabilidades Sociais Básicas\nTodos os usuários devem mover-se com consideração pelos outros e evitar causar distúrbios ou ruído para residentes à beira da estrada.\n\n### Conformidade com Sinais e Placas\nTodo condutor deve seguir os semáforos, placas regulamentares e marcações na pista.\n\n### Autoridade Policial\nInstruções e sinais manuais ou de lanterna dados por policiais ou guardas de trânsito têm prioridade sobre semáforos ou placas.\n\n### Comportamentos Proibidos\nAtirar objetos, jogar lixo ou bitucas de cigarro para fora do veículo, ofuscar motoristas, brincar no trânsito ou servir álcool a quem vai dirigir são estritamente ilegais.',
+          },
+          tip: {
+            en: 'Example [For Both - Cars & Bikes]: You approach an intersection where the main light is red, but a police officer signals you forward with a horizontal flashlight wave. You must follow the police officer\'s signal and proceed, as police directions override traffic lights.',
+            ja: '例 [四輪・二輪共通]: 赤信号の交差点に接近した際、警察官が手信号や懐中電灯で進行を指示した場合、警察官の指示が信号機より優先されるため、指示に従って進行します。',
+            zh: '示例 [四轮与两轮通用]: 当你接近红灯路口，但警察挥舞手电筒指示你前行时，你必须服从警察的指示通行，因为警察的指示优先于交通信号灯。',
+            pt: 'Exemplo [Para Ambos - Carros e Motos]: Você se aproxima de um cruzamento com sinal vermelho, mas um policial sinaliza para avançar. Você deve seguir a ordem do policial, pois ela se sobrepõe ao semáforo.',
+          },
+        },
+        {
+          id: 'jaf_sub1_2',
+          chapterId: 'jaf_ch1',
+          order: 2,
+          title: {
+            en: '1.2 Traffic Light Rules & Signal Meanings',
+            ja: '1.2 信号機のルールと意味',
+            zh: '1.2 交通信号灯规则与信号含义',
+            pt: '1.2 Regras de Semáforo e Significados dos Sinais',
+          },
+          content: {
+            en: '### Traffic Light Rules:\n\n* **Green Light**: Proceed straight, turn left, or turn right. (Mopeds executing a two-step right turn move straight across on green to the turning point).\n* **Yellow Light**: Vehicles must stop before the stopping point unless they are too close to stop safely.\n* **Red Light**: Vehicles must bring the vehicle to a complete stop before the stop line.\n* **Flashing Red Light**: Vehicles must come to a complete stop at the stop line before proceeding with caution.\n* **Flashing Yellow Light**: Proceed with caution without needing a full stop.',
+            ja: '### 信号機のルール：\n\n* **青色の灯火**：直進、左折、右折ができます（二段階右折をする原付は青信号で直進し、転向地点まで進みます）。\n* **黄色の灯火**：停止位置を越えて進行してはなりません。ただし、安全に停止できないほど接近している場合を除く。\n* **赤色の灯火**：停止位置の手前で完全停止しなければなりません。\n* **赤色の点滅**：停止位置で一時停止し、安全を確認した後に進行できます。\n* **黄色の点滅**：他の交通に注意して進行できます（一時停止の義務はありません）。',
+            zh: '### 交通信号灯规则：\n\n* **绿灯**：可直行、左转或右转。（执行二阶段右转的轻便摩托车在绿灯时直行至转向点）。\n* **黄灯**：车辆必须在停止线前停车，除非距离太近无法安全停车。\n* **红灯**：车辆必须在停止线前完全刹停。\n* **红灯闪烁**：车辆必须在停止线前完全暂停，确认安全后谨慎通行。\n* **黄灯闪烁**：无需完全暂停，但必须注意安全谨慎通行。',
+            pt: '### Regras dos Semáforos:\n\n* **Sinal Verde**: Siga em frente, vire à esquerda ou à direita. (Ciclomotores fazendo conversão em duas etapas seguem em frente no verde até o ponto de virada).\n* **Sinal Amarelo**: Os veículos devem parar antes da linha de parada, a menos que estejam muito próximos para parar com segurança.\n* **Sinal Vermelho**: Os veículos devem parar totalmente antes da linha de parada.\n* **Sinal Vermelho Piscante**: Parada obrigatória na linha de parada antes de prosseguir com cuidado.\n* **Sinal Amarelo Piscante**: Prossiga com cuidado sem necessidade de parada total.',
+          },
+        },
+      ],
+    },
+    {
+      id: 'jaf_ch2',
+      licenseType: 'both',
+      order: 2,
+      icon: 'card-outline',
+      title: {
+        en: 'Chapter 2: Before Getting Behind the Wheel',
+        ja: '第2章：運転する前に知っておくべきこと',
+        zh: '第二章：上路前的准备与规章',
+        pt: 'Capítulo 2: Antes de Assumir a Direção',
+      },
+      sub: {
+        en: 'Legal documentation, driver fitness, mandatory stickers, vehicle inspections, and physical limits.',
+        ja: '法的書類、ドライバーの適性、義務的標識、車両点検、積載制限について。',
+        zh: '法律文件、驾驶员适应性、强制性标志、车辆检查及载重限制。',
+        pt: 'Documentação legal, aptidão do motorista, adesivos obrigatórios, inspeções e limites de carga.',
+      },
+      subtopics: [
+        {
+          id: 'jaf_sub2_1',
+          chapterId: 'jaf_ch2',
+          order: 1,
+          title: {
+            en: '2.1 Driver Licensing & Mandatory Markings',
+            ja: '2.1 運転免許と義務的標識',
+            zh: '2.1 驾驶执照与强制标贴',
+            pt: '2.1 Habilitação e Marcas Obrigatórias',
+          },
+          content: {
+            en: '### Driver Licensing\nDrivers must carry a valid driver\'s license for the specific class of vehicle being operated.\n\n### Mandatory Markings:\n* **Beginner\'s Mark (Wakaba)**: Mandatory for new drivers for 1 year after obtaining a regular or semi-medium license.\n* **Senior Driver\'s Mark (Koreisha)**: Recommended for drivers aged 70 or older.\n* **Aurally / Physically Challenged Marks**: Designated for hearing-impaired or physically disabled drivers.',
+            ja: '### 運転免許\n運転者は、運転する車両の区分に応じた有効な運転免許証を携帯しなければなりません。\n\n### 義務的標識：\n* **初心者マーク（若葉マーク）**：普通免許または準中型免許取得後1年間は表示が義務付けられています。\n* **高齢運転者マーク（高齢者マーク）**：70歳以上の運転者に表示が推奨されています。\n* **聴覚障害者マーク・身体障害者標識**：聴覚障害や身体障害を持つ運転者の専用標識です。',
+            zh: '### 驾驶执照\n驾驶员在驾驶车辆时必须随身携带所驾车辆类别相符的有效驾驶执照。\n\n### 强制标贴：\n* **新手标志（若叶标志）**：取得普通或准中型驾照后的1年内必须张贴。\n* **高龄驾驶员标志**：推荐70岁及以上的驾驶员张贴。\n* **听觉/肢体残障标志**：供听力障碍或肢体残疾驾驶员专用。',
+            pt: '### Carteira de Habilitação\nOs motoristas devem portar uma carteira de motorista válida para a classe específica de veículo operado.\n\n### Marcas Obrigatórias:\n* **Marca de Iniciante (Wakaba)**: Obrigatória para novos motoristas durante 1 ano após a obtenção da carteira.\n* **Marca de Motorista Sênior (Koreisha)**: Recomendada para motoristas com 70 anos ou mais.\n* **Marcas para Deficientes Auditivos/Físicos**: Designadas para motoristas com deficiência auditiva ou física.',
+          },
+          tip: {
+            en: 'Example [For Both - Cars & Bikes]: A new driver who earned their driver\'s license six months ago must display the green-and-yellow Beginner\'s Mark on both the front and rear of their car. Other drivers are legally prohibited from tailgating or cutting off a car displaying this mark.',
+            ja: '例 [四輪・二輪共通]: 免許取得から6ヶ月の新米ドライバーは、車の前後両方に初心者マークを表示しなければなりません。他のドライバーはこのマークを付けた車への幅寄せや割り込みが禁止されています。',
+            zh: '示例 [四轮与两轮通用]: 新手驾驶员在取得驾照后的首年内，必须在车辆前后张贴绿黄相间的“新手标志”。其他车辆在法律上被禁止对此类车辆进行贴尾逼近或恶劣切道。',
+            pt: 'Exemplo [Para Ambos - Carros e Motos]: Um novo motorista que obteve a carteira há seis meses deve exibir o adesivo de iniciante (Wakaba) na frente e na traseira do carro. Outros motoristas são legalmente proibidos de fechar carros com este adesivo.',
+          },
+        },
+        {
+          id: 'jaf_sub2_2',
+          chapterId: 'jaf_ch2',
+          order: 2,
+          title: {
+            en: '2.2 Driver Fitness, Inspection & Capacity Limits',
+            ja: '2.2 ドライバーの体調、車両点検、積載制限',
+            zh: '2.2 驾驶员状态、车辆检查与装载限制',
+            pt: '2.2 Aptidão do Motorista, Inspeção e Limites de Carga',
+          },
+          content: {
+            en: '### Pre-Driving Fitness\nDriving under the influence of alcohol, drugs, or fatigue-inducing cold medications is strictly forbidden.\n\n### Vehicle Inspection\nDaily pre-driving checks (checking tires, brake fluid, lights, wipers) and periodic professional maintenance are required.\n\n### Loading & Capacity Limits\nCargo must not obstruct mirrors or tail lights, and total height limits must be strictly observed.',
+            ja: '### 運転前適性\nアルコール、薬物、または眠気を催す風邪薬を服用しての運転は固く禁止されています。\n\n### 日常点検・定期点検\nタイヤ、ブレーキ液、ライト、ワイパーの日常点検および定期的な専門点検が必要です。\n\n### 積載・定員制限\n荷物はバックミラーやテールランプを遮ってはならず、全高制限を遵守しなければなりません。',
+            zh: '### 驾驶前适应性\n严禁在饮酒、服药或服用易致疲劳的感冒药后驾驶车辆。\n\n### 车辆检查\n必须进行每日行车前检查（检查轮胎、刹车油、灯光、雨刮器）以及定期专业维护。\n\n### 装载与载重限制\n货物绝不可遮挡后视镜或尾灯，且必须严格遵守总高度限制。',
+            pt: '### Aptidão Pré-Condução\nDirigir sob a influência de álcool, drogas ou medicamentos que causam fadiga é estritamente proibido.\n\n### Inspeção do Veículo\nVerificações diárias (pneus, fluido de freio, luzes, limpadores) e manutenção periódica são obrigatórias.\n\n### Limites de Carga e Capacidade\nA carga não deve obstruir espelhos ou lanternas, e os limites de altura total devem ser observados.',
+          },
+        },
+      ],
+    },
+    {
+      id: 'jaf_ch3',
+      licenseType: 'car',
+      order: 3,
+      icon: 'car-sport-outline',
+      title: {
+        en: 'Chapter 3: Driving Rules & General Maneuvers',
+        ja: '第3章：運転ルールと一般的な操作',
+        zh: '第三章：驾驶规则与日常操作',
+        pt: 'Capítulo 3: Regras de Condução e Manobras Gerais',
+      },
+      sub: {
+        en: 'Focuses on lane positioning, turning rules, speed limits, parking, and automatic transmission vehicle operation.',
+        ja: '通行区分、右左折ルール、速度制限、駐車、AT車の操作について解説。',
+        zh: '侧重于车道定位、转弯规则、限速、停车及自动挡车辆操作。',
+        pt: 'Foca no posicionamento em faixa, conversões, limites de velocidade, estacionamento e câmbio automático.',
+      },
+      subtopics: [
+        {
+          id: 'jaf_sub3_1',
+          chapterId: 'jaf_ch3',
+          order: 1,
+          title: {
+            en: '3.1 Keep-Left Rule, Speed Limits & Intersection Turns',
+            ja: '3.1 キープ・レフト、速度制限、交差点の右左折',
+            zh: '3.1 靠左行驶原则、限速与路口转弯',
+            pt: '3.1 Regra de Manter à Esquerda, Limites de Velocidade e Conversões',
+          },
+          content: {
+            en: '### Keep-Left Rule\nAutomobiles must drive on the left side of the road. On multi-lane roads, drive in the left lanes and keep the far-right lane clear for overtaking.\n\n### Speed Limits\nDefault legal speed limit on general roads is 60 km/h for standard passenger cars unless otherwise posted.\n\n### Intersection Maneuvers:\n* **Left Turns**: Move close to the left edge of the road early and turn tightly around the corner. Watch for the inner-wheel turning radius difference to avoid trapping cyclists or pedestrians.\n* **Right Turns**: Move toward the center line in advance and turn slowly inside the center point of the intersection, yielding to oncoming straight and left-turning traffic.',
+            ja: '### キープレフトの原則\n自動車は道路の左側を通行しなければなりません。車両通行帯が複数ある道路では左側の通行帯を通行し、一番右側の通行帯は追い越しの為に空けておきます。\n\n### 法定速度\n一般道路における普通乗用車の法定最高速度は、特別の指定がない限り60km/hです。\n\n### 交差点での操作：\n* **左折**: あらかじめ道路の左端に寄っておき、角を小回りして曲がります。内輪差による自転車や歩行者の巻き込みに注意してください。\n* **右折**: あらかじめ道路の中央に寄せ、交差点の中心のすぐ内側を徐行しながら曲がります。対向の直進車や左折車に道を譲ります。',
+            zh: '### 靠左行驶原则\n汽车必须在道路左侧行驶。在多车道道路上，在左侧车道行驶，保留最右侧车道用于超车。\n\n### 法定限速\n除另有指示标志外，普通客车在一般道路上的默认法定最高限速为60公里/小时。\n\n### 交叉路口操作：\n* **左转**：提前靠紧道路左侧边缘，沿弯道紧凑小转弯。注意内轮差，防止挂蹭或卷入骑行者和行人。\n* **右转**：提前向道路中心线靠拢，在路口中心点内侧缓慢转弯，让行对面直行和左转车辆。',
+            pt: '### Regra de Manter à Esquerda\nOs automóveis devem trafegar pelo lado esquerdo da pista. Em vias de várias faixas, dirija nas faixas da esquerda e mantenha a faixa da extrema direita livre para ultrapassagens.\n\n### Limites de Velocidade\nO limite de velocidade padrão em vias gerais é de 60 km/h para carros de passeio comuns.\n\n### Manobras em Cruzamentos:\n* **Conversões à Esquerda**: Aproxime-se do meio-fio esquerdo com antecedência e faça uma curva fechada. Cuidado com o raio de rotação interno para não atingir ciclistas.\n* **Conversões à Direita**: Aproxime-se da linha central com antecedência e vire devagar pelo interior do ponto central, dando preferência ao tráfego em sentido contrário.',
+          },
+          tip: {
+            en: 'Example [For Car]: You are driving a sedan and want to turn left at an intersection. Signal left 30 meters prior, move close to the left curb, check your left blind spot for cyclists, and execute a tight turn to prevent catching anyone in your inner-wheel turning arc.',
+            ja: '例 [四輪専用]: セダンを運転中に交差点を左折する場合、30m手前でウィンカーを出し、あらかじめ道路の左端に寄せて巻き込み確認を行い、内輪差で自転車を巻き込まないよう小回りして曲がります。',
+            zh: '示例 [四轮专用]: 驾驶轿车在路口左转时，需提前30米打左转向灯，靠紧左侧马路边缘，检查左侧盲区是否有骑行者，然后紧凑转弯以防内轮差导致剐蹭。',
+            pt: 'Exemplo [Para Carro]: Ao virar à esquerda em um cruzamento, sinalize 30m antes, aproxime-se do meio-fio esquerdo, verifique o ponto cego para ciclistas e faça uma curva fechada para evitar acidentes por raio interno.',
+          },
+        },
+        {
+          id: 'jaf_sub3_2',
+          chapterId: 'jaf_ch3',
+          order: 2,
+          title: {
+            en: '3.2 Emergency Vehicles, Belts & Parking Rules',
+            ja: '3.2 緊急車両の優先、シートベルト、駐車規制',
+            zh: '3.2 避让特种车辆、安全带与停车限制',
+            pt: '3.2 Veículos de Emergência, Cintos e Regras de Estacionamento',
+          },
+          content: {
+            en: '### Emergency Vehicles\nPull over to the left side of the road and stop completely to yield right-of-way.\n\n### Seat Belts & Child Seats\nAll passengers must wear seat belts. Children under 6 years old must be secured in an approved child safety seat.\n\n### Parking & Stopping Restrictions\nProhibited within 5 meters of intersections, crosswalks, or road corners, and within 10 meters of railroad crossings or bus stops.\n\n### Automatic Transmission Creep\nWhen stopped in Drive (D) or Reverse (R), the car will creep forward/backward if the brake pedal is not firmly depressed.',
+            ja: '### 緊急自動車への譲り方\n道路の左側に寄って一時停止し、進路を譲らなければなりません。\n\n### シートベルトとチャイルドシート\n全同乗者のシートベルト着用が義務付けられています。6歳未満の幼児にはチャイルドシートの使用が義務です。\n\n### 駐車・停車禁止場所\n交差点、横断歩道、曲がり角から5m以内、踏切やバス停留所から10m以内は駐停車禁止です。\n\n### AT車のクリープ現象\nD（ドライブ）またはR（リバース）レンジに入っている時、ブレーキペダルをしっかり踏んでいないと車がゆっくり動き出します。',
+            zh: '### 避让特种车辆\n必须向道路左侧靠边完全停下，让出优先通行权。\n\n### 安全带与儿童座椅\n所有乘客均必须佩戴安全带。6岁以下儿童必须固定在经过认证的儿童安全座椅上。\n\n### 禁停区域限制\n交叉路口、人行横道或转弯处5米范围内，以及铁路道口或公交车站10米范围内禁止停车和临时停车。\n\n### 自动挡蠕行现象\n挂入前进挡(D)或倒挡(R)且未踩紧刹车踏板时，车辆会自动缓慢前后蠕行。',
+            pt: '### Veículos de Emergência\nPare no lado esquerdo da pista para dar preferência de passagem.\n\n### Cintos de Segurança e Cadeirinhas\nTodos os passageiros devem usar cinto. Crianças menores de 6 anos devem usar cadeirinha aprovada.\n\n### Restrições de Estacionamento\nProibido a menos de 5 metros de cruzamentos, faixas de pedestres ou curvas, e a menos de 10 metros de trilhos ou pontos de ônibus.\n\n### Efeito Creep no Câmbio Automático\nQuando em D (Drive) ou R (Ré), o carro andará devagar se o freio não estiver pressionado com firmeza.',
+          },
+        },
+      ],
+    },
+    {
+      id: 'jaf_ch4',
+      licenseType: 'both',
+      order: 4,
+      icon: 'warning-outline',
+      title: {
+        en: 'Chapter 4: Dangerous Spots and Hazardous Conditions',
+        ja: '第4章：危険な場所と悪条件下の運転',
+        zh: '第四章：危险地点与恶劣条件驾驶',
+        pt: 'Capítulo 4: Locais Perigosos e Condições Adversas',
+      },
+      sub: {
+        en: 'Covers railroad crossings, steep mountain curves, night driving, inclement weather, and emergencies.',
+        ja: '踏切、坂道、夜間運転、悪天候、緊急トラブルへの対処法。',
+        zh: '涵盖铁路道口、陡峭山路、夜间驾驶、恶劣天气与突发紧急状况。',
+        pt: 'Cruzamentos ferroviários, aclives acentuados, condução noturna, mau tempo e emergências.',
+      },
+      subtopics: [
+        {
+          id: 'jaf_sub4_1',
+          chapterId: 'jaf_ch4',
+          order: 1,
+          title: {
+            en: '4.1 Railroad Crossings & Mountain Slopes',
+            ja: '4.1 踏切の通行と山道の走行ルール',
+            zh: '4.1 铁路道口与山路行驶规则',
+            pt: '4.1 Cruzamentos Ferroviários e Ladeiras de Montanha',
+          },
+          content: {
+            en: '### Railroad Crossings\nFull stop required before the crossing. Look, listen, roll down the window, pass through in a low starting gear without changing gears, and never enter if the warning bell sounds or traffic is backed up ahead.\n\n### Slopes & Mountain Roads:\n* Downhill vehicles must yield to uphill vehicles (as starting uphill is harder).\n* Use low gears (L, 2, 1) for engine braking on long descents to avoid foot-brake overheating (Vapor Lock/Fade).\n* Near cliffs, the vehicle on the cliff side must stop and yield.',
+            ja: '### 踏切の通過\n踏切の手前で必ず一時停止します。目と耳で安全を確認し、窓を少し開けて音を聞き、ローギアで途中で変速せずに一気に通過します。警報機が鳴っている時や先が詰まっている時は進入禁止です。\n\n### 坂道・山道でのルール：\n* 下り坂の車は上り坂の車に道を譲ります（坂道発進が難しいため）。\n* 長い下り坂ではローギア（L, 2, 1）を使ってエンジンブレーキを活用し、フットブレーキの加熱（ベーパーロック・フェード現象）を防ぎます。\n* 崖付近では崖側の車両が停止して譲ります。',
+            zh: '### 铁路道口通行\n道口前必须完全暂停。一停、二看、三听，摇下车窗听声音，挂低速挡一气呵成通过，严禁在道口内换挡。警告铃响或前方堵车时绝不可驶入。\n\n### 坡道与山路规则：\n* 下坡车辆必须让行上坡车辆（因为上坡起步难度更大）。\n* 长距离下坡必须挂低速挡（L、2或1挡）利用发动机制动，防止脚刹过热引发气阻或刹车热衰退。\n* 悬崖路段，靠近悬崖一侧的车辆必须停车让行。',
+            pt: '### Cruzamentos Ferroviários\nParada total obrigatória antes do cruzamento. Olhe, ouça, abra o vidro, atravesse em marcha reduzida sem trocar de marcha e nunca entre se o alarme estiver tocando ou houver trânsito à frente.\n\n### Ladeiras e Estradas de Montanha:\n* Veículos descendo devem dar preferência aos que estão subindo.\n* Use marchas reduzidas (L, 2, 1) para freio-motor em descidas longas para evitar superaquecimento dos freios.\n* Perto de penhascos, o veículo do lado do penhasco deve parar e dar passagem.',
+          },
+          tip: {
+            en: 'Example [For Both - Cars & Bikes]: While descending a long 3-kilometer mountain slope, shift into low gear (2 or L) to use engine braking. Relying solely on foot brakes can cause the brake fluid to boil (vapor lock), resulting in total brake failure.',
+            ja: '例 [四輪・二輪共通]: 長い3kmの山下りでは、ローギア（2やL）でエンジンブレーキを使用します。フットブレーキのみに頼るとブレーキ液が沸騰し（ベーパーロック現象）、ブレーキが完全に効かなくなります。',
+            zh: '示例 [四轮与两轮通用]: 在3公里长的陡峭下坡路段，应挂入低速挡（2挡或L挡）利用发动机制动。若仅依赖脚刹，会导致制动液沸腾（气阻现象），造成刹车彻底失灵。',
+            pt: 'Exemplo [Para Ambos - Carros e Motos]: Ao descer uma ladeira de 3 km, engate a marcha reduzida (2 ou L) para usar freio-motor. Confiar apenas no freio de pé pode ferver o fluido de freio (vapor lock), resultando na perda total dos freios.',
+          },
+        },
+        {
+          id: 'jaf_sub4_2',
+          chapterId: 'jaf_ch4',
+          order: 2,
+          title: {
+            en: '4.2 Night Driving, Bad Weather & Emergency Skids',
+            ja: '4.2 夜間走行、悪天候、スリップ時の緊急対処',
+            zh: '4.2 夜间驾驶、恶劣天气与打滑应对',
+            pt: '4.2 Condução Noturna, Mau Tempo e Derrapagens de Emergência',
+          },
+          content: {
+            en: '### Night Driving\nDrive slower. Use high beams (100m visibility) on open roads to spot pedestrians, but switch to low beams (40m visibility) when meeting oncoming traffic or tailing a car. Beware of the "Evaporation Phenomenon" where pedestrians in the middle of the road become invisible due to overlapping headlight beams.\n\n### Bad Weather (Rain/Snow/Fog)\nIncrease following distances. On rain/snow, avoid sudden braking or sharp steering. Use tire chains or studless snow tires on icy roads.\n\n### Emergencies & Skids\nIf rear wheels skid, release the accelerator and steer gently in the direction of the skid. If stalled on railroad tracks, press the emergency alarm button or use a flare.',
+            ja: '### 夜間走行\n速度を落として走行します。通常はハイビーム（照射距離100m）を使用して歩行者を早めに発見し、対向車とすれ違う際や前車を追従する時はロービーム（40m）に切り替えます。ライトの交差で道路中央の歩行者が見えなくなる「蒸発現象」に注意してください。\n\n### 悪天候（雨・雪・霧）\n車間距離を十分にとります。雨や雪の日は急ブレーキ・急ハンドルを避け、凍結路面ではタイヤチェーンやスタッドレスタイヤを装着します。\n\n### スリップ・緊急トラブル\n後輪がスリップした場合はアクセルを緩め、スリップした方向へ慎重にハンドルを切ります。踏切内で動けなくなった場合は、非常ボタンを押すか発煙筒を使用します。',
+            zh: '### 夜间驾驶\n放慢车速。在无车开阔路段使用远光灯（照射距离100米）以早发现行人，但在会车或跟车时切至近光灯（40米）。谨防对向车灯交汇导致路中央行人隐形的“蒸发现象”。\n\n### 恶劣天气（雨/雪/雾）\n拉大跟车距离。雨雪路面切忌急刹车或猛打方向。结冰路面须安装轮胎防滑链或使用无钉雪地胎。\n\n### 打滑与紧急应对\n若后轮发生打滑，松开油门并顺着打滑方向轻打方向盘。若车辆卡在铁路道口内无法移动，按响紧急报警按钮或点燃信号火焰筒。',
+            pt: '### Condução Noturna\nDirija mais devagar. Use farol alto (visibilidade de 100m) em estradas abertas, mas mude para farol baixo (40m) ao cruzar com outros carros. Cuidado com o "Fenômeno da Evaporação" (pedestres somem no feixe cruzado de luzes).\n\n### Mau Tempo (Chuva/Neve/Neblina)\nAumente a distância de seguimento. Evite freadas ou manobras bruscas. Use correntes ou pneus de neve em pistas congeladas.\n\n### Emergências e Derrapagens\nSe as rodas traseiras derraparem, solte o acelerador e esterce suavemente na direção da derrapagem. Se o carro pifar no trilho do trem, aperte o alarme de emergência.',
+          },
+        },
+      ],
+    },
+    {
+      id: 'jaf_ch5',
+      licenseType: 'car',
+      order: 5,
+      icon: 'speedometer-outline',
+      title: {
+        en: 'Chapter 5: Expressway Driving Regulations',
+        ja: '第5章：高速道路の交通ルール',
+        zh: '第五章：高速公路驾驶规定',
+        pt: 'Capítulo 5: Regulamentos de Condução em Rodovias',
+      },
+      sub: {
+        en: 'Rules governing high-speed travel on national expressways and limited highways.',
+        ja: '高速自動車国道および自動車専用道路における高速走行の規則。',
+        zh: '国家高速公路及汽车专用道路的高速通行规则。',
+        pt: 'Regras para viagens em alta velocidade em rodovias nacionais e vias expressas.',
+      },
+      subtopics: [
+        {
+          id: 'jaf_sub5_1',
+          chapterId: 'jaf_ch5',
+          order: 1,
+          title: {
+            en: '5.1 Expressway Restrictions, Speeds & Breakdown Protocol',
+            ja: '5.1 高速通行規制・速度制限・故障時の避難手順',
+            zh: '5.1 高速通行限制、限速与故障避险流程',
+            pt: '5.1 Restrições em Rodovias, Velocidades e Protocolo de Avarias',
+          },
+          content: {
+            en: '### Pre-Entry Checks & Restrictions\nExpressways are closed to mopeds, light motorcycles under 125cc, and agricultural machinery. Ensure adequate fuel, oil, coolant, and higher-than-normal tire pressure. Equip your vehicle with an emergency warning triangle reflector.\n\n### Merging\nFully accelerate in the acceleration lane to match the speed of main-lane traffic before merging.\n\n### Speed Limits & Following Distance\nStandard statutory maximum speed is 100 km/h and statutory minimum speed is 50 km/h for regular passenger cars. Maintain a 100-meter gap when traveling at 100 km/h on dry pavement (double this distance on wet roads).\n\n### Expressway Breakdown Protocol:\n1. Pull onto the shoulder/side strip.\n2. Activate hazard lights.\n3. Place a warning reflector board behind the car.\n4. All occupants must immediately evacuate behind the guardrail.',
+            ja: '### 進入規制・事前点検\n原付、125cc以下の二輪車、農耕用特殊自動車は高速道路を通行できません。燃料、オイル、冷却水、タイヤ空気圧（通常より高め）を点検し、停止表示板（三角表示板）を必ず携行します。\n\n### 合流\n加速車線で十分加速し、本線車線の交通の流れと同じ速度になってから合流します。\n\n### 速度制限と車間距離\n普通乗用車の法定最高速度は100km/h、法定最低速度は50km/hです。100km/h走行時は約100mの車間距離を保ちます（雨天時は倍）。\n\n### 高速道路での故障時手順：\n1. 十分左側の路肩に寄せる。\n2. ハザードランプを点滅させる。\n3. 車両の後方に停止表示板を設置する。\n4. 同乗者全員が直ちにガードレールの外側に退避する。',
+            zh: '### 禁行与事前检查\n轻便摩托车、125cc以下摩托车及农用机械禁止进入高速公路。出发前检查燃油、机油、冷却液及轮胎气压（略高于平时），随车携带三角警示牌。\n\n### 汇入本线\n在加速车线内充分加速，达到与主线车流相当的速度后再汇入。\n\n### 限速与跟车距离\n普通客车法定最高限速100公里/小时，最低限速50公里/小时。时速100公里时保持100米跟车距离（雨天加倍）。\n\n### 高速故障处置流程：\n1. 停靠至最左侧路肩。\n2. 开启危险报警闪光灯。\n3. 在车后方摆放三角警示牌。\n4. 车上所有人员立即撤离至护栏外侧。',
+            pt: '### Restrições e Verificações Prévias\nCiclomotores, motos abaixo de 125cc e tratores não podem entrar. Verifique combustível, óleo, água e pressão dos pneus (mais alta). Carregue o triângulo de emergência.\n\n### Entrando na Rodovia\nAcelere totalmente na faixa de aceleração para igualar a velocidade da pista principal antes de entrar.\n\n### Limites de Velocidade e Distância\nA velocidade máxima padrão é 100 km/h e a mínima é 50 km/h. Mantenha 100m de distância a 100 km/h (dobre na chuva).\n\n### Protocolo de Quebra em Rodovias:\n1. Pare no acostamento esquerdo.\n2. Ligue o pisca-alerta.\n3. Coloque o triângulo de sinalização atrás do carro.\n4. Todos os ocupantes devem esperar atrás da barreira de proteção.',
+          },
+          tip: {
+            en: 'Example [For Car]: If your car gets a flat tire while driving on an expressway, pull onto the left shoulder, turn on your hazard lights, place a red warning triangle board behind your car, and wait behind the highway guardrail while calling for help.',
+            ja: '例 [四輪専用]: 高速道路でパンクした場合、左側の路肩に寄せ、ハザードランプをつけ、車の後方に赤い停止表示板を置き、ガードレールの外側に退避してロードサービスを呼びます。',
+            zh: '示例 [四轮专用]: 如果在高速公路上爆胎，应将车停在左侧路肩，开启危险报警闪光灯，在车后方摆放红色三角警示牌，人员立即撤离至护栏外侧报警等待救援。',
+            pt: 'Exemplo [Para Carro]: Se o pneu furar na rodovia, pare no acostamento esquerdo, ligue o pisca-alerta, coloque o triângulo atrás do carro e aguarde atrás da barreira de proteção.',
+          },
+        },
+      ],
+    },
+    {
+      id: 'jaf_ch6',
+      licenseType: 'bike',
+      order: 6,
+      icon: 'bicycle-outline',
+      title: {
+        en: 'Chapter 6: Riding Two-Wheeled Motor Vehicles & Mopeds',
+        ja: '第6章：二輪車・原付の運転ルール',
+        zh: '第六章：两轮摩托车与轻便摩托车骑行',
+        pt: 'Capítulo 6: Pilotagem de Motocicletas e Ciclomotores',
+      },
+      sub: {
+        en: 'Dedicated rules for motorcycles (large and regular) and mopeds (50cc or under).',
+        ja: '大型・普通自動二輪車および50cc原動機付自転車のための専用ルール。',
+        zh: '针对大型/普通摩托车及50cc轻便摩托车的专有规则。',
+        pt: 'Regras dedicadas para motocicletas (grandes e normais) e ciclomotores (50cc ou menos).',
+      },
+      subtopics: [
+        {
+          id: 'jaf_sub6_1',
+          chapterId: 'jaf_ch6',
+          order: 1,
+          title: {
+            en: '6.1 Riding Conduct, Tandem Riding & Two-Step Right Turn',
+            ja: '6.1 姿勢・二人乗り規定・原付の二段階右折',
+            zh: '6.1 骑行姿势、载人规定与二阶段右转',
+            pt: '6.1 Postura, Garupa e Conversão em Duas Etapas',
+          },
+          content: {
+            en: '### Basic Riding Conduct\nMaintain balance through body posture. Wearing an approved helmet (JIS/PS mark) with a securely fastened chinstrap is mandatory for riders and passengers. Squeezing between lanes or swerving through traffic is prohibited.\n\n### No Double Riding (Tandem Riding)\nProhibited on mopeds, on motorcycles without passenger seats, or for riders who have held their motorcycle license for less than 1 year. Prohibited on expressways for riders under age 20 or with less than 3 years of riding experience.\n\n### Moped Right Turns:\n* **Two-Step Right Turn (Hook Turn)**: Mandatory at controlled intersections on roads with 3 or more lanes, or where "Two-step Right Turn" signs are posted. Stay in the left lane, cross straight through on green, stop on the far side, turn the moped 90 degrees right, and wait for the facing light to turn green.\n* **Direct Right Turn**: Used on 2-lane roads or where "Direct Right Turn" signs exist. Move toward the center line and turn like an automobile.\n\n### Braking & Pushing on Foot\nRelease throttle and apply front and rear wheel brakes simultaneously. Dismounted riders pushing a motorcycle with the engine turned OFF are legally considered pedestrians.',
+            ja: '### 乗車姿勢と安全装備\n正しい姿勢でバランスを保ちます。乗車用ヘルメット（JIS/PSマーク付き）をあごひもをしっかり締めて着用します。すり抜け運転や蛇行運転は禁止です。\n\n### 二人乗りの制限\n原付での二人乗りは禁止です。自動二輪車での二人乗りは免許取得1年未満は禁止、高速道路での二人乗りは20歳未満または免許取得3年未満は禁止です。\n\n### 原付の右折方法：\n* **二段階右折**: 片側3車線以上の道路の交差点、または「原付の二段階右折」標識のある交差点では二段階右折が義務です。あらかじめ左側車線を直進し、交差点の向こう側で向きを90度右に変え、対面する信号が青になってから進みます。\n* **小回り右折**: 2車線以下の道路ではあらかじめ中央に寄って自動車と同様に右折します。\n\n### ブレーキと押して歩く場合\nアクセルを戻し、前後輪のブレーキを同時にかけます。エンジンを切り、押して歩いている場合は歩行者として扱われます。',
+            zh: '### 骑行姿势与安全装备\n通过身体姿势保持平衡。骑乘人员必须佩戴经认证的安全头盔（带有JIS/PS标志）并扣紧系带。严禁车缝穿梭或蛇形驾驶。\n\n### 禁止双载（载人限制）\n轻便摩托车严禁载人。取得摩托车驾照未满1年者禁止双载。未满20岁或驾照未满3年者禁止在高速公路上双载。\n\n### 轻便摩托车右转规则：\n* **二阶段右转**：在单向3车道及以上的路口，或设有“二阶段右转”标志的路口，必须执行二阶段右转。在最左侧车道直行过路口，在对角停下转动车头90度，等待横向信号灯变绿后再通行。\n* **小转弯右转**：在2车道道路上，提前靠向道路中心线像汽车一样右转。\n\n### 制动与推行\n松开油门，同时使用前后轮刹车。熄火后手推摩托车行走在法律上被视为行人。',
+            pt: '### Postura e Capacete\nMantenha o equilíbrio com a postura. É obrigatório o uso de capacete aprovado (JIS/PS) fivelado. Proibido trafegar entre faixas ou costurar o trânsito.\n\n### Proibição de Garupa\nProibido em ciclomotores (50cc). Em motos, proibido para recém-habilitados (menos de 1 ano). Em rodovias, proibido para menores de 20 anos ou com menos de 3 anos de habilitação.\n\n### Conversões à Direita para Ciclomotores:\n* **Conversão em Duas Etapas**: Obrigatória em vias de 3 ou mais faixas. Siga reto pela faixa da esquerda no verde, pare no canto oposto, vire a moto 90 graus à direita e aguarde o sinal verde da travessia.\n* **Conversão Direta**: Em pistas de 2 faixas, mova-se para a linha central e vire como um carro.\n\n### Frenagem e Empurrar a Pé\nSolte o acelerador e use os freios dianteiro e traseiro juntos. Empurrar a moto com o motor DESLIGADO é legalmente considerado pedestre.',
+          },
+          tip: {
+            en: 'Example [For Bike]: You are riding a 50cc moped on a 3-lane city road and wish to turn right at a signalized intersection. You must stay in the far-left lane, signal right 30 meters prior, cross straight on green, stop at the opposite corner, turn your moped right, turn off your blinker, and wait for that cross signal to turn green before proceeding.',
+            ja: '例 [二輪専用]: 片側3車線の道路で50cc原付を運転中、右折する場合は「二段階右折」が必要です。あらかじめ左端の車線を直進し、交差点の向こう側で向きを変えて信号が青になるのを待ちます。',
+            zh: '示例 [两轮专用]: 在3车道的都市道路上骑行50cc轻便摩托车欲右转时，必须进行二阶段右转。在最左侧车道打右灯直行过路口，在对角停下转动车头，等待横向绿灯亮起后再通行。',
+            pt: 'Exemplo [Para Moto]: Pilotando um ciclomotor de 50cc em uma via de 3 faixas, para virar à direita num cruzamento com sinal, siga direto pela faixa da esquerda, pare no canto oposto, vire a moto e aguarde o sinal verde da travessia.',
+          },
+        },
+      ],
+    },
+    {
+      id: 'jaf_ch7',
+      licenseType: 'car',
+      order: 7,
+      icon: 'bus-outline',
+      title: {
+        en: 'Chapter 7: Commercial Passenger Transport Services & Substitute Drivers',
+        ja: '第7章：旅客自動車の運転と運転代行',
+        zh: '第七章：商业客运服务与代驾服务',
+        pt: 'Capítulo 7: Transporte Comercial de Passageiros e Motoristas Substitutos',
+      },
+      sub: {
+        en: 'Rules for professional drivers operating taxis, route buses, microbuses, and substitute driving services.',
+        ja: 'タクシー、路線バス、運転代行業務に従事するプロドライバーのための規則。',
+        zh: '出租车、公交车及代驾服务等专业驾驶员的法律规定。',
+        pt: 'Regras para motoristas profissionais operando táxis, ônibus e motoristas substitutos.',
+      },
+      subtopics: [
+        {
+          id: 'jaf_sub7_1',
+          chapterId: 'jaf_ch7',
+          order: 1,
+          title: {
+            en: '7.1 Passenger Safety Priority & Substitute Driving Requirements',
+            ja: '7.1 旅客安全優先の原則と代行運転の規定',
+            zh: '7.1 乘客安全优先与代驾服务规定',
+            pt: '7.1 Prioridade de Segurança e Requisitos de Condução Substituta',
+          },
+          content: {
+            en: '### Passenger Safety Priority\nProfessional drivers must prioritize passenger safety, avoid harsh braking/accelerating, and give verbal warnings prior to rough road sections.\n\n### Bus Rules\nRoute buses must turn on interior cabin lights during night driving. Bus drivers must not engage in unnecessary conversations while driving.\n\n### Taxi Rules\nTaxis must display "Out of Service" signs when taking meal or rest breaks. Smoking inside commercial passenger vehicles with passengers on board is illegal.\n\n### Substitute Drivers\nSubstitute drivers (who drive a client\'s car home after the client drinks) must display an official "Substitute Driving Vehicle Sign" on the car.',
+            ja: '### 旅客安全優先\nプロの運転者は乗客の安全を最優先し、急ブレーキ・急発進を避け、悪路の走行前には乗客に声をかけます。\n\n### バス・タクシーのルール\n路線バスは夜間走行時に室内灯を点灯しなければなりません。タクシーは休憩・食事時には「回送」を表示します。乗客乗車中の車内禁煙は義務です。\n\n### 運転代行サービス\n飲酒した客に代わって自家用車を運転する代行運転者は、車両に規定の「運転代行標識」を掲示しなければなりません。',
+            zh: '### 乘客安全优先\n职业驾驶员必须将乘客安全放在首位，避免急刹车或猛加速，颠簸路段前须提前口头提醒乘客。\n\n### 公交车与出租车规则\n公交车夜间行驶时必须开启车厢内照明灯。出租车在休息或用餐时须挂出“暂停载客/回送”标志。载客状态下车内严禁吸烟。\n\n### 代驾司机规定\n代驾司机在代饮酒客户驾驶其私家车回家时，必须在车辆上悬挂官方“代行”（代驾）标识。',
+            pt: '### Prioridade de Segurança dos Passageiros\nMotoristas profissionais devem priorizar a segurança, evitar freadas/arrancadas bruscas e alertar antes de trechos esburacados.\n\n### Regras de Ônibus e Táxis\nÔnibus de linha devem acender a luz interna à noite. Táxis devem exibir placa de "Fora de Serviço" em intervalos. Proibido fumar a bordo com passageiros.\n\n### Motoristas Substitutos\nMotoristas substitutos (que dirigem o carro do cliente alcoolizado) devem exibir a placa oficial "代行" (Condução Substituta) no veículo.',
+          },
+          tip: {
+            en: 'Example [For Car]: A substitute driver taking an intoxicated client home in the client\'s vehicle must display the official "代行" (Substitute Driving) sign on the vehicle while operating it.',
+            ja: '例 [四輪専用]: 飲酒した顧客の自家用車を代行運転して送り届ける際、車両には規定の「代行」標識（運転代行標識）を掲示しなければなりません。',
+            zh: '示例 [四轮专用]: 代驾司机驾驶醉酒客户的车辆送其回家时，必须在车辆上悬挂官方的“代行”（代驾）标识。',
+            pt: 'Exemplo [Para Carro]: Um motorista substituto levando o cliente embriagado para casa no carro do próprio cliente deve exibir a placa oficial "代行" (Condução Substituta) no veículo.',
+          },
+        },
+      ],
+    },
+    {
+      id: 'jaf_ch8',
+      licenseType: 'both',
+      order: 8,
+      icon: 'medical-outline',
+      title: {
+        en: 'Chapter 8: Accidents, Breakdowns, and Natural Disasters',
+        ja: '第8章：交通事故・故障・自然災害時の対応',
+        zh: '第八章：交通事故、故障与自然灾害应对',
+        pt: 'Capítulo 8: Acidentes, Avarias e Desastres Naturais',
+      },
+      sub: {
+        en: 'Emergency protocols for traffic collisions, roadside breakdowns, and major natural disasters.',
+        ja: '交通事故発生時の救護措置、路上の故障、大地震発生時の対応手順。',
+        zh: '交通事故现场救援、路边故障处置及大地震避险流程。',
+        pt: 'Protocolos de emergência para colisões, avarias na pista e terremotos.',
+      },
+      subtopics: [
+        {
+          id: 'jaf_sub8_1',
+          chapterId: 'jaf_ch8',
+          order: 1,
+          title: {
+            en: '8.1 Accident Protocol, First Aid & Earthquake Evacuation',
+            ja: '8.1 事故対応・救急処置・地震発生時の避難措置',
+            zh: '8.1 事故处置、急救与地震防灾避险',
+            pt: '8.1 Protocolo de Acidentes, Primeiros Socorros e Evacuação em Terremotos',
+          },
+          content: {
+            en: '### Traffic Accidents (Duty of Care)\n1. Stop immediately and move vehicles off the active roadway.\n2. Administer first aid (stop bleeding with clean gauze; do not move head-injury victims unless in immediate danger).\n3. Call Police (110) and Ambulance (119).\n\n### Earthquake Early Warnings & Evacuation:\n* Upon hearing an earthquake warning, do not panic or slam on brakes.\n* Activate hazard lights to warn trailing traffic and gradually slow down.\n* Pull over safely along the left edge of the road.\n* **If evacuating on foot**: Turn off the engine, leave the key in the ignition (or on the driver seat), leave doors UNLOCKED, close windows, and evacuate. (Leaving keys allows emergency personnel to move vehicles if blocking emergency routes).',
+            ja: '### 交通事故時の義務\n1. 直ちに運転を停止し、車両を安全な場所へ移動します。\n2. 負傷者の救護を行います（清潔なガーゼで止血。頭部負傷者は危険がない限り動かさない）。\n3. 警察（110番）と救急（119番）へ通報します。\n\n### 地震発生時の避難手順：\n* 緊急地震速報を聞いても急ブレーキをかけず、ハザードランプをつけて徐々に減速します。\n* 道路の左側に寄せて安全に停車します。\n* **徒歩で避難する場合**: エンジンを切り、キーは挿したまま（または運転席に置く）、ドアはロックせず、窓を閉めて避難します。（緊急車両の通行の妨げになった際に移動できるようにするため）。',
+            zh: '### 交通事故处置义务\n1. 立即停车并将车辆移至不影响交通的安全地点。\n2. 实施现场急救（用干净纱布止血；除非处于直接危险中，切勿擅自搬动头部受伤人员）。\n3. 拨打报警电话(110)和急救电话(119)。\n\n### 地震预警与避险处置：\n* 收到地震预警时切勿惊慌急刹车，开启危险警示灯徐徐减速。\n* 靠道路左侧安全停靠。\n* **若选择步行撤离**：熄火，将钥匙留在点火开关上（或放在驾驶席上），切勿锁车门，关紧车窗后撤离。（留钥匙是为了方便救援人员在车辆阻挡救援通道时随时移车）。',
+            pt: '### Acidentes de Trânsito (Dever de Cuidado)\n1. Pare imediatamente e mova os veículos para fora da pista.\n2. Preste primeiros socorros (estanque sangramentos com gaze limpa; não mova vítimas com traumatismo craniano).\n3. Ligue para a Polícia (110) e Ambulância (119).\n\n### Alertas de Terremoto e Evacuação:\n* Ao ouvir o alerta de terremoto, não entre em pânico nem freie bruscamente.\n* Ligue o pisca-alerta e reduza gradualmente.\n* Pare no meio-fio esquerdo.\n* **Se evacuar a pé**: Desligue o motor, deixe a chave na ignição (ou no banco), deixe as portas DESTRAVADAS, feche as janelas e evacue. (Deixar as chaves permite que os socorristas movam o carro se bloquear emergências).',
+          },
+          tip: {
+            en: 'Example [For Both - Cars & Bikes]: An Earthquake Early Warning sounds while you are driving. You must turn on your hazard lights, slow down gradually without slamming the brakes, pull over to the left curb, leave your keys in the ignition with doors unlocked, and evacuate to a safe area.',
+            ja: '例 [四輪・二輪共通]: 運転中に緊急地震速報を受信した場合、急ブレーキを避け、ハザードランプをつけて緩やかに減速し、道路の左側に寄せて停車します。徒歩で避難する際はキーを挿したままドアをロックせずに避難します。',
+            zh: '示例 [四轮与两轮通用]: 行驶中收到地震预警时，切勿急刹车。应开启危险警示灯徐徐减速，靠左侧停靠。若步行撤离，须将钥匙留在车上且不锁车门，以便急救人员随时移车。',
+            pt: 'Exemplo [Para Ambos - Carros e Motos]: Ao ouvir o alerta de terremoto dirigindo, ligue o pisca-alerta, reduza gradualmente, pare no meio-fio esquerdo, deixe a chave na ignição com portas destravadas e evacue.',
+          },
+        },
+      ],
+    },
+    {
+      id: 'jaf_ch9',
+      licenseType: 'both',
+      order: 9,
+      icon: 'briefcase-outline',
+      title: {
+        en: 'Chapter 9: Duties of Owners, Users, and Safe Driving Supervisors',
+        ja: '第9章：使用者・管理者・安全運転管理者の義務',
+        zh: '第九章：车主、使用者与安全驾驶管理人员职责',
+        pt: 'Capítulo 9: Deveres de Proprietários, Usuários e Supervisores de Segurança',
+      },
+      sub: {
+        en: 'Legal responsibilities of vehicle owners, fleet managers, and corporate users.',
+        ja: '車両所有者、運行管理者、企業使用者の法的責任。',
+        zh: '车辆所有人、车队管理者及企业使用者的法律责任。',
+        pt: 'Responsabilidades legais dos proprietários de veículos, gestores de frotas e empresas.',
+      },
+      subtopics: [
+        {
+          id: 'jaf_sub9_1',
+          chapterId: 'jaf_ch9',
+          order: 1,
+          title: {
+            en: '9.1 Garage Storage Certification & Safe Driving Supervisors',
+            ja: '9.1 車庫証明と安全運転管理者制度の規定',
+            zh: '9.1 车库证明规定与安全驾驶管理员制度',
+            pt: '9.1 Certificação de Garagem e Supervisão de Frota',
+          },
+          content: {
+            en: '### Off-Road Garage Requirement\nVehicle owners must secure an off-road parking space/garage within a 2-kilometer radius of their residence/office and display an official Garage Storage Sticker on the rear window.\n\n### Street Parking Prohibitions\nUsing public roads as a garage is illegal. Parking in the exact same spot on a public road for over 12 hours continuously (or 8 hours at night) is prohibited.\n\n### Safe Driving Supervisor System\nEstablishments operating 5 or more motor vehicles (or 1+ vehicle with a capacity of 11+ passengers) must appoint a certified Safe Driving Supervisor to oversee driver health, daily vehicle inspections, and traffic safety compliance.',
+            ja: '### 車庫証明の必要性\n自動車の所有者は、自宅・事務所から2km以内に保管場所（車庫）を確保し、リアガラスに保管場所標章（車庫証明シール）を貼り付けなければなりません。\n\n### 路上駐車の禁止\n公道を保管場所（車庫代わり）として使用することは違法です。同一の場所に連続して12時間以上（夜間は8時間以上）駐車することは禁止されています。\n\n### 安全運転管理者制度\n乗車定員11名以上の自動車を1台以上、またはその他の自動車を5台以上使用する事業所では、安全運転管理者を選任し、ドライバーの体調管理や安全運転の指導を行わせなければなりません。',
+            zh: '### 车库证明要求\n车辆所有人必须在住所或办公室2公里半径范围内落实专用停放车位/车库，并在后车窗张贴官方车库保管场所标章。\n\n### 禁止将道路当车库\n将公共道路当车库使用属违法行为。禁止在公共道路上的同一位置连续停车超过12小时（夜间超过8小时）。\n\n### 安全驾驶管理员制度\n使用5辆及以上机动车（或1辆及以上乘员11人以上的车辆）的企业事业单位，必须任命经认证的安全驾驶管理员，负责监督驾驶员健康状态、每日例行车辆检查及交通安全合规。',
+            pt: '### Requisito de Garagem\nOs proprietários devem garantir uma vaga de garagem a no máximo 2 km de sua residência/escritório e colar o adesivo oficial no vidro traseiro.\n\n### Proibição de Usar a Via como Garagem\nUsar vias públicas como garagem é ilegal. É proibido estacionar no mesmo local por mais de 12 horas contínuas (ou 8 horas à noite).\n\n### Sistema de Supervisor de Segurança\nEmpresas com 5 ou mais veículos (ou 1+ veículo para 11+ passageiros) devem nomear um Supervisor de Segurança certificado para supervisionar a saúde dos motoristas e inspeções.',
+          },
+          tip: {
+            en: 'Example [For Both - Cars & Bikes]: When purchasing a car or motorcycle in Japan, you must register a certified off-road parking space located within 2 km of your home and display the Automobile Storage Sticker on your vehicle.',
+            ja: '例 [四輪・二輪共通]: 日本で自動車や二輪車を購入する際、自宅から2km以内に確保した車庫証明（保管場所証明）を取得し、保管場所標章を車両に貼り付ける必要があります。',
+            zh: '示例 [四轮与两轮通用]: 在日本购买汽车或摩托车时，必须在距住所2公里范围内登记经认证的停放车位，并在车辆上张贴保管场所标章。',
+            pt: 'Exemplo [Para Ambos - Carros e Motos]: Ao comprar um carro no Japão, você deve registrar uma vaga de garagem dentro de um raio de 2 km da sua residência e colar o adesivo de garagem no veículo.',
+          },
+        },
+      ],
+    },
+    {
+      id: 'jaf_ch10',
+      licenseType: 'both',
+      order: 10,
+      icon: 'ribbon-outline',
+      title: {
+        en: 'Appendix: Traffic Signals, Signs, Markings & Vehicle Categories',
+        ja: '付録：手信号・道路標識・標示・車両区分一覧',
+        zh: '附录：警察手信号、交通标志与车辆分类标准',
+        pt: 'Apêndice: Sinais Manuais, Placas e Categorias de Veículos',
+      },
+      sub: {
+        en: 'Reference charts detailing police hand signals, road sign categories, and vehicle classifications.',
+        ja: '警察官の手信号、道路標識の分類、道路交通法上の車両区分の解説。',
+        zh: '警察手信号含义、道路标志分类及法律规定的车辆分类对照。',
+        pt: 'Tabelas de referência detalhando sinais manuais da polícia, placas e categorias de veículos.',
+      },
+      subtopics: [
+        {
+          id: 'jaf_sub10_1',
+          chapterId: 'jaf_ch10',
+          order: 1,
+          title: {
+            en: 'Appendix 1. Police Hand Signals & Vehicle Classifications',
+            ja: '付録1. 警察官の手信号と車両区分',
+            zh: '附录1. 警察手信号与车辆分类标准',
+            pt: 'Apêndice 1. Sinais Manuais Policiais e Categorias de Veículos',
+          },
+          content: {
+            en: '### Police Hand Signals\n* **Arms Horizontally Extended**: Green light for traffic parallel to the officer; Red light for traffic facing front/back.\n* **Arms Raised Overhead**: Yellow light for traffic parallel to the officer; Red light for traffic facing front/back.\n* **Stopping Position**: Stop 1 meter before the police officer when directed at non-intersection locations.\n\n### Signboard Controls\n* **Blue Left Arrow Sign**: Permits left turns even if the traffic signal is red, provided it is safe and clear.\n\n### Vehicle Categories\n* **Large Vehicles**: GVW 11,000+ kg or 30+ passengers.\n* **Medium Vehicles**: GVW 5,000 to 11,000 kg or 11–29 passengers.\n* **Semi-Medium Vehicles**: GVW 3,500 to 7,500 kg.\n* **Regular Vehicles**: Standard automobiles under 3,500 kg GVW.\n* **Kei Cars (Light Vehicles)**: Engine displacement under 660cc, length under 3.4m, width under 1.48m.\n* **Mopeds**: Engine displacement 50cc or under.',
+            ja: '### 警察官の手信号\n* **腕を横に水平に上げる**: 手信号の対面方向は「赤」、平行方向は「青」を意味します。\n* **腕を垂直に高く上げる**: 対面方向は「赤」、平行方向は「黄」を意味します。\n* **停止位置**: 交差点以外の場所で停止を指示された場合、警察官の1m手前で停止します。\n\n### 標識による特例\n* **「左折可」の標示板（白地に青の左折矢印）**: 信号が赤であっても、歩行者等の安全を確認すれば常時左折が可能です。\n\n### 車両の区分\n* **大型自動車**: 車両総重量11トン以上、または乗車定員30人以上。\n* **中型自動車**: 車両総重量5トン以上11トン未満、または乗車定員11人以上29人以下。\n* **準中型自動車**: 車両総重量3.5トン以上7.5トン未満。\n* **普通自動車**: 車両総重量3.5トン未満の一般的な自動車。\n* **軽自動車**: 排気量660cc以下、全長3.4m以下、全幅1.48m以下。\n* **原動機付自転車（原付）**: 総排気量50cc以下。',
+            zh: '### 警察手信号含义\n* **双臂水平张开**：面向和背向警察方向为“红灯”；平行于警察方向为“绿灯”。\n* **单臂高举过头**：面向和背向警察方向为“红灯”；平行于警察方向为“黄灯”。\n* **停止位置**：在非路口处接到警察停止指令时，须在警察身前1米处停车。\n\n### 特殊标志指示\n* **“允许左折”指示牌（白底蓝色左转箭头）**：即使主信号灯为红灯，只要确认行人安全即可随时左转。\n\n### 车辆分类标准\n* **大型车辆**：总重量11吨及以上，或乘员30人及以上。\n* **中型车辆**：总重量5吨至11吨，或乘员11至29人。\n* **准中型车辆**：总重量3.5吨至7.5吨。\n* **普通车辆**：总重量3.5吨以下的标准乘用车。\n* **轻型汽车 (Kei Car)**：排量660cc及以下，车长3.4米及以下，车宽1.48米及以下。\n* **轻便摩托车**：发动机排量50cc及以下。',
+            pt: '### Sinais Manuais Policiais\n* **Braços Estendidos na Horizontal**: Sinal verde para o tráfego paralelo ao policial; Sinal vermelho para o tráfego de frente/costas.\n* **Braço Levantado**: Sinal amarelo para o tráfego paralelo ao policial; Sinal vermelho para o tráfego de frente/costas.\n* **Posição de Parada**: Pare 1 metro antes do policial quando instruído fora de cruzamentos.\n\n### Controles por Placas Especiais\n* **Seta Azul para Esquerda**: Permite conversão à esquerda mesmo com sinal vermelho, desde que haja segurança.\n\n### Categorias de Veículos\n* **Veículos Grandes**: PBT 11.000+ kg ou 30+ passageiros.\n* **Veículos Médios**: PBT 5.000 a 11.000 kg ou 11–29 passageiros.\n* **Veículos Semi-Médios**: PBT 3.500 a 7.500 kg.\n* **Veículos Regulares**: Carros normais com PBT abaixo de 3.500 kg.\n* **Carros Kei (Veículos Leves)**: Cilindrada até 660cc, comprimento até 3,4m, largura até 1,48m.\n* **Ciclomotores**: Cilindrada até 50cc.',
+          },
+          tip: {
+            en: 'Example [For Both - Cars & Bikes]: You reach an intersection with a red traffic light, but a blue arrow pointing left on a white background is mounted beside it. You are legally permitted to execute a left turn despite the red light, yielding to crossing pedestrians.',
+            ja: '例 [四輪・二輪共通]: 信号が赤であっても、白地に青い左折可の矢印標示（左折可標識）がある場合、歩行者の安全を確認した上で左折することが認められています。',
+            zh: '示例 [四轮与两轮通用]: 到达红灯路口，若路旁挂有白底蓝色左转允许指示牌，则在确保过街行人安全的前提下，即使是红灯也可以实施左转。',
+            pt: 'Exemplo [Para Ambos - Carros e Motos]: Ao chegar a um cruzamento com sinal vermelho, mas com uma placa de seta azul para a esquerda ao lado, é permitido virar à esquerda, cedendo preferência aos pedestres.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+export const mockChapters: Chapter[] = jafBook.chapters;
 
 export const mockBooks: Book[] = [
+  jafBook,
   {
     id: 'book1',
     title: {
@@ -120,7 +536,7 @@ export const mockBooks: Book[] = [
       pt: 'Guia completo para leis de trânsito, regulamentos e segurança ao dirigir no Japão.',
     },
     icon: 'car-sport-outline',
-    chapters: mockChapters,
+    chapters: jafBook.chapters.filter((ch) => ch.licenseType === 'car' || ch.licenseType === 'both'),
   },
   {
     id: 'book2',
@@ -137,43 +553,6 @@ export const mockBooks: Book[] = [
       pt: 'Procedimentos de segurança e regras de manuseio específicas para motociclistas.',
     },
     icon: 'bicycle-outline',
-    chapters: [
-      {
-        id: 'ch3',
-        title: {
-          en: 'Chapter 3: Riding Techniques',
-          ja: '第3章：ライディングテクニック',
-          zh: '第三章：骑行技巧',
-          pt: 'Capítulo 3: Técnicas de Pilotagem',
-        },
-        sub: {
-          en: 'Safety checks and balancing techniques for motorcycles.',
-          ja: '二輪車の安全点検とバランス技術について。',
-          zh: '摩托车的安全检查与平衡技巧。',
-          pt: 'Verificações de segurança e técnicas de equilíbrio para motocicletas.',
-        },
-        icon: 'rainy-outline',
-        order: 1,
-        subtopics: [
-          {
-            id: 'sub3_1',
-            chapterId: 'ch3',
-            title: {
-              en: '3.1 Safe Braking Techniques',
-              ja: '3.1 安全なブレーキ操作',
-              zh: '3.1 安全制动技巧',
-              pt: '3.1 Técnicas de Frenagem Segura',
-            },
-            order: 1,
-            content: {
-              en: 'When braking on a motorcycle, apply both front and rear brakes simultaneously. The front brake provides about 70% of the stopping power.',
-              ja: '二輪車でブレーキをかけるときは、前後輪のブレーキを同時に作動させます。前輪ブレーキが制動力の約70%を占めます。',
-              zh: '摩托车制动时，应同时使用前刹和后刹。前刹提供约70%的制动力。',
-              pt: 'Ao frear uma motocicleta, aplique os freios dianteiro e traseiro simultaneamente. O freio dianteiro fornece cerca de 70% da força de parada.',
-            }
-          }
-        ]
-      }
-    ]
-  }
+    chapters: jafBook.chapters.filter((ch) => ch.licenseType === 'bike' || ch.licenseType === 'both'),
+  },
 ];

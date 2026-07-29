@@ -758,7 +758,11 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                 ) : (
                   /* Render Books list if no book is selected */
                   books.map((book, index) => {
-                    const totalChapters = book.chapters?.length || 0;
+                    const matchingChapters = (book.chapters || []).filter((ch: any) => {
+                      if (!activeSection) return true;
+                      return ch.licenseType === activeSection || ch.licenseType === 'both' || !ch.licenseType;
+                    });
+                    const totalChapters = matchingChapters.length;
                     return (
                       <Animated.View key={book.id} entering={FadeInDown.delay(index * 100).springify()}>
                         <Card 
