@@ -301,7 +301,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
 
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.gradientOverlay} />
+        <View style={[styles.gradientOverlay, { backgroundColor: colors.background }]} />
         
         {/* Animated 1px progress line with a floating needle */}
         <View style={[styles.readerProgressBg, { backgroundColor: colors.backgroundSelected, height: 1, position: 'relative' }]}>
@@ -347,8 +347,8 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           {/* Bookmark Toggle */}
           <Pressable onPress={() => toggleBookmark(selectedSubtopic.id)} style={styles.headerBtn}>
             <Ionicons 
-              name={isBookmarked ? 'heart' : 'heart-outline'} 
-              size={26} 
+              name={isBookmarked ? 'bookmark' : 'bookmark-outline'} 
+              size={24} 
               color={isBookmarked ? colors.primary : colors.text} 
             />
           </Pressable>
@@ -976,10 +976,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#0D0D0D',
     ...Platform.select({
       web: {
-        backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(227, 24, 55, 0.04) 0%, rgba(13, 13, 13, 0) 75%)',
+        backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(227, 24, 55, 0.04) 0%, rgba(0, 0, 0, 0) 75%)',
       } as any,
     }),
   },

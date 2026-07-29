@@ -137,7 +137,7 @@ export const ProgressScreen: React.FC = () => {
                 <Text style={[styles.bentoLabel, { color: colors.textSecondary }]}>{t('quiz.bookmarkedQuestions')}</Text>
                 <Text style={[styles.bentoValue, { color: colors.text }]}>{bookmarkedQuestions.length}</Text>
               </View>
-              <Ionicons name="heart" size={32} color={colors.primary} style={{ opacity: 0.2 }} />
+              <Ionicons name="bookmark" size={32} color={colors.primary} style={{ opacity: 0.2 }} />
             </Card>
             
             <Card style={[styles.bentoCard, styles.flex1, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>

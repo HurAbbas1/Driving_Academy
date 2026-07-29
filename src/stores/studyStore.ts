@@ -256,10 +256,8 @@ export const useStudyStore = create<StudyState>((set, get) => ({
           ...(cloudProgress.completedSubtopics || []),
         ]));
 
-        const mergedBookmarks = Array.from(new Set([
-          ...(get().bookmarkedPages || []),
-          ...cloudBookmarks,
-        ]));
+        const localBookmarks = get().bookmarkedPages;
+        const mergedBookmarks = localBookmarks.length > 0 ? localBookmarks : cloudBookmarks;
 
         const mergedProgress = {
           completedSubtopics: mergedCompleted,

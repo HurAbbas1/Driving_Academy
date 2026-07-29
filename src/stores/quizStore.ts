@@ -307,16 +307,10 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
     const newHistory = [historyItem, ...history];
 
-    // Auto bookmark questions flagged during the quiz
-    const mergedBookmarks = Array.from(new Set([
-      ...bookmarkedQuestions,
-      ...activeSession.flaggedQuestions
-    ]));
-
     set({
       history: newHistory,
       wrongQuestions: updatedWrongQuestions,
-      bookmarkedQuestions: mergedBookmarks,
+      bookmarkedQuestions,
       activeSession: {
         ...activeSession,
         endTime,
@@ -466,10 +460,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         });
         mergedHistory.sort((a, b) => b.date - a.date);
 
-        const mergedBookmarks = Array.from(new Set([
-          ...get().bookmarkedQuestions,
-          ...cloudBookmarks,
-        ]));
+        const localBookmarks = get().bookmarkedQuestions;
+        const mergedBookmarks = localBookmarks.length > 0 ? localBookmarks : cloudBookmarks;
 
         // Merge wrong questions
         const localWrong = get().wrongQuestions;

@@ -256,13 +256,6 @@ export const QuizScreen: React.FC = () => {
             <Text style={[styles.qIndexText, { color: colors.textSecondary }]}>
               {t('quiz.questionCount', { current: activeSession.currentIndex + 1, total: totalQuestions })}
             </Text>
-            {/* Flag Question Button */}
-            <Pressable 
-              style={[styles.actionBtn, isFlagged ? { backgroundColor: colors.warning } : { borderColor: colors.border, borderWidth: 1 }]} 
-              onPress={() => toggleFlagQuestion(activeSession.id, currentQ.id)}
-            >
-              <Ionicons name={isFlagged ? "flag" : "flag-outline"} size={20} color={isFlagged ? '#000' : colors.textSecondary} />
-            </Pressable>
           </View>
 
           {/* Question Image (If applicable) */}
