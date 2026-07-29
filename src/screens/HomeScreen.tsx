@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, SafeAreaView, ScrollView, Platform, ImageBackground, TouchableOpacity, Image, Pressable, useWindowDimensions, FlatList } from 'react-native';
+import { View, StyleSheet, Text, SafeAreaView, ScrollView, Platform, ImageBackground, TouchableOpacity, Image, Pressable, useWindowDimensions, FlatList, Animated } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';
@@ -32,23 +32,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
   const streak = profile?.streak?.current ?? 0;
   const username = profile?.displayName ?? 'Learner';
 
-  const flatListRef = useRef<FlatList>(null);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    if (!books || books.length === 0) return;
+    if (!books || books.length <= 1) return;
     const interval = setInterval(() => {
-      let nextIndex = activeIndex + 1;
-      if (nextIndex >= books.length) {
-        nextIndex = 0;
-      }
-      setActiveIndex(nextIndex);
-      if (flatListRef.current) {
-        flatListRef.current.scrollToIndex({ index: nextIndex, animated: true });
-      }
-    }, 4000);
+      Animated.timing(fadeAnim, {
+        toValue: 0.2,
+        duration: 350,
+        useNativeDriver: true,
+      }).start(() => {
+        setActiveIndex((prev) => (prev + 1) % books.length);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 450,
+          useNativeDriver: true,
+        }).start();
+      });
+    }, 3800);
     return () => clearInterval(interval);
-  }, [activeIndex, books]);
+  }, [books]);
 
 
   const currentLangLoc = useLanguageStore((state) => state.language);
@@ -185,48 +189,83 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
 
         
         
-        {/* Top Netflix/Airbnb Style Featured Banner (Auto-Scrolling Pictures) */}
-        <View style={{ marginTop: 16, marginBottom: 20 }}>
-          <FlatList
-            ref={flatListRef}
-            data={books && books.length > 0 ? books : []}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item) => 'hero-' + item.id}
-            getItemLayout={(data, index) => ({ length: width - 32, offset: (width - 32) * index, index })}
-            onScrollToIndexFailed={(info) => {
-              flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
-            }}
-            renderItem={({ item: book }) => (
-              <View style={{ width: width - 32, marginRight: 16 }}>
-                <TouchableOpacity 
-                  activeOpacity={0.9} 
-                  onPress={() => {
-                    setSelectedBookId(book.id);
-                    if (onNavigateToTab) onNavigateToTab('study');
-                  }}
-                  style={{ height: 180, borderRadius: 24, overflow: 'hidden', backgroundColor: colors.backgroundElement }}
-                >
-                  <Image 
-                    source={{ uri: book.coverImage || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800' }} 
-                    style={[StyleSheet.absoluteFill]} 
-                    resizeMode="cover" 
-                  />
-                  <View style={{ padding: 20, flex: 1, justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.45)' }}>
-                    <View style={{ backgroundColor: `${colors.primary}90`, alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
-                      <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '800', letterSpacing: 1 }}>FEATURED</Text>
-                    </View>
-                    <View>
-                      <Text style={{ fontSize: 22, fontWeight: '900', color: '#FFF' }} numberOfLines={1}>{loc(book.title)}</Text>
-                      <Text style={{ fontSize: 13, color: '#DDD', marginTop: 4 }}>{t('home.startLearning')}</Text>
-                    </View>
+        {/* Single Box Smooth Auto-Transition Featured Hero Box */}
+        {books && books.length > 0 && (
+          <View style={{ paddingHorizontal: 16, marginTop: 16, marginBottom: 20 }}>
+            <TouchableOpacity 
+              activeOpacity={0.9} 
+              onPress={() => {
+                const activeBook = books[activeIndex % books.length];
+                if (activeBook) {
+                  setSelectedBookId(activeBook.id);
+                  if (onNavigateToTab) onNavigateToTab('study');
+                }
+              }}
+              style={{ 
+                height: 190, 
+                borderRadius: 24, 
+                overflow: 'hidden', 
+                backgroundColor: colors.backgroundElement,
+                position: 'relative',
+                ...Platform.select({
+                  web: {
+                    boxShadow: theme === 'dark' ? '0 8px 24px rgba(0,0,0,0.4)' : '0 8px 24px rgba(0,0,0,0.08)',
+                  } as any,
+                  default: {
+                    shadowColor: '#000',
+                    shadowOpacity: 0.15,
+                    shadowRadius: 12,
+                    elevation: 4,
+                  }
+                })
+              }}
+            >
+              {/* Background Image with Smooth Fade Animation */}
+              <Animated.View style={[StyleSheet.absoluteFill, { opacity: fadeAnim }]}>
+                <Image 
+                  source={{ uri: books[activeIndex % books.length]?.coverImage || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800' }} 
+                  style={StyleSheet.absoluteFill} 
+                  resizeMode="cover" 
+                />
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.52)' }]} />
+              </Animated.View>
+
+              {/* Card Content Overlay */}
+              <View style={{ padding: 20, flex: 1, justifyContent: 'space-between', zIndex: 2 }}>
+                <View style={{ backgroundColor: `${colors.primary}E0`, alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
+                  <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>FEATURED</Text>
+                </View>
+
+                <Animated.View style={{ opacity: fadeAnim }}>
+                  <Text style={{ fontSize: 22, fontWeight: '900', color: '#FFFFFF', marginBottom: 4 }} numberOfLines={1}>
+                    {loc(books[activeIndex % books.length]?.title)}
+                  </Text>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: 'rgba(255, 255, 255, 0.85)' }}>
+                    {t('home.startLearning')}
+                  </Text>
+                </Animated.View>
+
+                {/* Pagination Dots Indicator */}
+                {books.length > 1 && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginTop: 8, gap: 6 }}>
+                    {books.map((b, idx) => (
+                      <TouchableOpacity
+                        key={'dot-' + b.id}
+                        onPress={() => setActiveIndex(idx)}
+                        style={{
+                          width: idx === (activeIndex % books.length) ? 20 : 6,
+                          height: 6,
+                          borderRadius: 3,
+                          backgroundColor: idx === (activeIndex % books.length) ? colors.primary : 'rgba(255, 255, 255, 0.5)',
+                        }}
+                      />
+                    ))}
                   </View>
-                </TouchableOpacity>
+                )}
               </View>
-            )}
-          />
-        </View>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Stable Manual Scrollable Handbooks Cards (Users scroll left/right) */}
         <View style={{ marginBottom: 24 }}>
