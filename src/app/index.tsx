@@ -120,7 +120,12 @@ export default function IndexScreen() {
   // Determine if app data is fully initialized
   const isAppReady = isInitialized && isOnboardingCompleted !== null && !authLoading;
 
-  // 0. Splash Screen Phase
+  // 1. Onboarding Flow (FIRST — skip app splash for first-time users, onboarding has its own intro)
+  if (isOnboardingCompleted === false) {
+    return <OnboardingScreen onComplete={() => { setIsOnboardingCompleted(true); setIsSplashAnimationDone(true); }} />;
+  }
+
+  // 0. Splash Screen Phase (only for returning users)
   if (!isSplashAnimationDone) {
     return (
       <AnimatedSplashScreen 
@@ -133,11 +138,6 @@ export default function IndexScreen() {
   // Fallback Loading phase
   if (!isAppReady) {
     return <LoadingScreen />;
-  }
-
-  // 1. Onboarding Flow
-  if (!isOnboardingCompleted) {
-    return <OnboardingScreen onComplete={() => setIsOnboardingCompleted(true)} />;
   }
 
   // 2. Auth Flow (if not signed in)

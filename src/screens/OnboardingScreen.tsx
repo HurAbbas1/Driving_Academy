@@ -13,450 +13,685 @@ interface OnboardingScreenProps {
   onComplete: () => void;
 }
 
-const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+const { width: SCREEN_W } = Dimensions.get('window');
 const useNative = Platform.OS !== 'web';
 
-/* ───────── Animated Intro Splash ───────── */
-const AnimatedIntroSplash: React.FC<{ onFinish: () => void }> = ({ onFinish }) => {
-  // Phase 1: Red sun rises & grows
-  const sunScale = useRef(new Animated.Value(0)).current;
-  const sunGlow = useRef(new Animated.Value(0)).current;
+/* ─────────────────────────────────────────────
+   SUPERCAR — Built Entirely from Views
+   ───────────────────────────────────────────── */
+const SuperCar: React.FC = () => (
+  <View style={carStyles.wrapper}>
+    {/* Rear spoiler */}
+    <View style={carStyles.spoiler} />
+    <View style={carStyles.spoilerPillar} />
 
-  // Phase 2: Car silhouette drives in from left
-  const carX = useRef(new Animated.Value(-SCREEN_W)).current;
-  const carOpacity = useRef(new Animated.Value(0)).current;
-
-  // Phase 3: "NS" letters slam in
-  const nScale = useRef(new Animated.Value(3)).current;
-  const nOpacity = useRef(new Animated.Value(0)).current;
-  const sScale = useRef(new Animated.Value(3)).current;
-  const sOpacity = useRef(new Animated.Value(0)).current;
-
-  // Phase 4: Road lines animate
-  const roadWidth = useRef(new Animated.Value(0)).current;
-
-  // Phase 5: Transition - everything morphs to final logo
-  const containerScale = useRef(new Animated.Value(1)).current;
-  const bgOpacity = useRef(new Animated.Value(1)).current;
-  const finalLogoOpacity = useRef(new Animated.Value(0)).current;
-  const finalLogoY = useRef(new Animated.Value(30)).current;
-  const taglineOpacity = useRef(new Animated.Value(0)).current;
-  const taglineY = useRef(new Animated.Value(20)).current;
-
-  // Particles
-  const particle1 = useRef(new Animated.Value(0)).current;
-  const particle2 = useRef(new Animated.Value(0)).current;
-  const particle3 = useRef(new Animated.Value(0)).current;
-  const particleOpacity = useRef(new Animated.Value(0)).current;
-
-  // Pulse ring
-  const ringScale = useRef(new Animated.Value(0.5)).current;
-  const ringOpacity = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const sequence = Animated.sequence([
-      // ── Phase 1: Red Sun rises (0.0s - 0.8s) ──
-      Animated.parallel([
-        Animated.spring(sunScale, { toValue: 1, friction: 6, tension: 40, useNativeDriver: useNative }),
-        Animated.timing(sunGlow, { toValue: 1, duration: 800, useNativeDriver: useNative }),
-      ]),
-
-      // ── Phase 1b: Pulse ring bursts out ──
-      Animated.parallel([
-        Animated.timing(ringOpacity, { toValue: 0.6, duration: 200, useNativeDriver: useNative }),
-        Animated.timing(ringScale, { toValue: 2.5, duration: 600, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
-      ]),
-      Animated.timing(ringOpacity, { toValue: 0, duration: 300, useNativeDriver: useNative }),
-
-      // ── Phase 2: Car drives across (0.8s - 1.6s) ──
-      Animated.parallel([
-        Animated.timing(carOpacity, { toValue: 1, duration: 100, useNativeDriver: useNative }),
-        Animated.timing(carX, { toValue: 0, duration: 800, easing: Easing.out(Easing.back(1.2)), useNativeDriver: useNative }),
-      ]),
-
-      // ── Phase 3: "N" and "S" slam in with scale bounce ──
-      Animated.parallel([
-        Animated.spring(nScale, { toValue: 1, friction: 5, tension: 80, useNativeDriver: useNative }),
-        Animated.timing(nOpacity, { toValue: 1, duration: 200, useNativeDriver: useNative }),
-      ]),
-      Animated.delay(100),
-      Animated.parallel([
-        Animated.spring(sScale, { toValue: 1, friction: 5, tension: 80, useNativeDriver: useNative }),
-        Animated.timing(sOpacity, { toValue: 1, duration: 200, useNativeDriver: useNative }),
-      ]),
-
-      // ── Phase 4: Road lines extend ──
-      Animated.timing(roadWidth, { toValue: 1, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
-
-      // ── Phase 4b: Particles burst ──
-      Animated.parallel([
-        Animated.timing(particleOpacity, { toValue: 1, duration: 200, useNativeDriver: useNative }),
-        Animated.timing(particle1, { toValue: 1, duration: 600, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
-        Animated.timing(particle2, { toValue: 1, duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
-        Animated.timing(particle3, { toValue: 1, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
-      ]),
-      Animated.timing(particleOpacity, { toValue: 0, duration: 400, useNativeDriver: useNative }),
-
-      // ── Hold for dramatic pause ──
-      Animated.delay(600),
-
-      // ── Phase 5: Morph to final logo ──
-      Animated.parallel([
-        Animated.timing(containerScale, { toValue: 0.85, duration: 500, easing: Easing.inOut(Easing.cubic), useNativeDriver: useNative }),
-        Animated.timing(bgOpacity, { toValue: 0, duration: 600, useNativeDriver: useNative }),
-        Animated.timing(finalLogoOpacity, { toValue: 1, duration: 500, delay: 200, useNativeDriver: useNative }),
-        Animated.spring(finalLogoY, { toValue: 0, friction: 8, tension: 40, delay: 200, useNativeDriver: useNative }),
-      ]),
-
-      // ── Phase 6: Tagline slides up ──
-      Animated.parallel([
-        Animated.timing(taglineOpacity, { toValue: 1, duration: 400, useNativeDriver: useNative }),
-        Animated.spring(taglineY, { toValue: 0, friction: 8, tension: 50, useNativeDriver: useNative }),
-      ]),
-
-      // ── Final hold ──
-      Animated.delay(800),
-    ]);
-
-    sequence.start(() => onFinish());
-  }, []);
-
-  return (
-    <View style={splashStyles.container}>
-      {/* ── Dark Background Card (Starting Logo) ── */}
-      <Animated.View style={[
-        splashStyles.darkCard,
-        {
-          opacity: bgOpacity,
-          transform: [{ scale: containerScale }],
-        },
-      ]}>
-        {/* Red Sun Circle */}
-        <Animated.View style={[
-          splashStyles.sunCircle,
-          {
-            opacity: sunGlow,
-            transform: [{ scale: sunScale }],
-          },
-        ]} />
-
-        {/* Pulse Ring */}
-        <Animated.View style={[
-          splashStyles.pulseRing,
-          {
-            opacity: ringOpacity,
-            transform: [{ scale: ringScale }],
-          },
-        ]} />
-
-        {/* Car Silhouette */}
-        <Animated.View style={[
-          splashStyles.carContainer,
-          {
-            opacity: carOpacity,
-            transform: [{ translateX: carX }],
-          },
-        ]}>
-          {/* Car body - built with views */}
-          <View style={splashStyles.carBody} />
-          <View style={splashStyles.carRoof} />
-          <View style={splashStyles.carWheel1} />
-          <View style={splashStyles.carWheel2} />
-          <View style={splashStyles.carWindow1} />
-          <View style={splashStyles.carWindow2} />
-          <View style={splashStyles.carHeadlight} />
-        </Animated.View>
-
-        {/* Road Lines */}
-        <Animated.View style={[
-          splashStyles.roadLine,
-          {
-            transform: [{ scaleX: roadWidth }],
-          },
-        ]} />
-        <Animated.View style={[
-          splashStyles.roadLine2,
-          {
-            transform: [{ scaleX: roadWidth }],
-          },
-        ]} />
-
-        {/* "N" Letter */}
-        <Animated.View style={[
-          splashStyles.letterContainer,
-          { left: '28%' },
-          {
-            opacity: nOpacity,
-            transform: [{ scale: nScale }],
-          },
-        ]}>
-          <Text style={splashStyles.letterN}>N</Text>
-        </Animated.View>
-
-        {/* "S" Letter */}
-        <Animated.View style={[
-          splashStyles.letterContainer,
-          { left: '53%' },
-          {
-            opacity: sOpacity,
-            transform: [{ scale: sScale }],
-          },
-        ]}>
-          <Text style={splashStyles.letterS}>S</Text>
-        </Animated.View>
-
-        {/* Particles */}
-        {[particle1, particle2, particle3].map((p, i) => {
-          const angle = (i * 120) * (Math.PI / 180);
-          return (
-            <Animated.View
-              key={`p-${i}`}
-              style={[
-                splashStyles.particle,
-                {
-                  opacity: particleOpacity,
-                  transform: [
-                    { translateX: p.interpolate({ inputRange: [0, 1], outputRange: [0, Math.cos(angle) * 80] }) },
-                    { translateY: p.interpolate({ inputRange: [0, 1], outputRange: [0, Math.sin(angle) * 80] }) },
-                    { scale: p.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1.2, 0.3] }) },
-                  ],
-                },
-              ]}
-            />
-          );
-        })}
-      </Animated.View>
-
-      {/* ── Final Logo (Ending Logo) ── */}
-      <Animated.View style={[
-        splashStyles.finalLogoContainer,
-        {
-          opacity: finalLogoOpacity,
-          transform: [{ translateY: finalLogoY }],
-        },
-      ]}>
-        <View style={splashStyles.finalLogoRow}>
-          <Text style={splashStyles.finalN}>N</Text>
-          <Text style={splashStyles.finalS}>S</Text>
-        </View>
-        <Animated.View style={{ opacity: taglineOpacity, transform: [{ translateY: taglineY }] }}>
-          <View style={splashStyles.finalTextBlock}>
-            <Text style={splashStyles.finalTitle}>NEW SUNSHINE</Text>
-            <Text style={splashStyles.finalSubtitle}>DRIVING ACADEMY</Text>
-          </View>
-        </Animated.View>
-      </Animated.View>
+    {/* Main body */}
+    <View style={carStyles.body}>
+      {/* Body accent stripe */}
+      <View style={carStyles.bodyStripe} />
     </View>
-  );
-};
 
-const splashStyles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#0D0D0D',
-    alignItems: 'center',
-    justifyContent: 'center',
+    {/* Windshield / Cockpit */}
+    <View style={carStyles.cockpit}>
+      <View style={carStyles.windshield} />
+      <View style={carStyles.rearWindow} />
+    </View>
+
+    {/* Hood (long front) */}
+    <View style={carStyles.hood} />
+
+    {/* Front splitter */}
+    <View style={carStyles.frontSplitter} />
+
+    {/* Rear diffuser */}
+    <View style={carStyles.rearDiffuser} />
+
+    {/* Headlights */}
+    <View style={carStyles.headlightOuter} />
+    <View style={carStyles.headlightInner} />
+
+    {/* Taillights */}
+    <View style={carStyles.taillightTop} />
+    <View style={carStyles.taillightBottom} />
+
+    {/* Front wheel */}
+    <View style={carStyles.wheelFront}>
+      <View style={carStyles.wheelRim} />
+      <View style={carStyles.wheelHub} />
+    </View>
+
+    {/* Rear wheel */}
+    <View style={carStyles.wheelRear}>
+      <View style={carStyles.wheelRim} />
+      <View style={carStyles.wheelHub} />
+    </View>
+
+    {/* Side intake */}
+    <View style={carStyles.sideIntake} />
+
+    {/* Door line */}
+    <View style={carStyles.doorLine} />
+  </View>
+);
+
+const carStyles = StyleSheet.create({
+  wrapper: {
+    width: 180,
+    height: 65,
+    position: 'relative',
   },
-  darkCard: {
-    width: 220,
-    height: 220,
-    borderRadius: 40,
-    backgroundColor: '#1A1A1A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'visible',
-    ...Platform.select({
-      web: { boxShadow: '0 0 40px rgba(227, 24, 55, 0.3)' } as any,
-      default: { shadowColor: '#E31837', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 40, elevation: 20 },
-    }),
-  },
-  sunCircle: {
+  body: {
     position: 'absolute',
-    top: 25,
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#E31837',
-    ...Platform.select({
-      web: { boxShadow: '0 0 30px rgba(227, 24, 55, 0.6)' } as any,
-      default: { shadowColor: '#E31837', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 30, elevation: 15 },
-    }),
-  },
-  pulseRing: {
-    position: 'absolute',
-    top: 25,
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 3,
-    borderColor: '#E31837',
-    backgroundColor: 'transparent',
-  },
-  carContainer: {
-    position: 'absolute',
-    bottom: 65,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 120,
-    height: 45,
-  },
-  carBody: {
-    position: 'absolute',
-    bottom: 8,
-    width: 100,
-    height: 22,
-    borderRadius: 4,
+    bottom: 14,
+    left: 10,
+    right: 5,
+    height: 24,
     backgroundColor: '#2A2A2A',
+    borderRadius: 4,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 8,
     borderWidth: 1,
     borderColor: '#444',
   },
-  carRoof: {
+  bodyStripe: {
     position: 'absolute',
-    bottom: 25,
-    left: 25,
+    top: 10,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: '#E31837',
+    opacity: 0.7,
+  },
+  cockpit: {
+    position: 'absolute',
+    bottom: 33,
+    left: 55,
     width: 55,
-    height: 18,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 12,
-    backgroundColor: '#2A2A2A',
+    height: 22,
+    backgroundColor: '#222',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 14,
     borderWidth: 1,
     borderColor: '#444',
     borderBottomWidth: 0,
+    overflow: 'hidden',
   },
-  carWheel1: {
+  windshield: {
     position: 'absolute',
-    bottom: 2,
-    left: 15,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#555',
-    borderWidth: 2,
-    borderColor: '#888',
+    right: 0,
+    top: 2,
+    width: 28,
+    height: 18,
+    borderTopRightRadius: 12,
+    backgroundColor: 'rgba(227, 24, 55, 0.2)',
+    borderLeftWidth: 1,
+    borderColor: '#555',
   },
-  carWheel2: {
+  rearWindow: {
     position: 'absolute',
-    bottom: 2,
-    right: 20,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#555',
-    borderWidth: 2,
-    borderColor: '#888',
-  },
-  carWindow1: {
-    position: 'absolute',
-    bottom: 28,
-    left: 30,
-    width: 20,
-    height: 12,
-    borderTopLeftRadius: 6,
-    backgroundColor: 'rgba(227, 24, 55, 0.3)',
-  },
-  carWindow2: {
-    position: 'absolute',
-    bottom: 28,
-    left: 54,
+    left: 2,
+    top: 3,
     width: 22,
-    height: 12,
-    borderTopRightRadius: 8,
-    backgroundColor: 'rgba(227, 24, 55, 0.3)',
+    height: 16,
+    borderTopLeftRadius: 3,
+    backgroundColor: 'rgba(227, 24, 55, 0.15)',
+    borderRightWidth: 1,
+    borderColor: '#555',
   },
-  carHeadlight: {
+  hood: {
     position: 'absolute',
-    bottom: 14,
-    right: 10,
-    width: 8,
+    bottom: 22,
+    right: 5,
+    width: 65,
+    height: 14,
+    backgroundColor: '#2A2A2A',
+    borderTopRightRadius: 6,
+    borderTopLeftRadius: 1,
+    borderWidth: 1,
+    borderColor: '#444',
+    borderBottomWidth: 0,
+    borderLeftWidth: 0,
+  },
+  frontSplitter: {
+    position: 'absolute',
+    bottom: 10,
+    right: 0,
+    width: 18,
+    height: 6,
+    backgroundColor: '#333',
+    borderTopRightRadius: 3,
+    borderBottomRightRadius: 2,
+  },
+  rearDiffuser: {
+    position: 'absolute',
+    bottom: 10,
+    left: 2,
+    width: 14,
     height: 5,
-    borderRadius: 3,
-    backgroundColor: '#FFD700',
-    ...Platform.select({
-      web: { boxShadow: '0 0 8px rgba(255, 215, 0, 0.8)' } as any,
-      default: { shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 8 },
-    }),
+    backgroundColor: '#333',
+    borderRadius: 2,
   },
-  roadLine: {
-    position: 'absolute',
-    bottom: 55,
-    width: 180,
-    height: 2,
-    backgroundColor: '#555',
-  },
-  roadLine2: {
+  spoiler: {
     position: 'absolute',
     bottom: 50,
-    width: 120,
-    height: 1,
-    backgroundColor: '#333',
+    left: 6,
+    width: 30,
+    height: 4,
+    backgroundColor: '#444',
+    borderRadius: 2,
   },
-  letterContainer: {
+  spoilerPillar: {
     position: 'absolute',
-    bottom: 72,
+    bottom: 38,
+    left: 18,
+    width: 3,
+    height: 14,
+    backgroundColor: '#444',
+  },
+  headlightOuter: {
+    position: 'absolute',
+    bottom: 24,
+    right: 4,
+    width: 10,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFE066',
+    ...Platform.select({
+      web: { boxShadow: '0 0 12px rgba(255, 224, 102, 0.9)' } as any,
+      default: { shadowColor: '#FFE066', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.9, shadowRadius: 12 },
+    }),
+  },
+  headlightInner: {
+    position: 'absolute',
+    bottom: 25,
+    right: 6,
+    width: 5,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#FFFFFF',
+  },
+  taillightTop: {
+    position: 'absolute',
+    bottom: 28,
+    left: 10,
+    width: 7,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#FF1744',
+    ...Platform.select({
+      web: { boxShadow: '0 0 8px rgba(255, 23, 68, 0.8)' } as any,
+      default: { shadowColor: '#FF1744', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 8 },
+    }),
+  },
+  taillightBottom: {
+    position: 'absolute',
+    bottom: 22,
+    left: 10,
+    width: 7,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: '#FF5252',
+    opacity: 0.7,
+  },
+  wheelFront: {
+    position: 'absolute',
+    bottom: 3,
+    right: 22,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#1A1A1A',
+    borderWidth: 3,
+    borderColor: '#555',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wheelRear: {
+    position: 'absolute',
+    bottom: 3,
+    left: 22,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#1A1A1A',
+    borderWidth: 3,
+    borderColor: '#555',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wheelRim: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#888',
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wheelHub: {
+    position: 'absolute',
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#AAA',
+  },
+  sideIntake: {
+    position: 'absolute',
+    bottom: 18,
+    left: 48,
+    width: 12,
+    height: 8,
+    backgroundColor: '#1A1A1A',
+    borderRadius: 2,
+    borderWidth: 1,
+    borderColor: '#444',
+  },
+  doorLine: {
+    position: 'absolute',
+    bottom: 18,
+    left: 65,
+    width: 1,
+    height: 26,
+    backgroundColor: '#444',
+  },
+});
+
+/* ─────────────────────────────────────────────
+   ANIMATED INTRO SPLASH
+   ───────────────────────────────────────────── */
+const AnimatedIntroSplash: React.FC<{ onFinish: () => void }> = ({ onFinish }) => {
+  // Background
+  const bgFade = useRef(new Animated.Value(0)).current;
+
+  // Phase 1: Red sun
+  const sunScale = useRef(new Animated.Value(0)).current;
+  const sunGlow = useRef(new Animated.Value(0)).current;
+
+  // Ambient glow ring
+  const glowRingScale = useRef(new Animated.Value(0.4)).current;
+  const glowRingOpacity = useRef(new Animated.Value(0)).current;
+
+  // Phase 2: Car
+  const carX = useRef(new Animated.Value(-SCREEN_W * 0.8)).current;
+  const carOpacity = useRef(new Animated.Value(0)).current;
+
+  // Speed lines
+  const speedLine1 = useRef(new Animated.Value(0)).current;
+  const speedLine2 = useRef(new Animated.Value(0)).current;
+  const speedLine3 = useRef(new Animated.Value(0)).current;
+
+  // Phase 3: NS letters
+  const nX = useRef(new Animated.Value(-80)).current;
+  const nOpacity = useRef(new Animated.Value(0)).current;
+  const sX = useRef(new Animated.Value(80)).current;
+  const sOpacity = useRef(new Animated.Value(0)).current;
+
+  // Road
+  const roadScaleX = useRef(new Animated.Value(0)).current;
+
+  // Phase 4: Particles
+  const particles = Array.from({ length: 6 }, () => ({
+    progress: useRef(new Animated.Value(0)).current,
+  }));
+  const particleOpacity = useRef(new Animated.Value(0)).current;
+
+  // Phase 5: Everything scales down & morphs
+  const sceneScale = useRef(new Animated.Value(1)).current;
+  const sceneOpacity = useRef(new Animated.Value(1)).current;
+
+  // Final logo
+  const finalOpacity = useRef(new Animated.Value(0)).current;
+  const finalScale = useRef(new Animated.Value(0.7)).current;
+  const taglineOpacity = useRef(new Animated.Value(0)).current;
+  const taglineY = useRef(new Animated.Value(24)).current;
+
+  // Underline
+  const underlineWidth = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.sequence([
+      // BG fade in
+      Animated.timing(bgFade, { toValue: 1, duration: 300, useNativeDriver: useNative }),
+
+      // ── Phase 1: Red Sun rises with glow ring ──
+      Animated.parallel([
+        Animated.spring(sunScale, { toValue: 1, friction: 5, tension: 50, useNativeDriver: useNative }),
+        Animated.timing(sunGlow, { toValue: 1, duration: 500, useNativeDriver: useNative }),
+      ]),
+      // Glow ring expands
+      Animated.parallel([
+        Animated.timing(glowRingOpacity, { toValue: 0.5, duration: 250, useNativeDriver: useNative }),
+        Animated.timing(glowRingScale, { toValue: 3, duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
+      ]),
+      Animated.timing(glowRingOpacity, { toValue: 0, duration: 400, useNativeDriver: useNative }),
+
+      // ── Phase 2: Supercar races in ──
+      Animated.parallel([
+        Animated.timing(carOpacity, { toValue: 1, duration: 80, useNativeDriver: useNative }),
+        Animated.timing(carX, { toValue: 0, duration: 700, easing: Easing.out(Easing.back(1.1)), useNativeDriver: useNative }),
+        // Speed lines
+        Animated.sequence([
+          Animated.delay(100),
+          Animated.parallel([
+            Animated.timing(speedLine1, { toValue: 1, duration: 400, useNativeDriver: useNative }),
+            Animated.timing(speedLine2, { toValue: 1, duration: 500, useNativeDriver: useNative }),
+            Animated.timing(speedLine3, { toValue: 1, duration: 350, useNativeDriver: useNative }),
+          ]),
+        ]),
+      ]),
+
+      // ── Phase 3: NS letters fly in from opposite sides ──
+      Animated.parallel([
+        Animated.spring(nX, { toValue: 0, friction: 6, tension: 60, useNativeDriver: useNative }),
+        Animated.timing(nOpacity, { toValue: 1, duration: 250, useNativeDriver: useNative }),
+        Animated.spring(sX, { toValue: 0, friction: 6, tension: 60, useNativeDriver: useNative }),
+        Animated.timing(sOpacity, { toValue: 1, duration: 250, useNativeDriver: useNative }),
+      ]),
+
+      // Road extends
+      Animated.timing(roadScaleX, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
+
+      // ── Phase 4: Particle burst ──
+      Animated.parallel([
+        Animated.timing(particleOpacity, { toValue: 1, duration: 150, useNativeDriver: useNative }),
+        ...particles.map((p, i) =>
+          Animated.timing(p.progress, { toValue: 1, duration: 500 + i * 60, easing: Easing.out(Easing.cubic), useNativeDriver: useNative })
+        ),
+      ]),
+      Animated.timing(particleOpacity, { toValue: 0, duration: 350, useNativeDriver: useNative }),
+
+      // ── Dramatic Pause ──
+      Animated.delay(500),
+
+      // ── Phase 5: Scene shrinks, final logo appears ──
+      Animated.parallel([
+        Animated.timing(sceneScale, { toValue: 0.6, duration: 600, easing: Easing.inOut(Easing.cubic), useNativeDriver: useNative }),
+        Animated.timing(sceneOpacity, { toValue: 0, duration: 500, useNativeDriver: useNative }),
+        Animated.timing(finalOpacity, { toValue: 1, duration: 500, delay: 250, useNativeDriver: useNative }),
+        Animated.spring(finalScale, { toValue: 1, friction: 7, tension: 40, delay: 250, useNativeDriver: useNative }),
+      ]),
+
+      // ── Phase 6: Tagline + underline ──
+      Animated.parallel([
+        Animated.timing(taglineOpacity, { toValue: 1, duration: 350, useNativeDriver: useNative }),
+        Animated.spring(taglineY, { toValue: 0, friction: 8, tension: 50, useNativeDriver: useNative }),
+      ]),
+      Animated.timing(underlineWidth, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
+
+      // Hold
+      Animated.delay(700),
+    ]).start(() => onFinish());
+  }, []);
+
+  return (
+    <Animated.View style={[splash.container, { opacity: bgFade }]}>
+      {/* Ambient red gradient background glow */}
+      <View style={splash.ambientGlow} />
+
+      {/* ── Scene Container (start logo) ── */}
+      <Animated.View style={[splash.scene, { opacity: sceneOpacity, transform: [{ scale: sceneScale }] }]}>
+        {/* Dark card */}
+        <View style={splash.card}>
+          {/* Red Sun */}
+          <Animated.View style={[splash.sun, { opacity: sunGlow, transform: [{ scale: sunScale }] }]} />
+
+          {/* Glow ring */}
+          <Animated.View style={[splash.glowRing, { opacity: glowRingOpacity, transform: [{ scale: glowRingScale }] }]} />
+
+          {/* Speed lines */}
+          {[speedLine1, speedLine2, speedLine3].map((sl, i) => (
+            <Animated.View
+              key={`sl-${i}`}
+              style={[
+                splash.speedLine,
+                { top: 90 + i * 16, right: 160 + i * 10 },
+                {
+                  opacity: sl.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1, 0] }),
+                  transform: [{ scaleX: sl }, { translateX: sl.interpolate({ inputRange: [0, 1], outputRange: [0, -40] }) }],
+                },
+              ]}
+            />
+          ))}
+
+          {/* Supercar */}
+          <Animated.View style={[splash.carWrap, { opacity: carOpacity, transform: [{ translateX: carX }] }]}>
+            <SuperCar />
+          </Animated.View>
+
+          {/* Road */}
+          <Animated.View style={[splash.road, { transform: [{ scaleX: roadScaleX }] }]} />
+          <Animated.View style={[splash.roadDash, { transform: [{ scaleX: roadScaleX }] }]} />
+
+          {/* N letter */}
+          <Animated.View style={[splash.letterWrap, { left: '23%' }, { opacity: nOpacity, transform: [{ translateX: nX }] }]}>
+            <Text style={splash.letterN}>N</Text>
+          </Animated.View>
+
+          {/* S letter */}
+          <Animated.View style={[splash.letterWrap, { left: '52%' }, { opacity: sOpacity, transform: [{ translateX: sX }] }]}>
+            <Text style={splash.letterS}>S</Text>
+          </Animated.View>
+
+          {/* Particles */}
+          {particles.map((p, i) => {
+            const angle = (i * 60 + 15) * (Math.PI / 180);
+            const dist = 60 + (i % 3) * 25;
+            return (
+              <Animated.View
+                key={`p-${i}`}
+                style={[
+                  splash.particle,
+                  i % 2 === 0 ? splash.particleRed : splash.particleGold,
+                  {
+                    opacity: particleOpacity,
+                    transform: [
+                      { translateX: p.progress.interpolate({ inputRange: [0, 1], outputRange: [0, Math.cos(angle) * dist] }) },
+                      { translateY: p.progress.interpolate({ inputRange: [0, 1], outputRange: [0, Math.sin(angle) * dist] }) },
+                      { scale: p.progress.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 1.3, 0.2] }) },
+                    ],
+                  },
+                ]}
+              />
+            );
+          })}
+        </View>
+      </Animated.View>
+
+      {/* ── Final Logo (end logo) ── */}
+      <Animated.View style={[splash.finalWrap, { opacity: finalOpacity, transform: [{ scale: finalScale }] }]}>
+        <View style={splash.finalRow}>
+          <Text style={splash.finalN}>N</Text>
+          <Text style={splash.finalS}>S</Text>
+        </View>
+        <Animated.View style={{ opacity: taglineOpacity, transform: [{ translateY: taglineY }] }}>
+          <Text style={splash.finalTitle}>NEW SUNSHINE</Text>
+          <Text style={splash.finalSub}>DRIVING ACADEMY</Text>
+          <Animated.View style={[splash.underline, { transform: [{ scaleX: underlineWidth }] }]} />
+        </Animated.View>
+      </Animated.View>
+    </Animated.View>
+  );
+};
+
+const splash = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#0A0A0A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ambientGlow: {
+    position: 'absolute',
+    width: 400,
+    height: 400,
+    borderRadius: 200,
+    backgroundColor: 'rgba(227, 24, 55, 0.06)',
+    top: '20%',
+  },
+  scene: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  card: {
+    width: 260,
+    height: 260,
+    borderRadius: 48,
+    backgroundColor: '#151515',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+    borderWidth: 1,
+    borderColor: '#222',
+    ...Platform.select({
+      web: { boxShadow: '0 0 60px rgba(227, 24, 55, 0.2), 0 20px 40px rgba(0,0,0,0.5)' } as any,
+      default: { shadowColor: '#E31837', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 40, elevation: 25 },
+    }),
+  },
+  sun: {
+    position: 'absolute',
+    top: 22,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#E31837',
+    ...Platform.select({
+      web: { boxShadow: '0 0 40px rgba(227, 24, 55, 0.6), inset 0 -8px 16px rgba(0,0,0,0.2)' } as any,
+      default: { shadowColor: '#E31837', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 40, elevation: 20 },
+    }),
+  },
+  glowRing: {
+    position: 'absolute',
+    top: 22,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: '#E31837',
+    backgroundColor: 'transparent',
+  },
+  speedLine: {
+    position: 'absolute',
+    width: 30,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: 'rgba(227, 24, 55, 0.5)',
+  },
+  carWrap: {
+    position: 'absolute',
+    bottom: 55,
+  },
+  road: {
+    position: 'absolute',
+    bottom: 52,
+    width: 240,
+    height: 2,
+    backgroundColor: '#444',
+  },
+  roadDash: {
+    position: 'absolute',
+    bottom: 47,
+    width: 160,
+    height: 1,
+    backgroundColor: '#2A2A2A',
+  },
+  letterWrap: {
+    position: 'absolute',
+    bottom: 65,
   },
   letterN: {
-    fontSize: 42,
+    fontSize: 48,
     fontWeight: '900',
     fontStyle: 'italic',
     color: '#E31837',
     letterSpacing: -2,
+    ...Platform.select({
+      web: { textShadow: '0 0 20px rgba(227, 24, 55, 0.5)' } as any,
+      default: {},
+    }),
   },
   letterS: {
-    fontSize: 42,
+    fontSize: 48,
     fontWeight: '900',
     fontStyle: 'italic',
     color: '#FFFFFF',
     letterSpacing: -2,
+    ...Platform.select({
+      web: { textShadow: '0 0 20px rgba(255, 255, 255, 0.3)' } as any,
+      default: {},
+    }),
   },
   particle: {
     position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  particleRed: {
     backgroundColor: '#E31837',
   },
-  finalLogoContainer: {
+  particleGold: {
+    backgroundColor: '#FFD700',
+  },
+  finalWrap: {
     position: 'absolute',
     alignItems: 'center',
   },
-  finalLogoRow: {
+  finalRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   finalN: {
-    fontSize: 56,
+    fontSize: 64,
     fontWeight: '900',
     fontStyle: 'italic',
     color: '#E31837',
-    letterSpacing: -3,
+    letterSpacing: -4,
+    ...Platform.select({
+      web: { textShadow: '0 4px 24px rgba(227, 24, 55, 0.4)' } as any,
+      default: {},
+    }),
   },
   finalS: {
-    fontSize: 56,
+    fontSize: 64,
     fontWeight: '900',
     fontStyle: 'italic',
     color: '#FFFFFF',
-    letterSpacing: -3,
-  },
-  finalTextBlock: {
-    alignItems: 'center',
+    letterSpacing: -4,
+    ...Platform.select({
+      web: { textShadow: '0 4px 24px rgba(255, 255, 255, 0.2)' } as any,
+      default: {},
+    }),
   },
   finalTitle: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 22,
-    letterSpacing: 3,
+    fontSize: 24,
+    letterSpacing: 4,
+    textAlign: 'center',
   },
-  finalSubtitle: {
+  finalSub: {
     color: '#E31837',
     fontWeight: '700',
     fontSize: 13,
-    letterSpacing: 4,
-    marginTop: 2,
+    letterSpacing: 5,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  underline: {
+    marginTop: 10,
+    height: 2,
+    backgroundColor: '#E31837',
+    width: '80%',
+    alignSelf: 'center',
+    borderRadius: 1,
   },
 });
 
-/* ───────── Main Onboarding Screen ───────── */
+/* ─────────────────────────────────────────────
+   MAIN ONBOARDING SCREEN
+   ───────────────────────────────────────────── */
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const { t } = useTranslation();
   const theme = useThemeStore((state) => state.theme);
@@ -464,7 +699,6 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const [showSlides, setShowSlides] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
 
-  // Slide transition animations
   const slideOpacity = useRef(new Animated.Value(0)).current;
   const slideY = useRef(new Animated.Value(40)).current;
 
@@ -482,51 +716,26 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   }, [showSlides, activeSlide]);
 
   const slides = [
-    {
-      title: t('onboarding.slide1Title'),
-      subtitle: t('onboarding.slide1Sub'),
-      icon: 'book-outline',
-      iconColor: '#4F46E5',
-      bgGradient: '#1E1B4B',
-    },
-    {
-      title: t('onboarding.slide2Title'),
-      subtitle: t('onboarding.slide2Sub'),
-      icon: 'help-circle-outline',
-      iconColor: '#059669',
-      bgGradient: '#064E3B',
-    },
-    {
-      title: t('onboarding.slide3Title'),
-      subtitle: t('onboarding.slide3Sub'),
-      icon: 'trending-up-outline',
-      iconColor: '#E31837',
-      bgGradient: '#4C0519',
-    },
+    { title: t('onboarding.slide1Title'), subtitle: t('onboarding.slide1Sub'), icon: 'book-outline', accent: '#6366F1', bg: '#1E1B4B' },
+    { title: t('onboarding.slide2Title'), subtitle: t('onboarding.slide2Sub'), icon: 'help-circle-outline', accent: '#10B981', bg: '#064E3B' },
+    { title: t('onboarding.slide3Title'), subtitle: t('onboarding.slide3Sub'), icon: 'trending-up-outline', accent: '#E31837', bg: '#4C0519' },
   ];
 
   const handleNext = async () => {
     if (activeSlide < slides.length - 1) {
       setActiveSlide(activeSlide + 1);
     } else {
-      try {
-        await AsyncStorage.setItem('onboarding-completed', 'true');
-      } catch (e) {
-        console.error(e);
-      }
+      try { await AsyncStorage.setItem('onboarding-completed', 'true'); } catch {}
       onComplete();
     }
   };
 
   const handleSkip = async () => {
-    try {
-      await AsyncStorage.setItem('onboarding-completed', 'true');
-    } catch (e) {
-      console.error(e);
-    }
+    try { await AsyncStorage.setItem('onboarding-completed', 'true'); } catch {}
     onComplete();
   };
 
+  // Show intro splash first
   if (!showSlides) {
     return <AnimatedIntroSplash onFinish={() => setShowSlides(true)} />;
   }
@@ -538,23 +747,21 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
           <Pressable onPress={handleSkip}>
             <Text style={[styles.skipText, { color: colors.textSecondary }]}>{t('common.skip')}</Text>
           </Pressable>
-        ) : (
-          <View />
-        )}
+        ) : <View />}
       </View>
 
       <Animated.View style={[styles.slideContainer, { opacity: slideOpacity, transform: [{ translateY: slideY }] }]}>
-        {/* Animated Icon Card */}
-        <View style={[styles.iconCard, { backgroundColor: slides[activeSlide].bgGradient }]}>
-          <View style={[styles.iconRing, { borderColor: `${slides[activeSlide].iconColor}40` }]}>
-            <View style={[styles.iconInner, { backgroundColor: `${slides[activeSlide].iconColor}20` }]}>
-              <Ionicons name={slides[activeSlide].icon as any} size={56} color={slides[activeSlide].iconColor} />
+        {/* Icon Card */}
+        <View style={[styles.iconCard, { backgroundColor: slides[activeSlide].bg }]}>
+          <View style={[styles.iconRing, { borderColor: `${slides[activeSlide].accent}40` }]}>
+            <View style={[styles.iconInner, { backgroundColor: `${slides[activeSlide].accent}20` }]}>
+              <Ionicons name={slides[activeSlide].icon as any} size={56} color={slides[activeSlide].accent} />
             </View>
           </View>
         </View>
 
-        {/* Branding Mini Logo */}
-        <View style={styles.miniLogoRow}>
+        {/* Mini branding */}
+        <View style={styles.miniLogo}>
           <Text style={{ color: colors.primary, fontSize: 28, fontWeight: '900', fontStyle: 'italic', letterSpacing: -2 }}>
             N<Text style={{ color: colors.text }}>S</Text>
           </Text>
@@ -565,22 +772,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       </Animated.View>
 
       <View style={styles.footer}>
-        {/* Pagination Dots */}
         <View style={styles.pagination}>
-          {slides.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                {
-                  backgroundColor: index === activeSlide ? colors.primary : colors.backgroundSelected,
-                  width: index === activeSlide ? 24 : 8,
-                },
-              ]}
-            />
+          {slides.map((_, i) => (
+            <View key={i} style={[styles.dot, {
+              backgroundColor: i === activeSlide ? colors.primary : colors.backgroundSelected,
+              width: i === activeSlide ? 24 : 8,
+            }]} />
           ))}
         </View>
-
         <Button
           title={activeSlide === slides.length - 1 ? t('common.getStarted') : t('common.next')}
           onPress={handleNext}
@@ -592,84 +791,24 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    height: 48,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  skipText: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  slideContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
+  container: { flex: 1 },
+  header: { height: 48, alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: 24 },
+  skipText: { fontSize: 15, fontWeight: '600' },
+  slideContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   iconCard: {
-    width: 200,
-    height: 200,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 32,
+    width: 200, height: 200, borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 32,
     ...Platform.select({
       web: { boxShadow: '0 12px 32px rgba(0,0,0,0.3)' } as any,
       default: { shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.3, shadowRadius: 32, elevation: 15 },
     }),
   },
-  iconRing: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconInner: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  miniLogoRow: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '900',
-    textAlign: 'center',
-    marginBottom: 12,
-    lineHeight: 34,
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 12,
-  },
-  footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 28,
-    alignItems: 'center',
-    width: '100%',
-  },
-  pagination: {
-    flexDirection: 'row',
-    marginBottom: 24,
-  },
-  dot: {
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 4,
-  },
-  btn: {
-    width: '100%',
-  },
+  iconRing: { width: 120, height: 120, borderRadius: 60, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  iconInner: { width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center' },
+  miniLogo: { marginBottom: 16 },
+  title: { fontSize: 26, fontWeight: '900', textAlign: 'center', marginBottom: 12, lineHeight: 34 },
+  subtitle: { fontSize: 16, textAlign: 'center', lineHeight: 22, paddingHorizontal: 12 },
+  footer: { paddingHorizontal: 24, paddingBottom: 28, alignItems: 'center', width: '100%' },
+  pagination: { flexDirection: 'row', marginBottom: 24 },
+  dot: { height: 8, borderRadius: 4, marginHorizontal: 4 },
+  btn: { width: '100%' },
 });
