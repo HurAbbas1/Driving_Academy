@@ -15,7 +15,7 @@ export const jafBook: Book = {
     pt: 'Guia oficial JAF de regras de trânsito, segurança rodoviária e operação de veículos no Japão.',
   },
   icon: 'book-outline',
-  coverImage: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1000&q=80',
+  coverImage: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1000&q=80',
   chapters: [
     {
       id: 'jaf_ch1',

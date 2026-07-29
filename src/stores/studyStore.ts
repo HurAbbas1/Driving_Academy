@@ -200,12 +200,20 @@ export const useStudyStore = create<StudyState>((set, get) => ({
               return dbCh && dbCh.book_id === b.id;
             });
 
+            const bookCoverMap: Record<string, string> = {
+              'book_jaf_guide': 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1000&q=80',
+              'book_rules_of_road_part2': 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1000&q=80',
+              'book_traffic_rules_full': 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1000&q=80',
+              'book1': 'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=1000&q=80',
+              'book2': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=1000&q=80',
+            };
+
             return {
               id: b.id,
               title: b.title,
               description: b.description || { en: '', ja: '', zh: '', pt: '' },
               icon: b.icon || 'car-sport-outline',
-              coverImage: b.cover_image,
+              coverImage: bookCoverMap[b.id] || b.cover_image || 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1000&q=80',
               chapters: chs
             };
           });
