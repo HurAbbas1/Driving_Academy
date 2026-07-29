@@ -53,13 +53,13 @@ export const Card: React.FC<CardProps> = ({
       case 'elevated':
         variantStyle = {
           ...Platform.select({
-            web: { boxShadow: theme === 'dark' ? '0 4px 20px rgba(0,0,0,0.4)' : '0 4px 20px rgba(15,23,42,0.06)' } as any,
+            web: { boxShadow: theme === 'dark' ? '0 4px 20px rgba(0,0,0,0.4)' : '0 2px 8px rgba(26,26,46,0.06), 0 8px 24px rgba(26,26,46,0.08)' } as any,
             default: {
-              shadowColor: theme === 'dark' ? '#000000' : '#0F172A',
+              shadowColor: theme === 'dark' ? '#000000' : '#1A1A2E',
               shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: theme === 'dark' ? 0.35 : 0.07,
-              shadowRadius: 12,
-              elevation: 4,
+              shadowOpacity: theme === 'dark' ? 0.35 : 0.12,
+              shadowRadius: 16,
+              elevation: 5,
             },
           }),
           borderWidth: theme === 'dark' ? 1 : 0,
@@ -67,23 +67,23 @@ export const Card: React.FC<CardProps> = ({
         break;
       case 'glass':
         variantStyle = {
-          backgroundColor: theme === 'dark' ? 'rgba(26, 26, 26, 0.75)' : 'rgba(255, 255, 255, 0.82)',
+          backgroundColor: theme === 'dark' ? 'rgba(26, 26, 26, 0.75)' : 'rgba(255, 255, 255, 0.88)',
           borderWidth: 1,
-          borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.25)' : 'rgba(227, 24, 55, 0.1)',
+          borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.25)' : 'rgba(212, 21, 64, 0.12)',
           ...Platform.select({
             web: {
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
               boxShadow: theme === 'dark' 
                 ? '0 4px 16px rgba(0,0,0,0.25), 0 0 10px rgba(227, 24, 55, 0.12)' 
-                : '0 4px 16px rgba(15,23,42,0.03), 0 0 10px rgba(227, 24, 55, 0.04)',
+                : '0 2px 8px rgba(26,26,46,0.05), 0 8px 24px rgba(26,26,46,0.08)',
             } as any,
             default: {
-              shadowColor: colors.primary,
+              shadowColor: theme === 'dark' ? colors.primary : '#1A1A2E',
               shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: theme === 'dark' ? 0.18 : 0.04,
-              shadowRadius: 10,
-              elevation: 3,
+              shadowOpacity: theme === 'dark' ? 0.18 : 0.1,
+              shadowRadius: 12,
+              elevation: 4,
             }
           }),
         };

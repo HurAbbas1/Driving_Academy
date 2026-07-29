@@ -565,14 +565,16 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
             {!selectedBook && progress.lastReadSubtopicId && (
               <Card onPress={handleResumeReading} variant="glass" style={styles.resumeCard}>
                 <View style={styles.resumeContent}>
-                  <Ionicons name="play" size={20} color="#FFFFFF" style={styles.resumePlayIcon} />
+                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: `${colors.primary}1A`, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                    <Ionicons name="play" size={18} color={colors.primary} />
+                  </View>
                   <View style={styles.resumeTextContainer}>
-                    <Text style={styles.resumeLbl}>{t('study.resumeReading')}</Text>
-                    <Text style={styles.resumeTitle} numberOfLines={1}>
+                    <Text style={[styles.resumeLbl, { color: colors.textSecondary }]}>{t('study.resumeReading')}</Text>
+                    <Text style={[styles.resumeTitle, { color: colors.text }]} numberOfLines={1}>
                       {getLastReadTitle()}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
                 </View>
               </Card>
             )}

@@ -191,10 +191,16 @@ export default function IndexScreen() {
           <View style={[
             styles.floatingTabBar, 
             { 
-              backgroundColor: theme === 'dark' ? 'rgba(26,26,26,0.85)' : 'rgba(255,255,255,0.9)',
-              borderColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+              backgroundColor: theme === 'dark' ? 'rgba(26,26,26,0.85)' : 'rgba(255,255,255,0.95)',
+              borderColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(26,26,46,0.08)',
               ...Platform.select({
-                web: { backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' } as any,
+                web: { 
+                  backdropFilter: 'blur(20px)', 
+                  WebkitBackdropFilter: 'blur(20px)',
+                  boxShadow: theme === 'dark' 
+                    ? '0 8px 32px rgba(0,0,0,0.2)' 
+                    : '0 2px 8px rgba(26,26,46,0.06), 0 8px 32px rgba(26,26,46,0.12)',
+                } as any,
               })
             }
           ]}>

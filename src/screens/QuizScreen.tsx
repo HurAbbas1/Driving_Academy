@@ -858,8 +858,8 @@ export const QuizScreen: React.FC = () => {
               <Ionicons name="school" size={28} color="#FFFFFF" />
             </View>
             <View style={styles.startInfo}>
-              <Text style={styles.startTitle}>{t('quiz.finalCombinedExam')}</Text>
-              <Text style={styles.startSub}>
+              <Text style={[styles.startTitle, { color: colors.text }]}>{t('quiz.finalCombinedExam')}</Text>
+              <Text style={[styles.startSub, { color: colors.textSecondary }]}>
                 {t('quiz.recommendedForFinal')}
               </Text>
             </View>

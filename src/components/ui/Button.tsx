@@ -46,10 +46,36 @@ export const Button: React.FC<ButtonProps> = ({
     
     switch (variant) {
       case 'primary':
-        variantStyle = { backgroundColor: colors.primary };
+        variantStyle = { 
+          backgroundColor: colors.primary,
+          ...Platform.select({
+            web: { boxShadow: theme === 'dark' ? 'none' : '0 2px 8px rgba(212, 21, 64, 0.25)' } as any,
+            default: theme === 'light' ? {
+              shadowColor: '#D41540',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 8,
+              elevation: 4,
+            } : {},
+          }),
+        };
         break;
       case 'secondary':
-        variantStyle = { backgroundColor: colors.backgroundElement, borderWidth: 1, borderColor: colors.border };
+        variantStyle = { 
+          backgroundColor: colors.backgroundElement, 
+          borderWidth: 1.5, 
+          borderColor: colors.border,
+          ...Platform.select({
+            web: { boxShadow: theme === 'dark' ? 'none' : '0 1px 4px rgba(26,26,46,0.06)' } as any,
+            default: theme === 'light' ? {
+              shadowColor: '#1A1A2E',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.06,
+              shadowRadius: 4,
+              elevation: 2,
+            } : {},
+          }),
+        };
         break;
       case 'ghost':
         variantStyle = { backgroundColor: 'transparent' };

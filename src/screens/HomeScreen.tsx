@@ -467,8 +467,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
 
           {/* Huge Call to Action Row */}
           <TouchableOpacity activeOpacity={0.9} onPress={() => onNavigateToTab?.('study')} style={{ marginTop: 8 }}>
-            <View style={[styles.ctaContainer, { backgroundColor: colors.backgroundElement, borderColor: colors.border, borderWidth: 1 }]}>
-               <View style={styles.ctaIconBg}>
+            <View style={[
+              styles.ctaContainer, 
+              { 
+                backgroundColor: colors.backgroundElement, 
+                borderColor: colors.border, 
+                borderWidth: 1,
+                ...Platform.select({
+                  web: { boxShadow: theme === 'dark' ? 'none' : '0 4px 20px rgba(26,26,46,0.06)' } as any,
+                  default: theme === 'light' ? {
+                    shadowColor: '#1A1A2E',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 16,
+                    elevation: 3,
+                  } : {},
+                }),
+              }
+            ]}>
+               <View style={[styles.ctaIconBg, { backgroundColor: `${colors.primary}1A` }]}>
                   <Ionicons name="car-sport" size={32} color={colors.primary} />
                </View>
                <View style={styles.ctaTextContainer}>
