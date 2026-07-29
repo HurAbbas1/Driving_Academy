@@ -102,13 +102,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
       Animated.timing(fadeAnim, {
         toValue: 0.2,
         duration: 350,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start(() => {
         setActiveIndex((prev) => (prev + 1) % featuredQueue.length);
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 450,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }).start();
       });
     }, 3800);
