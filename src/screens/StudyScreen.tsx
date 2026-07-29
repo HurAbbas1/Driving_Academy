@@ -550,7 +550,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                 {selectedBook.coverImage ? (
                   <Image source={{ uri: selectedBook.coverImage }} style={[StyleSheet.absoluteFill]} resizeMode="cover" />
                 ) : null}
-                <View style={[StyleSheet.absoluteFillObject, { backgroundColor: selectedBook.coverImage ? 'rgba(0,0,0,0.55)' : 'transparent' }]} />
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: selectedBook.coverImage ? 'rgba(0,0,0,0.55)' : 'transparent' }]} />
                 <Ionicons name="book" size={64} color={selectedBook.coverImage ? '#FFF' : colors.primary} style={{ opacity: 0.25, position: 'absolute', top: -10, right: -10, transform: [{ scale: 2 }] }} />
                 <Text style={{ fontSize: 28, fontWeight: '900', color: selectedBook.coverImage ? '#FFFFFF' : colors.text, marginBottom: 4 }}>
                   {loc(selectedBook.title)}

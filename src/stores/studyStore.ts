@@ -236,13 +236,14 @@ export const useStudyStore = create<StudyState>((set, get) => ({
 
   syncWithCloud: async () => {
     const user = useAuthStore.getState().user;
-    if (!user || user.id === 'mock-user-123') return;
+    const userId = (user as any)?.id || (user as any)?.uid;
+    if (!user || !userId || userId === 'mock-user-123') return;
 
     try {
       const { data: record } = await supabase
         .from('user_data')
         .select('data')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
 
       if (record?.data) {
@@ -276,7 +277,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         await supabase
           .from('user_data')
           .upsert({
-            user_id: user.id,
+            user_id: userId,
             data: {
               ...cloudData,
               bookmarks: { ...cloudData.bookmarks, pages: mergedBookmarks },

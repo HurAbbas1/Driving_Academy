@@ -345,9 +345,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     try {
       await AsyncStorage.setItem('quiz-history', JSON.stringify(newHistory));
       await AsyncStorage.setItem('wrong-questions', JSON.stringify(updatedWrongQuestions));
-      await AsyncStorage.setItem('bookmarked-questions', JSON.stringify(mergedBookmarks));
+      await AsyncStorage.setItem('bookmarked-questions', JSON.stringify(bookmarkedQuestions));
 
-      const userId = user?.id;
+      const userId = user?.id || user?.uid;
       if (userId && userId !== 'mock-user-123') {
         const { data: record } = await supabase
           .from('user_data')
@@ -366,7 +366,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
               wrongQuestions: updatedWrongQuestions,
               bookmarks: {
                 ...existingData.bookmarks,
-                questions: mergedBookmarks
+                questions: bookmarkedQuestions
               }
             }
           });
@@ -435,13 +435,14 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
   syncWithCloud: async () => {
     const user = useAuthStore.getState().user;
-    if (!user || user.id === 'mock-user-123') return;
+    const userId = (user as any)?.id || (user as any)?.uid;
+    if (!user || !userId || userId === 'mock-user-123') return;
 
     try {
       const { data: record } = await supabase
         .from('user_data')
         .select('data')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
 
       if (record?.data) {
@@ -485,7 +486,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         await supabase
           .from('user_data')
           .upsert({
-            user_id: user.id,
+            user_id: userId,
             data: {
               ...cloudData,
               history: mergedHistory,

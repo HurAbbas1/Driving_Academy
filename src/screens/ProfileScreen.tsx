@@ -128,7 +128,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateToLangua
 
         {/* Settings Group */}
         <Animated.View entering={FadeInUp.delay(200).springify()}>
-          <Card style={styles.settingsGroupCard}>
+          <Card style={styles.settingGroupCard}>
             {/* Theme Select */}
             <View style={styles.settingRow}>
               <View style={styles.settingLeft}>
