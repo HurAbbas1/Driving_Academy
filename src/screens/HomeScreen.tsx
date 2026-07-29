@@ -252,7 +252,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
         
         {/* Single Box Smooth Auto-Transition Featured Hero Box (Mixed Custom Slides & Book Covers) */}
         {featuredQueue && featuredQueue.length > 0 && (
-          <View style={{ paddingHorizontal: 16, marginTop: 16, marginBottom: 20 }}>
+          <View style={{ paddingHorizontal: 10, marginTop: 16, marginBottom: 20 }}>
             <TouchableOpacity 
               activeOpacity={0.9} 
               onPress={() => {
@@ -334,13 +334,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
 
         {/* Stable Manual Scrollable Handbooks Cards (Users scroll left/right) */}
         <View style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, marginBottom: 16, paddingHorizontal: 16 }}>
+          <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, marginBottom: 16, paddingHorizontal: 10 }}>
             {t('home.featuredHandbooks')}
           </Text>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false} 
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
+            contentContainerStyle={{ paddingHorizontal: 10, gap: 12 }}
           >
              {books.map((book) => (
                  <View key={'card-' + book.id} style={{ width: 220 }}>
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingTop: 16,
     paddingBottom: 40,
   },

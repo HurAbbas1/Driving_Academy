@@ -258,8 +258,8 @@ const styles = StyleSheet.create({
   floatingTabBarContainer: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 24 : 16,
-    left: 16,
-    right: 16,
+    left: 10,
+    right: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     borderWidth: 1,
     width: '100%',
-    maxWidth: 500,
+    maxWidth: 650,
     ...Platform.select({
       web: { boxShadow: '0 8px 32px rgba(0,0,0,0.2)' } as any,
       default: { shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 16, elevation: 10 },
