@@ -98,7 +98,7 @@ export const Card: React.FC<CardProps> = ({
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
       toValue: 0.97,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
       speed: 50,
       bounciness: 4,
     }).start();
@@ -107,7 +107,7 @@ export const Card: React.FC<CardProps> = ({
   const handlePressOut = () => {
     Animated.spring(scaleAnim, {
       toValue: 1,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
       speed: 40,
       bounciness: 8,
     }).start();

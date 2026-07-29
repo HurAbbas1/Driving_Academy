@@ -182,11 +182,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 28,
     backgroundColor: '#000000',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 8,
+    ...Platform.select({
+      web: { boxShadow: '0 8px 16px rgba(0, 0, 0, 0.25)' } as any,
+      default: { shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.25, shadowRadius: 16, elevation: 8 },
+    }),
   },
   videoNative: {
     width: '100%',
