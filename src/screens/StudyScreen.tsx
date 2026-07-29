@@ -770,13 +770,21 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                           style={styles.chapterCard}
                         >
                           <View style={styles.chapterHeaderRow}>
-                            <View style={[styles.chapterIconBox, { backgroundColor: activeSection === 'car' ? `${colors.primary}10` : '#FFB30015' }]}>
-                              <Ionicons 
-                                name={activeSection === 'car' ? "car-sport-outline" : "bicycle-outline"} 
-                                size={24} 
-                                color={activeSection === 'car' ? colors.primary : "#FFB300"} 
+                            {book.coverImage ? (
+                              <Image 
+                                source={{ uri: book.coverImage }} 
+                                style={{ width: 56, height: 56, borderRadius: 14, marginRight: 12 }} 
+                                resizeMode="cover" 
                               />
-                            </View>
+                            ) : (
+                              <View style={[styles.chapterIconBox, { backgroundColor: activeSection === 'car' ? `${colors.primary}10` : '#FFB30015' }]}>
+                                <Ionicons 
+                                  name={activeSection === 'car' ? "car-sport-outline" : "bicycle-outline"} 
+                                  size={24} 
+                                  color={activeSection === 'car' ? colors.primary : "#FFB300"} 
+                                />
+                              </View>
+                            )}
                             <View style={styles.chapterInfo}>
                               <Text style={[styles.chapterCardTitle, { color: colors.text }]}>
                                 {loc(book.title)}

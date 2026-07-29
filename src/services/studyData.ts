@@ -15,6 +15,7 @@ export const jafBook: Book = {
     pt: 'Guia oficial JAF de regras de trânsito, segurança rodoviária e operação de veículos no Japão.',
   },
   icon: 'book-outline',
+  coverImage: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1000&q=80',
   chapters: [
     {
       id: 'jaf_ch1',
@@ -536,6 +537,7 @@ export const mockBooks: Book[] = [
       pt: 'Guia completo para leis de trânsito, regulamentos e segurança ao dirigir no Japão.',
     },
     icon: 'car-sport-outline',
+    coverImage: 'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=1000&q=80',
     chapters: jafBook.chapters.filter((ch) => ch.licenseType === 'car' || ch.licenseType === 'both'),
   },
   {
@@ -553,6 +555,7 @@ export const mockBooks: Book[] = [
       pt: 'Procedimentos de segurança e regras de manuseio específicas para motociclistas.',
     },
     icon: 'bicycle-outline',
+    coverImage: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=1000&q=80',
     chapters: jafBook.chapters.filter((ch) => ch.licenseType === 'bike' || ch.licenseType === 'both'),
   },
 ];
