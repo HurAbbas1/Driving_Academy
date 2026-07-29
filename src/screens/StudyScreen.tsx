@@ -414,39 +414,116 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.content}>
           {/* Header */}
-          <View style={styles.chapterHeader}>
-            <Pressable onPress={() => setSelectedChapter(null)} style={styles.backBtn}>
-              <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14, gap: 12 }}>
+            <Pressable 
+              onPress={() => {
+                Haptics.selectionAsync();
+                setSelectedChapter(null);
+              }} 
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: colors.backgroundElement,
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: colors.border,
+                ...Platform.select({
+                  web: { boxShadow: theme === 'dark' ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)' } as any,
+                })
+              }}
+            >
+              <Ionicons name="arrow-back" size={20} color={colors.text} />
             </Pressable>
-            <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
-              {loc(selectedChapter.title)}
-            </Text>
+
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                <View style={{ backgroundColor: `${colors.primary}18`, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: colors.primary, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    {activeSection === 'car' ? '🚗 Car Guide' : activeSection === 'bike' ? '🏍️ Bike Guide' : '📖 Handbook'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: colors.text }} numberOfLines={1}>
+                {loc(selectedChapter.title)}
+              </Text>
+            </View>
           </View>
 
-          {/* Chapter Quiz Trigger Button */}
-          <Card style={styles.chapterQuizCard}>
-            <View style={styles.chapterQuizRow}>
-              <View style={[styles.subtopicIndex, { backgroundColor: `${colors.primary}15`, marginRight: 4 }]}>
-                <Ionicons name="school" size={16} color={colors.primary} />
+          {/* Chapter Quiz Trigger Hero Card */}
+          <Card 
+            style={{
+              marginHorizontal: 16,
+              marginTop: 4,
+              marginBottom: 16,
+              padding: 18,
+              borderRadius: 20,
+              borderWidth: 1.5,
+              borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.4)' : 'rgba(227, 24, 55, 0.2)',
+              backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.06)' : 'rgba(227, 24, 55, 0.02)',
+              ...Platform.select({
+                web: {
+                  boxShadow: theme === 'dark' ? '0 6px 20px rgba(227, 24, 55, 0.15)' : '0 6px 20px rgba(227, 24, 55, 0.06)',
+                } as any,
+              })
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+              <View style={{
+                width: 48,
+                height: 48,
+                borderRadius: 16,
+                backgroundColor: `${colors.primary}20`,
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: `${colors.primary}30`
+              }}>
+                <Ionicons name="ribbon-sharp" size={26} color={colors.primary} />
               </View>
-              <View style={styles.chapterQuizInfo}>
-                <Text style={[styles.chapterQuizTitle, { color: colors.text }]}>{t('study.chapterPracticeQuiz')}</Text>
-                <Text style={[styles.chapterQuizSub, { color: colors.textSecondary }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text, marginBottom: 2 }}>
+                  {t('study.chapterPracticeQuiz')}
+                </Text>
+                <Text style={{ fontSize: 12, lineHeight: 17, color: colors.textSecondary }}>
                   {t('study.chapterQuizDesc')}
                 </Text>
               </View>
             </View>
-            <Button
-              title={t('study.startChapterQuiz')}
+
+            <TouchableOpacity
+              activeOpacity={0.88}
               onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 useQuizStore.getState().startNewQuiz(undefined, undefined, selectedChapter.id);
                 useQuizStore.getState().setViewMode('countdown');
                 if (onNavigateToTab) {
                   onNavigateToTab('quiz');
                 }
               }}
-              style={{ marginTop: 12 }}
-            />
+              style={{
+                marginTop: 14,
+                backgroundColor: colors.primary,
+                paddingVertical: 12,
+                borderRadius: 14,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                ...Platform.select({
+                  web: {
+                    boxShadow: '0 4px 14px rgba(227, 24, 55, 0.35)',
+                    cursor: 'pointer'
+                  } as any
+                })
+              }}
+            >
+              <Ionicons name="play-circle-sharp" size={20} color="#FFF" />
+              <Text style={{ color: '#FFF', fontSize: 14, fontWeight: '800', letterSpacing: 0.3 }}>
+                {t('study.startChapterQuiz')}
+              </Text>
+            </TouchableOpacity>
           </Card>
 
           {/* Subtopics FlatList */}
@@ -459,23 +536,73 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
             renderItem={({ item, index }) => {
               const isRead = progress.completedSubtopics.includes(item.id);
               return (
-                <Card onPress={() => setSelectedSubtopic(item)} style={styles.subtopicCard}>
-                  <View style={styles.subtopicRow}>
-                    <View style={[styles.subtopicIndex, { backgroundColor: isRead ? colors.success : colors.backgroundSelected }]}>
-                      {isRead ? (
-                        <Ionicons name="checkmark" size={16} color="#FFF" />
-                      ) : (
-                        <Text style={[styles.subtopicIndexText, { color: colors.textSecondary }]}>{index + 1}</Text>
-                      )}
+                <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
+                  <Card 
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setSelectedSubtopic(item);
+                    }} 
+                    style={{
+                      marginHorizontal: 16,
+                      marginBottom: 10,
+                      padding: 16,
+                      borderRadius: 16,
+                      backgroundColor: colors.backgroundElement,
+                      borderWidth: 1,
+                      borderColor: isRead 
+                        ? (theme === 'dark' ? 'rgba(16, 185, 129, 0.35)' : 'rgba(16, 185, 129, 0.25)')
+                        : colors.border,
+                      ...Platform.select({
+                        web: {
+                          transition: 'all 0.15s ease-in-out',
+                          cursor: 'pointer'
+                        } as any
+                      })
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                      <View style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 18,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: isRead ? `${colors.success}20` : `${colors.primary}10`,
+                        borderWidth: 1,
+                        borderColor: isRead ? `${colors.success}40` : `${colors.primary}20`
+                      }}>
+                        {isRead ? (
+                          <Ionicons name="checkmark-sharp" size={18} color={colors.success} />
+                        ) : (
+                          <Text style={{ fontSize: 13, fontWeight: '800', color: colors.primary }}>
+                            {String(index + 1).padStart(2, '0')}
+                          </Text>
+                        )}
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 2 }}>
+                          {loc(item.title)}
+                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Ionicons name="book-outline" size={12} color={colors.textSecondary} />
+                          <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textSecondary }}>
+                            Lesson {index + 1}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                      }}>
+                        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                      </View>
                     </View>
-                    <View style={styles.subtopicInfo}>
-                      <Text style={[styles.subtopicTitle, { color: colors.text }]}>
-                        {loc(item.title)}
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                  </View>
-                </Card>
+                  </Card>
+                </Animated.View>
               );
             }}
           />
