@@ -265,7 +265,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                 }
               }}
               style={{ 
-                height: 190, 
+                height: 230, 
                 borderRadius: 24, 
                 overflow: 'hidden', 
                 backgroundColor: colors.backgroundElement,
@@ -294,15 +294,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
               </Animated.View>
 
               {/* Card Content Overlay */}
-              <View style={{ padding: 20, flex: 1, justifyContent: 'space-between', zIndex: 2 }}>
-                <View style={{ backgroundColor: `${colors.primary}E0`, alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
+              <View style={{ padding: 24, flex: 1, justifyContent: 'space-between', zIndex: 2 }}>
+                <View style={{ backgroundColor: `${colors.primary}E0`, alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12 }}>
                   <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>
                     {featuredQueue[activeIndex % featuredQueue.length]?.badge || 'FEATURED'}
                   </Text>
                 </View>
 
                 <Animated.View style={{ opacity: fadeAnim }}>
-                  <Text style={{ fontSize: 22, fontWeight: '900', color: '#FFFFFF', marginBottom: 4 }} numberOfLines={1}>
+                  <Text style={{ fontSize: 24, fontWeight: '900', color: '#FFFFFF', marginBottom: 6, lineHeight: 30 }} numberOfLines={1}>
                     {loc(featuredQueue[activeIndex % featuredQueue.length]?.title)}
                   </Text>
                   <Text style={{ fontSize: 13, fontWeight: '600', color: 'rgba(255, 255, 255, 0.85)' }} numberOfLines={1}>
@@ -334,16 +334,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
 
         {/* Stable Manual Scrollable Handbooks Cards (Users scroll left/right) */}
         <View style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, marginBottom: 16, paddingHorizontal: 10 }}>
+          <Text style={{ fontSize: 18, fontWeight: '800', color: colors.text, marginBottom: 12, paddingHorizontal: 10 }}>
             {t('home.featuredHandbooks')}
           </Text>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false} 
-            contentContainerStyle={{ paddingHorizontal: 10, gap: 12 }}
+            contentContainerStyle={{ paddingHorizontal: 10, gap: 8 }}
           >
              {books.map((book) => (
-                 <View key={'card-' + book.id} style={{ width: 220 }}>
+                 <View key={'card-' + book.id} style={{ width: 175 }}>
                    <Card 
                      variant="glass" 
                      onPress={() => {
@@ -352,21 +352,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                            onNavigateToTab('study');
                        }
                      }} 
-                     style={{ height: 160, padding: 0, justifyContent: 'space-between', margin: 0, overflow: 'hidden', borderRadius: 20 }}
+                     style={{ height: 135, padding: 0, justifyContent: 'space-between', margin: 0, overflow: 'hidden', borderRadius: 16 }}
                    >
                      {book.coverImage ? (
                        <Image source={{ uri: book.coverImage }} style={[StyleSheet.absoluteFill]} resizeMode="cover" />
                      ) : null}
-                     <View style={{ padding: 16, flex: 1, justifyContent: 'space-between', backgroundColor: book.coverImage ? 'rgba(0,0,0,0.4)' : 'transparent' }}>
+                     <View style={{ padding: 12, flex: 1, justifyContent: 'space-between', backgroundColor: book.coverImage ? 'rgba(0,0,0,0.45)' : 'transparent' }}>
                        <View>
-                          <View style={{ backgroundColor: `${colors.primary}40`, alignSelf: 'flex-start', padding: 8, borderRadius: 12 }}>
-                            <Ionicons name={book.icon as any || 'book'} size={20} color="#FFF" />
+                          <View style={{ backgroundColor: `${colors.primary}40`, alignSelf: 'flex-start', padding: 6, borderRadius: 10 }}>
+                            <Ionicons name={book.icon as any || 'book'} size={16} color="#FFF" />
                           </View>
-                          <Text style={{ fontSize: 16, fontWeight: '800', color: '#fff', marginTop: 10 }} numberOfLines={2}>{loc(book.title)}</Text>
+                          <Text style={{ fontSize: 14, fontWeight: '800', color: '#fff', marginTop: 6 }} numberOfLines={2}>{loc(book.title)}</Text>
                        </View>
                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Text style={{ color: '#eee', fontSize: 13, fontWeight: '600' }}>{t('study.chaptersCount', { count: book.chapters.length })}</Text>
-                          <Ionicons name="arrow-forward-circle" size={24} color="#eee" />
+                          <Text style={{ color: '#eee', fontSize: 11, fontWeight: '600' }}>{t('study.chaptersCount', { count: book.chapters.length })}</Text>
+                          <Ionicons name="arrow-forward-circle" size={18} color="#eee" />
                        </View>
                      </View>
                    </Card>
