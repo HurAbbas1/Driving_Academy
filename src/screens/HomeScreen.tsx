@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Text, SafeAreaView, ScrollView, Platform, ImageBackground, TouchableOpacity, Image, Pressable, useWindowDimensions, FlatList, Animated } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
@@ -35,15 +35,76 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const customFeaturedSlides = useMemo(() => [
+    {
+      id: 'feat_japan_traffic_signs',
+      title: { en: 'Master Japanese Traffic Signs', ja: '日本の道路標識をマスターしよう', zh: '掌握日本交通标志', pt: 'Domine os Sinais de Trânsito do Japão' },
+      subtitle: { en: 'Stop signs, speed limits & warning indicators', ja: '一時停止、速度制限、警告標識', zh: '停止标志、限速与警告标志', pt: 'Sinais de paragem e limites de velocidade' },
+      image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1000&q=80',
+      targetBookId: 'book_traffic_rules_full',
+      badge: 'ESSENTIAL',
+    },
+    {
+      id: 'feat_expressway_rules',
+      title: { en: 'Expressway & ETC Toll Gate Rules', ja: '高速道路とETC料金所規則', zh: '高速公路与ETC收费站规则', pt: 'Regras de Vias Rápidas e Portagens ETC' },
+      subtitle: { en: 'Speed controls, merging lanes & breakdown safety', ja: '速度規制、車線合流、故障安全策', zh: '速度控制、车道汇入与故障安全', pt: 'Limites de velocidade e manobras' },
+      image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1000&q=80',
+      targetBookId: 'book_rules_of_road_part2',
+      badge: 'PRO GUIDE',
+    },
+    {
+      id: 'feat_safety_regulations',
+      title: { en: 'Zero Tolerance Traffic Laws', ja: '交通安全ゼロ容認ルール', zh: '零容忍交通安全法规', pt: 'Leis de Trânsito de Tolerância Zero' },
+      subtitle: { en: 'DUI laws, phone restrictions & emergency contacts', ja: '飲酒運転禁止、スマホ規制、緊急通報110/119', zh: '严禁酒驾、手机限制与紧急电话', pt: 'Regras sobre álcool e telemóvel' },
+      image: 'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=1000&q=80',
+      targetBookId: 'book_traffic_rules_full',
+      badge: 'SAFETY',
+    }
+  ], []);
+
+  const featuredQueue = useMemo(() => {
+    const queue: any[] = [];
+    const bookList = books || [];
+    
+    // Interleave custom slides and book covers
+    customFeaturedSlides.forEach((slide, idx) => {
+      queue.push(slide);
+      if (bookList[idx]) {
+        queue.push({
+          id: 'book-' + bookList[idx].id,
+          title: bookList[idx].title,
+          subtitle: { en: 'Tap to open Official Study Handbook', ja: 'タップして公式学習ハンドブックを開く', zh: '点击打开官方学习手册', pt: 'Toque para abrir o Manual Oficial' },
+          image: bookList[idx].coverImage || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800',
+          targetBookId: bookList[idx].id,
+          badge: 'HANDBOOK',
+        });
+      }
+    });
+
+    // Append any remaining books
+    for (let i = customFeaturedSlides.length; i < bookList.length; i++) {
+      queue.push({
+        id: 'book-' + bookList[i].id,
+        title: bookList[i].title,
+        subtitle: { en: 'Tap to open Official Study Handbook', ja: 'タップして公式学習ハンドブックを開く', zh: '点击打开官方学习手册', pt: 'Toque para abrir o Manual Oficial' },
+        image: bookList[i].coverImage || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800',
+        targetBookId: bookList[i].id,
+        badge: 'HANDBOOK',
+      });
+    }
+
+    return queue;
+  }, [books, customFeaturedSlides]);
+
   useEffect(() => {
-    if (!books || books.length <= 1) return;
+    if (!featuredQueue || featuredQueue.length <= 1) return;
     const interval = setInterval(() => {
       Animated.timing(fadeAnim, {
         toValue: 0.2,
         duration: 350,
         useNativeDriver: true,
       }).start(() => {
-        setActiveIndex((prev) => (prev + 1) % books.length);
+        setActiveIndex((prev) => (prev + 1) % featuredQueue.length);
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 450,
@@ -52,7 +113,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
       });
     }, 3800);
     return () => clearInterval(interval);
-  }, [books]);
+  }, [featuredQueue]);
 
 
   const currentLangLoc = useLanguageStore((state) => state.language);
@@ -189,15 +250,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
 
         
         
-        {/* Single Box Smooth Auto-Transition Featured Hero Box */}
-        {books && books.length > 0 && (
+        {/* Single Box Smooth Auto-Transition Featured Hero Box (Mixed Custom Slides & Book Covers) */}
+        {featuredQueue && featuredQueue.length > 0 && (
           <View style={{ paddingHorizontal: 16, marginTop: 16, marginBottom: 20 }}>
             <TouchableOpacity 
               activeOpacity={0.9} 
               onPress={() => {
-                const activeBook = books[activeIndex % books.length];
-                if (activeBook) {
-                  setSelectedBookId(activeBook.id);
+                const currentSlide = featuredQueue[activeIndex % featuredQueue.length];
+                if (currentSlide) {
+                  if (currentSlide.targetBookId) {
+                    setSelectedBookId(currentSlide.targetBookId);
+                  }
                   if (onNavigateToTab) onNavigateToTab('study');
                 }
               }}
@@ -223,7 +286,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
               {/* Background Image with Smooth Fade Animation */}
               <Animated.View style={[StyleSheet.absoluteFill, { opacity: fadeAnim }]}>
                 <Image 
-                  source={{ uri: books[activeIndex % books.length]?.coverImage || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800' }} 
+                  source={{ uri: featuredQueue[activeIndex % featuredQueue.length]?.image || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800' }} 
                   style={StyleSheet.absoluteFill} 
                   resizeMode="cover" 
                 />
@@ -233,30 +296,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
               {/* Card Content Overlay */}
               <View style={{ padding: 20, flex: 1, justifyContent: 'space-between', zIndex: 2 }}>
                 <View style={{ backgroundColor: `${colors.primary}E0`, alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
-                  <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>FEATURED</Text>
+                  <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>
+                    {featuredQueue[activeIndex % featuredQueue.length]?.badge || 'FEATURED'}
+                  </Text>
                 </View>
 
                 <Animated.View style={{ opacity: fadeAnim }}>
                   <Text style={{ fontSize: 22, fontWeight: '900', color: '#FFFFFF', marginBottom: 4 }} numberOfLines={1}>
-                    {loc(books[activeIndex % books.length]?.title)}
+                    {loc(featuredQueue[activeIndex % featuredQueue.length]?.title)}
                   </Text>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: 'rgba(255, 255, 255, 0.85)' }}>
-                    {t('home.startLearning')}
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: 'rgba(255, 255, 255, 0.85)' }} numberOfLines={1}>
+                    {loc(featuredQueue[activeIndex % featuredQueue.length]?.subtitle) || t('home.startLearning')}
                   </Text>
                 </Animated.View>
 
                 {/* Pagination Dots Indicator */}
-                {books.length > 1 && (
+                {featuredQueue.length > 1 && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginTop: 8, gap: 6 }}>
-                    {books.map((b, idx) => (
+                    {featuredQueue.map((item, idx) => (
                       <TouchableOpacity
-                        key={'dot-' + b.id}
+                        key={'dot-' + item.id + '-' + idx}
                         onPress={() => setActiveIndex(idx)}
                         style={{
-                          width: idx === (activeIndex % books.length) ? 20 : 6,
+                          width: idx === (activeIndex % featuredQueue.length) ? 20 : 6,
                           height: 6,
                           borderRadius: 3,
-                          backgroundColor: idx === (activeIndex % books.length) ? colors.primary : 'rgba(255, 255, 255, 0.5)',
+                          backgroundColor: idx === (activeIndex % featuredQueue.length) ? colors.primary : 'rgba(255, 255, 255, 0.5)',
                         }}
                       />
                     ))}
