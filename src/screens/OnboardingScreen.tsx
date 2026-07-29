@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {View, StyleSheet, Dimensions, SafeAreaView, Pressable} from 'react-native';
+import { View, StyleSheet, Dimensions, SafeAreaView, Pressable, Platform } from 'react-native';
 import { Text } from '../components/ui/Text';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,12 +8,48 @@ import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';
 import { Button } from '../components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
+import { useVideoPlayer, VideoView } from 'expo-video';
 
 interface OnboardingScreenProps {
   onComplete: () => void;
 }
 
-const { width } = Dimensions.get('window');
+const welcomeVideoAsset = require('../../assets/welcome.mp4');
+
+const OnboardingVideoPlayer: React.FC = () => {
+  if (Platform.OS === 'web') {
+    return (
+      <View style={styles.videoContainer}>
+        <video
+          src={welcomeVideoAsset}
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{ width: '100%', height: '100%', borderRadius: 24, objectFit: 'cover' }}
+        />
+      </View>
+    );
+  }
+
+  const player = useVideoPlayer(welcomeVideoAsset, (p) => {
+    p.loop = true;
+    p.muted = true;
+    p.play();
+  });
+
+  return (
+    <View style={styles.videoContainer}>
+      <VideoView
+        player={player}
+        style={styles.videoNative}
+        contentFit="cover"
+        allowsFullscreen={false}
+        showsTimecodes={false}
+      />
+    </View>
+  );
+};
 
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const { t } = useTranslation();
@@ -74,18 +110,19 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       </View>
 
       <View style={styles.slideContainer}>
-        {/* Logo at the top of onboarding */}
-        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 40}}>
-          <Text style={{color: colors.primary, fontSize: 42, fontWeight: '900', fontStyle: 'italic', letterSpacing: -2}}>N<Text style={{color: colors.text}}>S</Text></Text>
-          <View style={{marginLeft: 12}}>
-            <Text style={{color: colors.text, fontWeight: '800', fontSize: 20, letterSpacing: 1.5}}>NEW SUNSHINE</Text>
-            <Text style={{color: colors.primary, fontWeight: '700', fontSize: 12, letterSpacing: 2}}>DRIVING ACADEMY</Text>
+        {/* Branding Logo */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
+          <Text style={{ color: colors.primary, fontSize: 36, fontWeight: '900', fontStyle: 'italic', letterSpacing: -2 }}>
+            N<Text style={{ color: colors.text }}>S</Text>
+          </Text>
+          <View style={{ marginLeft: 10 }}>
+            <Text style={{ color: colors.text, fontWeight: '800', fontSize: 18, letterSpacing: 1.5 }}>NEW SUNSHINE</Text>
+            <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 11, letterSpacing: 2 }}>DRIVING ACADEMY</Text>
           </View>
         </View>
-        {/* Animated icon wrapper with circular branding design */}
-        <View style={[styles.iconWrapper, { backgroundColor: `${colors.primary}15`, borderColor: `${colors.primary}30` }]}>
-          <Ionicons name={slides[activeSlide].icon as any} size={80} color={colors.primary} />
-        </View>
+
+        {/* Hero Animation Video */}
+        <OnboardingVideoPlayer />
 
         <Text style={[styles.title, { color: colors.text }]}>{slides[activeSlide].title}</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{slides[activeSlide].subtitle}</Text>
@@ -123,57 +160,61 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: 50,
+    height: 48,
     alignItems: 'flex-end',
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
   skipText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   slideContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
   },
-  iconWrapper: {
-    width: 160,
-    height: 160,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
-    borderWidth: 1,
+  videoContainer: {
+    width: '100%',
+    height: 220,
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginBottom: 28,
+    backgroundColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  videoNative: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 24,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '900',
     textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 36,
+    marginBottom: 12,
+    lineHeight: 34,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
     paddingHorizontal: 12,
   },
   footer: {
     paddingHorizontal: 24,
-    paddingBottom: 32,
+    paddingBottom: 28,
     alignItems: 'center',
     width: '100%',
   },
   pagination: {
     flexDirection: 'row',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   dot: {
     height: 8,
