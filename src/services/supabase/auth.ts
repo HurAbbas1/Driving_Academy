@@ -137,7 +137,7 @@ export const authenticateOrRegisterUser = async (name: string, password: string,
           .from('user_profiles')
           .select('profile')
           .eq('user_id', signInData.user.id)
-          .single();
+          .maybeSingle();
 
         if (profileData?.profile) {
           useAuthStore.getState().setProfile(profileData.profile);
@@ -207,7 +207,7 @@ export const initAuthListener = () => {
         .from('user_profiles')
         .select('profile')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
         
       if (data?.profile) {
         const themeStore = useThemeStore.getState();
