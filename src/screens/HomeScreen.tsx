@@ -90,15 +90,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                 </View>
               )}
             </View>
-
-            {/* Notification Bell Icon */}
-            <TouchableOpacity 
-              activeOpacity={0.8}
-              style={[styles.bellBtn, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}
-            >
-              <Ionicons name="notifications-outline" size={20} color={colors.text} />
-              <View style={styles.bellBadgeDot} />
-            </TouchableOpacity>
           </View>
         </View>
 
