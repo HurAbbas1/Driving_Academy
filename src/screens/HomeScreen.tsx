@@ -104,15 +104,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
 
         {/* Hero Banner Card */}
         <View style={styles.heroWrapper}>
-          <Card style={[styles.heroCard, { backgroundColor: theme === 'dark' ? colors.backgroundElement : '#FFF' }]}>
+          <Card style={[styles.heroCard, { backgroundColor: theme === 'dark' ? colors.backgroundElement : '#FFFFFF' }]}>
             {/* Fuji & Sakura Background Image on Right */}
             <Image 
               source={{ uri: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200&q=80' }} 
               style={styles.heroBgImage} 
               resizeMode="cover" 
             />
-            {/* Soft Gradient Overlay fading from left off-white to transparent right */}
-            <View style={[styles.heroOverlay, { backgroundColor: theme === 'dark' ? 'rgba(26,26,46,0.82)' : 'rgba(255,255,255,0.78)' }]} />
+            {/* Smooth Left Linear Gradient Fade Overlay */}
+            <View 
+              style={[
+                styles.heroOverlay, 
+                Platform.select({
+                  web: {
+                    backgroundImage: theme === 'dark' 
+                      ? 'linear-gradient(to right, #1A1A2E 0%, #1A1A2E 35%, rgba(26,26,46,0.85) 55%, rgba(26,26,46,0) 80%)'
+                      : 'linear-gradient(to right, #FFFFFF 0%, #FFFFFF 35%, rgba(255,255,255,0.85) 55%, rgba(255,255,255,0) 80%)',
+                  } as any,
+                  default: {
+                    backgroundColor: theme === 'dark' ? 'rgba(26,26,46,0.5)' : 'rgba(255,255,255,0.4)',
+                  }
+                })
+              ]} 
+            />
 
             {/* Content Overlay */}
             <View style={styles.heroContent}>
@@ -138,7 +152,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                 <TouchableOpacity 
                   activeOpacity={0.88} 
                   onPress={() => onNavigateToTab?.('quiz')} 
-                  style={[styles.quizBtn, { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.92)', borderColor: colors.border }]}
+                  style={[styles.quizBtn, { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.12)' : '#FFFFFF', borderColor: '#E2E8F0' }]}
                 >
                   <View style={styles.questionCircle}>
                     <Ionicons name="help-outline" size={14} color={colors.text} />
@@ -374,8 +388,11 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   heroBgImage: {
-    ...StyleSheet.absoluteFillObject,
-    left: '25%',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: '70%',
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
