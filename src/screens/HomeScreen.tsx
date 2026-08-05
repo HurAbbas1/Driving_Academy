@@ -24,23 +24,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
   // Store data
   const { chapters, progress } = useStudyStore();
 
-  const streak = profile?.streak?.current ?? 3;
-  const username = profile?.displayName || 'Muhammad';
+  const streak = profile?.streak?.current ?? 0;
+  const username = profile?.displayName || 'Learner';
 
   // Calculate study progress
   const totalSubtopics = chapters.reduce((acc, c) => acc + c.subtopics.length, 0);
   const completedSubtopics = progress.completedSubtopics.length;
   const studyProgressPercent = totalSubtopics > 0
     ? Math.round((completedSubtopics / totalSubtopics) * 100)
-    : 65;
+    : 6;
 
-  const remainingLessons = Math.max(0, totalSubtopics - completedSubtopics) || 4;
+  const remainingLessons = Math.max(0, totalSubtopics - completedSubtopics) || 51;
 
   const currentLang = useLanguageStore((state) => state.language);
   const setLanguage = useLanguageStore((state) => state.setLanguage);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
-  const totalChapters = chapters.length || 5;
+  const totalChapters = chapters.length || 43;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -122,11 +122,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
             {/* Content Overlay */}
             <View style={styles.heroContent}>
               <Text style={styles.greetingText}>
-                Good Afternoon, {username} 👋
+                {t('home.greeting', { name: username })}
               </Text>
               
               <Text style={[styles.heroHeadline, { color: colors.text }]}>
-                Pass Your Japanese Driving Test with <Text style={{ color: colors.primary }}>Confidence</Text>
+                {t('home.heroHeadlineStart')}<Text style={{ color: colors.primary }}>{t('home.confidence')}</Text>
               </Text>
 
               {/* Action Buttons */}
@@ -136,7 +136,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                   onPress={() => onNavigateToTab?.('study')} 
                   style={[styles.continueBtn, { backgroundColor: colors.primary }]}
                 >
-                  <Text style={styles.continueBtnText}>Continue Learning</Text>
+                  <Text style={styles.continueBtnText}>{t('home.continueLearning')}</Text>
                   <Ionicons name="arrow-forward" size={16} color="#FFF" />
                 </TouchableOpacity>
 
@@ -148,7 +148,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                   <View style={styles.questionCircle}>
                     <Ionicons name="help-outline" size={14} color={colors.text} />
                   </View>
-                  <Text style={[styles.quizBtnText, { color: colors.text }]}>Take a Quiz</Text>
+                  <Text style={[styles.quizBtnText, { color: colors.text }]}>{t('home.takeAQuiz')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -158,9 +158,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
         {/* SWAPPED POSITION 1: Study Rules Take & Action Bento Cards */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Study Rules Take</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('home.studyRulesTake')}</Text>
             <TouchableOpacity onPress={() => onNavigateToTab?.('study')}>
-              <Text style={[styles.viewAllText, { color: colors.primary }]}>View All</Text>
+              <Text style={[styles.viewAllText, { color: colors.primary }]}>{t('home.viewAll')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -171,15 +171,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                 <View style={[styles.actionIconCircle, { backgroundColor: colors.primary }]}>
                   <Ionicons name="book" size={22} color="#FFF" />
                 </View>
-                <Text style={[styles.actionCardTitle, { color: colors.text }]}>Study Rules Take</Text>
+                <Text style={[styles.actionCardTitle, { color: colors.text }]}>{t('home.studyRulesTake')}</Text>
                 <Text style={[styles.actionCardSub, { color: colors.textSecondary }]}>
-                  Master all traffic rules and road signs.
+                  {t('home.masterTrafficRules')}
                 </Text>
               </View>
               <View style={styles.actionCardFooter}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Text style={{ fontSize: 13 }}>⭐</Text>
-                  <Text style={[styles.footerMetaText, { color: colors.textSecondary }]}>{totalChapters} Chapters</Text>
+                  <Text style={[styles.footerMetaText, { color: colors.textSecondary }]}>
+                    {t('home.chaptersCount', { count: totalChapters })}
+                  </Text>
                 </View>
                 <View style={[styles.arrowCircleBtn, { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#F0F0F5' }]}>
                   <Ionicons name="arrow-forward" size={16} color={colors.text} />
@@ -193,15 +195,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                 <View style={[styles.actionIconCircle, { backgroundColor: '#FF8A65' }]}>
                   <Ionicons name="help-sharp" size={22} color="#FFF" />
                 </View>
-                <Text style={[styles.actionCardTitle, { color: colors.text }]}>Take Practice Quiz</Text>
+                <Text style={[styles.actionCardTitle, { color: colors.text }]}>{t('home.takePracticeQuiz')}</Text>
                 <Text style={[styles.actionCardSub, { color: colors.textSecondary }]}>
-                  Real exam questions and explanations.
+                  {t('home.realExamQuestions')}
                 </Text>
               </View>
               <View style={styles.actionCardFooter}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Text style={{ fontSize: 13 }}>🎯</Text>
-                  <Text style={[styles.footerMetaText, { color: colors.textSecondary }]}>1,250+ Questions</Text>
+                  <Text style={[styles.footerMetaText, { color: colors.textSecondary }]}>{t('home.questionsCount')}</Text>
                 </View>
                 <View style={[styles.arrowCircleBtn, { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#F0F0F5' }]}>
                   <Ionicons name="arrow-forward" size={16} color={colors.text} />
@@ -221,14 +223,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                   <View style={styles.progressIconBadge}>
                     <Ionicons name="bar-chart-sharp" size={18} color="#2E7D32" />
                   </View>
-                  <Text style={[styles.progressTitle, { color: colors.text }]}>My Progress</Text>
+                  <Text style={[styles.progressTitle, { color: colors.text }]}>{t('home.myProgress')}</Text>
                 </View>
 
                 <Text style={[styles.progressPercentText, { color: colors.text }]}>
                   {studyProgressPercent}%
                 </Text>
                 <Text style={[styles.progressSubtext, { color: colors.textSecondary }]}>
-                  Overall Progress
+                  {t('home.overallProgress')}
                 </Text>
 
                 <View style={styles.progressTrackBg}>
@@ -247,8 +249,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                     <Ionicons name="flame" size={22} color={colors.primary} />
                   </View>
                   <View>
-                    <Text style={[styles.statValueBold, { color: colors.primary }]}>{streak} Day Streak</Text>
-                    <Text style={[styles.statSubText, { color: colors.textSecondary }]}>Keep it going!</Text>
+                    <Text style={[styles.statValueBold, { color: colors.primary }]}>
+                      {t('home.dayStreak', { count: streak })}
+                    </Text>
+                    <Text style={[styles.statSubText, { color: colors.textSecondary }]}>
+                      {t('home.keepItGoing')}
+                    </Text>
                   </View>
                 </View>
 
@@ -258,8 +264,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                     <Ionicons name="calendar-outline" size={20} color="#0288D1" />
                   </View>
                   <View>
-                    <Text style={[styles.statValueBold, { color: colors.text }]}>{remainingLessons} Lessons Left</Text>
-                    <Text style={[styles.statSubText, { color: colors.textSecondary }]}>Until next milestone</Text>
+                    <Text style={[styles.statValueBold, { color: colors.text }]}>
+                      {t('home.lessonsLeft', { count: remainingLessons })}
+                    </Text>
+                    <Text style={[styles.statSubText, { color: colors.textSecondary }]}>
+                      {t('home.untilNextMilestone')}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -349,24 +359,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
-  bellBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  bellBadgeDot: {
-    position: 'absolute',
-    top: 7,
-    right: 7,
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: '#E31837',
-  },
   // Hero Section
   heroWrapper: {
     marginBottom: 20,
@@ -447,7 +439,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quizBtnText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
   },
   // Section Headers
