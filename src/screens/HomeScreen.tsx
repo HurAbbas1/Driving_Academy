@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { View, StyleSheet, Text, SafeAreaView, ScrollView, Platform, ImageBackground, TouchableOpacity, Image, Pressable, useWindowDimensions, FlatList, Animated } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, SafeAreaView, ScrollView, Platform, TouchableOpacity, Image, Pressable, useWindowDimensions } from 'react-native';
+import { Text } from '../components/ui/Text';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';
 import { useAuthStore } from '../stores/authStore';
-import { useQuizStore } from '../stores/quizStore';
 import { useStudyStore } from '../stores/studyStore';
 import { useLanguageStore, LanguageCode } from '../stores/languageStore';
 import { Card } from '../components/ui/Card';
-import { Badge } from '../components/ui/Badge';
-import { ProgressBar } from '../components/ui/ProgressBar';
 import { Ionicons } from '@expo/vector-icons';
 
 interface HomeScreenProps {
@@ -18,488 +16,252 @@ interface HomeScreenProps {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
   const { width } = useWindowDimensions();
-  const isMobile = width < 500;
   const { t } = useTranslation();
   const theme = useThemeStore((state) => state.theme);
   const colors = Colors[theme];
   const profile = useAuthStore((state) => state.profile);
 
   // Store data
-  const { history, bookmarkedQuestions, setViewMode } = useQuizStore();
-  const { chapters, progress, books } = useStudyStore();
-  const setSelectedBookId = useStudyStore((state) => state.setSelectedBookId);
+  const { chapters, progress } = useStudyStore();
 
-  const streak = profile?.streak?.current ?? 0;
-  const username = profile?.displayName ?? 'Learner';
+  const streak = profile?.streak?.current ?? 3;
+  const username = profile?.displayName || 'Muhammad';
 
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const customFeaturedSlides = useMemo(() => [
-    {
-      id: 'feat_japan_traffic_signs',
-      title: { en: 'Master Japanese Traffic Signs', ja: '日本の道路標識をマスターしよう', zh: '掌握日本交通标志', pt: 'Domine os Sinais de Trânsito do Japão' },
-      subtitle: { en: 'Stop signs, speed limits & warning indicators', ja: '一時停止、速度制限、警告標識', zh: '停止标志、限速与警告标志', pt: 'Sinais de paragem e limites de velocidade' },
-      image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1000&q=80',
-      targetBookId: 'book_jaf_guide',
-      badge: 'ESSENTIAL',
-    },
-    {
-      id: 'feat_expressway_rules',
-      title: { en: 'Expressway & ETC Toll Gate Rules', ja: '高速道路とETC料金所規則', zh: '高速公路与ETC收费站规则', pt: 'Regras de Vias Rápidas e Portagens ETC' },
-      subtitle: { en: 'Speed controls, merging lanes & breakdown safety', ja: '速度規制、車線合流、故障安全策', zh: '速度控制、车道汇入与故障安全', pt: 'Limites de velocidade e manobras' },
-      image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1000&q=80',
-      targetBookId: 'book_jaf_guide',
-      badge: 'PRO GUIDE',
-    },
-    {
-      id: 'feat_safety_regulations',
-      title: { en: 'Zero Tolerance Traffic Laws', ja: '交通安全ゼロ容認ルール', zh: '零容忍交通安全法规', pt: 'Leis de Trânsito de Tolerância Zero' },
-      subtitle: { en: 'DUI laws, phone restrictions & emergency contacts', ja: '飲酒運転禁止、スマホ規制、緊急通報110/119', zh: '严禁酒驾、手机限制与紧急电话', pt: 'Regras sobre álcool e telemóvel' },
-      image: 'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=1000&q=80',
-      targetBookId: 'book_jaf_guide',
-      badge: 'SAFETY',
-    }
-  ], []);
-
-  const featuredQueue = useMemo(() => {
-    const queue: any[] = [];
-    const bookList = books || [];
-    
-    // Interleave custom slides and book covers
-    customFeaturedSlides.forEach((slide, idx) => {
-      queue.push(slide);
-      if (bookList[idx]) {
-        queue.push({
-          id: 'book-' + bookList[idx].id,
-          title: bookList[idx].title,
-          subtitle: { en: 'Tap to open Official Study Handbook', ja: 'タップして公式学習ハンドブックを開く', zh: '点击打开官方学习手册', pt: 'Toque para abrir o Manual Oficial' },
-          image: bookList[idx].coverImage || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800',
-          targetBookId: bookList[idx].id,
-          badge: 'HANDBOOK',
-        });
-      }
-    });
-
-    // Append any remaining books
-    for (let i = customFeaturedSlides.length; i < bookList.length; i++) {
-      queue.push({
-        id: 'book-' + bookList[i].id,
-        title: bookList[i].title,
-        subtitle: { en: 'Tap to open Official Study Handbook', ja: 'タップして公式学習ハンドブックを開く', zh: '点击打开官方学习手册', pt: 'Toque para abrir o Manual Oficial' },
-        image: bookList[i].coverImage || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800',
-        targetBookId: bookList[i].id,
-        badge: 'HANDBOOK',
-      });
-    }
-
-    return queue;
-  }, [books, customFeaturedSlides]);
-
-  useEffect(() => {
-    if (!featuredQueue || featuredQueue.length <= 1) return;
-    const interval = setInterval(() => {
-      Animated.timing(fadeAnim, {
-        toValue: 0.2,
-        duration: 350,
-        useNativeDriver: Platform.OS !== 'web',
-      }).start(() => {
-        setActiveIndex((prev) => (prev + 1) % featuredQueue.length);
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 450,
-          useNativeDriver: Platform.OS !== 'web',
-        }).start();
-      });
-    }, 3800);
-    return () => clearInterval(interval);
-  }, [featuredQueue]);
-
-
-  const currentLangLoc = useLanguageStore((state) => state.language);
-
-  const loc = (field: any): string => {
-    if (!field) return '';
-    if (typeof field === 'string') {
-      try {
-        const parsed = JSON.parse(field);
-        if (typeof parsed === 'object' && parsed !== null) {
-          return loc(parsed);
-        }
-      } catch (e) {
-        const translated = t(field);
-        if (translated && translated !== field) return translated;
-        const lowerField = field.trim().toLowerCase();
-        if (currentLangLoc === 'zh') {
-           if (lowerField === 'rules of the road') return '道路规则';
-           if (lowerField === 'federal rules of the road') return '联邦交通规则';
-           if (lowerField === 'traffic rules') return '交通法规';
-        }
-        if (currentLangLoc === 'ja') {
-           if (lowerField === 'rules of the road') return '道路交通法';
-           if (lowerField === 'federal rules of the road') return '連邦交通法';
-           if (lowerField === 'traffic rules') return '交通ルール';
-        }
-        if (currentLangLoc === 'pt') {
-           if (lowerField === 'rules of the road') return 'Regras da Estrada';
-           if (lowerField === 'federal rules of the road') return 'Regras Federais';
-           if (lowerField === 'traffic rules') return 'Regras de Trânsito';
-        }
-      }
-      return field;
-    }
-    if (typeof field === 'object') {
-      const val = field[currentLangLoc] ?? field.en ?? Object.values(field)[0] ?? '';
-      if (typeof val === 'object') {
-        const valInner = val[currentLangLoc] ?? val.en ?? Object.values(val)[0] ?? '';
-        if (typeof valInner === 'object') return JSON.stringify(valInner);
-        return String(valInner);
-      }
-      return String(val);
-    }
-    return String(field);
-  };
-
-  const handleGoToBookmarks = () => {
-    setViewMode('bookmarks');
-    if (onNavigateToTab) {
-      onNavigateToTab('quiz');
-    }
-  };
-
-  const handleResumeReading = () => {
-    if (onNavigateToTab) {
-      onNavigateToTab('study');
-    }
-  };
-
-  // Calculations
-  const completedQuizzes = history.length;
-  const avgScore = completedQuizzes > 0
-    ? Math.round(history.reduce((acc, h) => acc + h.score, 0) / completedQuizzes)
-    : 0;
-
-  // Study progress calculation
+  // Calculate study progress
   const totalSubtopics = chapters.reduce((acc, c) => acc + c.subtopics.length, 0);
   const completedSubtopics = progress.completedSubtopics.length;
   const studyProgressPercent = totalSubtopics > 0
     ? Math.round((completedSubtopics / totalSubtopics) * 100)
-    : 0;
+    : 65;
+
+  const remainingLessons = Math.max(0, totalSubtopics - completedSubtopics) || 4;
 
   const currentLang = useLanguageStore((state) => state.language);
   const setLanguage = useLanguageStore((state) => state.setLanguage);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
-  // Resume title details
-  const getResumeTitle = () => {
-    if (progress.lastReadSubtopicId && progress.lastReadChapterId) {
-      const chapter = chapters.find(c => c.id === progress.lastReadChapterId);
-      const sub = chapter?.subtopics.find(s => s.id === progress.lastReadSubtopicId);
-      return sub?.title[currentLang] || '';
-    }
-    return '';
-  };
-
-  const resumeTitle = getResumeTitle();
+  const totalChapters = chapters.length || 5;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         {/* Top Header / App Branding Area */}
         <View style={styles.topNav}>
-           <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{color: colors.primary, fontSize: 32, fontWeight: '900', fontStyle: 'italic', letterSpacing: -2}}>N<Text style={{color: colors.text}}>S</Text></Text>
-              <View style={{marginLeft: 12}}>
-                 <Text style={{color: colors.text, fontWeight: '800', fontSize: 16, letterSpacing: 1.5}}>NEW SUNSHINE</Text>
-                 <Text style={{color: colors.primary, fontWeight: '700', fontSize: 10, letterSpacing: 2}}>DRIVING ACADEMY</Text>
-              </View>
-           </View>
-           <View style={{ position: 'relative', zIndex: 50 }}>
-             <Pressable 
-               style={[styles.langSelector, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}
-               onPress={() => setIsLangMenuOpen(!isLangMenuOpen)}
-             >
-               <Ionicons name="globe-outline" size={16} color={colors.text} />
-               <Text style={[styles.langText, { color: colors.text }]}>{currentLang.toUpperCase()}</Text>
-               <Ionicons name="chevron-down" size={14} color={colors.textSecondary} />
-             </Pressable>
-             
-             {isLangMenuOpen && (
-               <View style={[styles.langDropdown, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
-                 {['en', 'ja', 'zh', 'pt'].map((lang) => (
-                   <Pressable
-                     key={lang}
-                     style={[styles.langDropdownItem, currentLang === lang && { backgroundColor: `${colors.primary}15` }]}
-                     onPress={() => {
-                       setLanguage(lang as LanguageCode);
-                       setIsLangMenuOpen(false);
-                     }}
-                   >
-                     <Text style={[styles.langDropdownText, { color: currentLang === lang ? colors.primary : colors.text }]}>
-                       {lang.toUpperCase()}
-                     </Text>
-                   </Pressable>
-                 ))}
-               </View>
-             )}
-           </View>
-        </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {/* Logo Badge */}
+            <View style={styles.logoBadge}>
+              <Text style={styles.logoBadgeText}>NS</Text>
+            </View>
+            <View style={{ marginLeft: 10 }}>
+              <Text style={[styles.logoBrandMain, { color: colors.text }]}>NEW SUNSHINE</Text>
+              <Text style={styles.logoBrandSub}>DRIVING ACADEMY</Text>
+            </View>
+          </View>
 
-        
-
-        
-        
-        {/* Single Box Smooth Auto-Transition Featured Hero Box (Mixed Custom Slides & Book Covers) */}
-        {featuredQueue && featuredQueue.length > 0 && (
-          <View style={{ paddingHorizontal: 10, marginTop: 16, marginBottom: 20 }}>
-            <TouchableOpacity 
-              activeOpacity={0.9} 
-              onPress={() => {
-                const currentSlide = featuredQueue[activeIndex % featuredQueue.length];
-                if (currentSlide) {
-                  if (currentSlide.targetBookId) {
-                    setSelectedBookId(currentSlide.targetBookId);
-                  }
-                  if (onNavigateToTab) onNavigateToTab('study');
-                }
-              }}
-              style={{ 
-                height: 230, 
-                borderRadius: 24, 
-                overflow: 'hidden', 
-                backgroundColor: colors.backgroundElement,
-                position: 'relative',
-                ...Platform.select({
-                  web: {
-                    boxShadow: theme === 'dark' ? '0 8px 24px rgba(0,0,0,0.4)' : '0 8px 24px rgba(0,0,0,0.08)',
-                  } as any,
-                  default: {
-                    shadowColor: '#000',
-                    shadowOpacity: 0.15,
-                    shadowRadius: 12,
-                    elevation: 4,
-                  }
-                })
-              }}
-            >
-              {/* Background Image with Smooth Fade Animation */}
-              <Animated.View style={[StyleSheet.absoluteFill, { opacity: fadeAnim }]}>
-                <Image 
-                  source={{ uri: featuredQueue[activeIndex % featuredQueue.length]?.image || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800' }} 
-                  style={StyleSheet.absoluteFill} 
-                  resizeMode="cover" 
-                />
-                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.52)' }]} />
-              </Animated.View>
-
-              {/* Card Content Overlay */}
-              <View style={{ padding: 24, flex: 1, justifyContent: 'space-between', zIndex: 2 }}>
-                <View style={{ backgroundColor: `${colors.primary}E0`, alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12 }}>
-                  <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>
-                    {featuredQueue[activeIndex % featuredQueue.length]?.badge || 'FEATURED'}
-                  </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, zIndex: 50 }}>
+            {/* Language Selector Dropdown */}
+            <View style={{ position: 'relative' }}>
+              <Pressable 
+                style={[styles.langSelector, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}
+                onPress={() => setIsLangMenuOpen(!isLangMenuOpen)}
+              >
+                <Ionicons name="globe-outline" size={16} color={colors.text} />
+                <Text style={[styles.langText, { color: colors.text }]}>{currentLang.toUpperCase()}</Text>
+                <Ionicons name="chevron-down" size={14} color={colors.textSecondary} />
+              </Pressable>
+              
+              {isLangMenuOpen && (
+                <View style={[styles.langDropdown, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
+                  {['en', 'ja', 'zh', 'pt'].map((lang) => (
+                    <Pressable
+                      key={lang}
+                      style={[styles.langDropdownItem, currentLang === lang && { backgroundColor: `${colors.primary}15` }]}
+                      onPress={() => {
+                        setLanguage(lang as LanguageCode);
+                        setIsLangMenuOpen(false);
+                      }}
+                    >
+                      <Text style={[styles.langDropdownText, { color: currentLang === lang ? colors.primary : colors.text }]}>
+                        {lang.toUpperCase()}
+                      </Text>
+                    </Pressable>
+                  ))}
                 </View>
+              )}
+            </View>
 
-                <Animated.View style={{ opacity: fadeAnim }}>
-                  <Text style={{ fontSize: 24, fontWeight: '900', color: '#FFFFFF', marginBottom: 6, lineHeight: 30 }} numberOfLines={1}>
-                    {loc(featuredQueue[activeIndex % featuredQueue.length]?.title)}
-                  </Text>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: 'rgba(255, 255, 255, 0.85)' }} numberOfLines={1}>
-                    {loc(featuredQueue[activeIndex % featuredQueue.length]?.subtitle) || t('home.startLearning')}
-                  </Text>
-                </Animated.View>
-
-                {/* Pagination Dots Indicator */}
-                {featuredQueue.length > 1 && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginTop: 8, gap: 6 }}>
-                    {featuredQueue.map((item, idx) => (
-                      <TouchableOpacity
-                        key={'dot-' + item.id + '-' + idx}
-                        onPress={() => setActiveIndex(idx)}
-                        style={{
-                          width: idx === (activeIndex % featuredQueue.length) ? 20 : 6,
-                          height: 6,
-                          borderRadius: 3,
-                          backgroundColor: idx === (activeIndex % featuredQueue.length) ? colors.primary : 'rgba(255, 255, 255, 0.5)',
-                        }}
-                      />
-                    ))}
-                  </View>
-                )}
-              </View>
+            {/* Notification Bell Icon */}
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              style={[styles.bellBtn, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}
+            >
+              <Ionicons name="notifications-outline" size={20} color={colors.text} />
+              <View style={styles.bellBadgeDot} />
             </TouchableOpacity>
           </View>
-        )}
-
-        {/* Stable Manual Scrollable Handbooks Cards (Users scroll left/right) */}
-        <View style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 18, fontWeight: '800', color: colors.text, marginBottom: 12, paddingHorizontal: 10 }}>
-            {t('home.featuredHandbooks')}
-          </Text>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
-            contentContainerStyle={{ paddingHorizontal: 10, gap: 8 }}
-          >
-             {books.map((book) => (
-                 <View key={'card-' + book.id} style={{ width: 175 }}>
-                   <Card 
-                     variant="glass" 
-                     onPress={() => {
-                       setSelectedBookId(book.id);
-                       if (onNavigateToTab) {
-                           onNavigateToTab('study');
-                       }
-                     }} 
-                     style={{ height: 135, padding: 0, justifyContent: 'space-between', margin: 0, overflow: 'hidden', borderRadius: 16 }}
-                   >
-                     {book.coverImage ? (
-                       <Image source={{ uri: book.coverImage }} style={[StyleSheet.absoluteFill]} resizeMode="cover" />
-                     ) : null}
-                     <View style={{ padding: 12, flex: 1, justifyContent: 'space-between', backgroundColor: book.coverImage ? 'rgba(0,0,0,0.45)' : 'transparent' }}>
-                       <View>
-                          <View style={{ backgroundColor: `${colors.primary}40`, alignSelf: 'flex-start', padding: 6, borderRadius: 10 }}>
-                            <Ionicons name={book.icon as any || 'book'} size={16} color="#FFF" />
-                          </View>
-                          <Text style={{ fontSize: 14, fontWeight: '800', color: '#fff', marginTop: 6 }} numberOfLines={2}>{loc(book.title)}</Text>
-                       </View>
-                       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Text style={{ color: '#eee', fontSize: 11, fontWeight: '600' }}>{t('study.chaptersCount', { count: book.chapters.length })}</Text>
-                          <Ionicons name="arrow-forward-circle" size={18} color="#eee" />
-                       </View>
-                     </View>
-                   </Card>
-                 </View>
-             ))}
-          </ScrollView>
         </View>
 
-        {/* Bento Grid Layout */}
-        <View style={styles.bentoGrid}>
+        {/* Hero Banner Card */}
+        <View style={styles.heroWrapper}>
+          <Card style={[styles.heroCard, { backgroundColor: theme === 'dark' ? colors.backgroundElement : '#FFF' }]}>
+            {/* Fuji & Sakura Background Image on Right */}
+            <Image 
+              source={{ uri: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200&q=80' }} 
+              style={styles.heroBgImage} 
+              resizeMode="cover" 
+            />
+            {/* Soft Gradient Overlay fading from left off-white to transparent right */}
+            <View style={[styles.heroOverlay, { backgroundColor: theme === 'dark' ? 'rgba(26,26,46,0.82)' : 'rgba(255,255,255,0.78)' }]} />
 
-          {/* Practice Quiz Highlight Row */}
-          <Card style={styles.practiceQuizCard} variant="glass" onPress={() => onNavigateToTab?.('quiz')}>
-             <View style={styles.practiceRow}>
-                <View style={[styles.trophyIconBg, { backgroundColor: `${colors.primary}15`, borderColor: `${colors.primary}30` }]}>
-                   <Ionicons name="trophy" size={28} color={colors.primary} />
-                </View>
-                <View style={{flex: 1}}>
-                   <Text style={[styles.practiceTitle, { color: colors.text }]}>{t("home.practiceQuizTitle")}</Text>
-                   <Text style={[styles.practiceSub, { color: colors.textSecondary }]}>{t("home.practiceQuizSub")}</Text>
-                </View>
-             </View>
-             <View style={[styles.practiceStatsRow, { flexWrap: 'wrap', gap: 16 }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={styles.statBox}>
-                     <Ionicons name="checkmark-circle-outline" size={20} color={colors.primary} style={{marginRight: 6}} />
-                     <View>
-                       <Text style={[styles.statValue, { color: colors.text }]}>{completedQuizzes}</Text>
-                       <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("home.quizzesCompleted")}</Text>
-                     </View>
-                  </View>
-                  <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-                  <View style={styles.statBox}>
-                     <Ionicons name="star" size={20} color={colors.warning} style={{marginRight: 6}} />
-                     <View>
-                       <Text style={[styles.statValue, { color: colors.text }]}>{avgScore}%</Text>
-                       <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t("quiz.averageScore")}</Text>
-                     </View>
-                  </View>
-                </View>
-                <View style={[styles.takeQuizBtn, { borderColor: colors.primary, alignSelf: 'flex-start' }]}>
-                  <Text style={[styles.takeQuizText, { color: colors.primary }]}>{t('home.takeFirstQuiz')}</Text>
-                  <Ionicons name="arrow-forward" size={16} color={colors.primary} style={{ marginLeft: 6 }} />
-                </View>
-             </View>
-          </Card>
-
-          {/* Progress Split Row */}
-          <View style={[styles.bentoRow, { flexWrap: 'wrap' }]}>
-            {/* License Rules */}
-            <Card style={[styles.bentoCardHalf, { flex: 1, minWidth: 280 }]} variant="glass" onPress={handleResumeReading}>
-              <View style={styles.cardHeaderRow}>
-                 <View style={[styles.bentoIconWrapper, { backgroundColor: `${colors.primary}15` }]}>
-                   <Ionicons name="clipboard-outline" size={22} color={colors.primary} />
-                 </View>
-                 <Text style={[styles.cardTitle, { color: colors.text }]}>{t("home.licenseRulesTitle")}</Text>
-              </View>
-              <Text style={[styles.cardDesc, { color: colors.textSecondary }]}>{t("home.licenseRulesSub")}</Text>
+            {/* Content Overlay */}
+            <View style={styles.heroContent}>
+              <Text style={styles.greetingText}>
+                Good Afternoon, {username} 👋
+              </Text>
               
-              <View style={styles.progressSection}>
-                 <View style={styles.progressHeader}>
-                   <Text style={[styles.progressLbl, { color: colors.textSecondary }]}>{t("home.progress")}</Text>
-                   <Text style={[styles.progressVal, {color: colors.text}]}>{studyProgressPercent}%</Text>
-                 </View>
-                 <ProgressBar progress={studyProgressPercent / 100} style={{marginBottom: 12, height: 6}} />
-                 <View style={styles.cardActionRow}>
-                    <Text style={[styles.cardActionText, { color: colors.primary }]}>{resumeTitle ? t('home.resumeReading') : t('home.startLearning')}</Text>
-                    <Ionicons name="arrow-forward" size={16} color={colors.primary} />
-                 </View>
+              <Text style={[styles.heroHeadline, { color: colors.text }]}>
+                Pass Your Japanese Driving Test with <Text style={{ color: colors.primary }}>Confidence</Text>
+              </Text>
+
+              {/* Action Buttons */}
+              <View style={styles.heroBtnRow}>
+                <TouchableOpacity 
+                  activeOpacity={0.9} 
+                  onPress={() => onNavigateToTab?.('study')} 
+                  style={[styles.continueBtn, { backgroundColor: colors.primary }]}
+                >
+                  <Text style={styles.continueBtnText}>Continue Learning</Text>
+                  <Ionicons name="arrow-forward" size={16} color="#FFF" />
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  activeOpacity={0.88} 
+                  onPress={() => onNavigateToTab?.('quiz')} 
+                  style={[styles.quizBtn, { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.92)', borderColor: colors.border }]}
+                >
+                  <View style={styles.questionCircle}>
+                    <Ionicons name="help-outline" size={14} color={colors.text} />
+                  </View>
+                  <Text style={[styles.quizBtnText, { color: colors.text }]}>Take a Quiz</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Card>
+        </View>
+
+        {/* SWAPPED POSITION 1: Study Rules Take & Action Bento Cards */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Study Rules Take</Text>
+            <TouchableOpacity onPress={() => onNavigateToTab?.('study')}>
+              <Text style={[styles.viewAllText, { color: colors.primary }]}>View All</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.actionCardsRow}>
+            {/* Card 1: Study Rules Take */}
+            <Card style={styles.actionCard} onPress={() => onNavigateToTab?.('study')}>
+              <View style={styles.actionCardTop}>
+                <View style={[styles.actionIconCircle, { backgroundColor: colors.primary }]}>
+                  <Ionicons name="book" size={22} color="#FFF" />
+                </View>
+                <Text style={[styles.actionCardTitle, { color: colors.text }]}>Study Rules Take</Text>
+                <Text style={[styles.actionCardSub, { color: colors.textSecondary }]}>
+                  Master all traffic rules and road signs.
+                </Text>
+              </View>
+              <View style={styles.actionCardFooter}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Text style={{ fontSize: 13 }}>⭐</Text>
+                  <Text style={[styles.footerMetaText, { color: colors.textSecondary }]}>{totalChapters} Chapters</Text>
+                </View>
+                <View style={[styles.arrowCircleBtn, { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#F0F0F5' }]}>
+                  <Ionicons name="arrow-forward" size={16} color={colors.text} />
+                </View>
               </View>
             </Card>
 
-            {/* Traffic Quizzes */}
-            <Card style={[styles.bentoCardHalf, { flex: 1 }]} variant="glass" onPress={() => onNavigateToTab?.('quiz')}>
-              <View style={styles.cardHeaderRow}>
-                 <View style={[styles.bentoIconWrapper, { backgroundColor: `${colors.error}15` }]}>
-                   <Ionicons name="help-circle-outline" size={24} color={colors.error} />
-                 </View>
-                 <Text style={[styles.cardTitle, { color: colors.text }]}>{t("home.trafficQuizzesTitle")}</Text>
+            {/* Card 2: Take Practice Quiz */}
+            <Card style={styles.actionCard} onPress={() => onNavigateToTab?.('quiz')}>
+              <View style={styles.actionCardTop}>
+                <View style={[styles.actionIconCircle, { backgroundColor: '#FF8A65' }]}>
+                  <Ionicons name="help-sharp" size={22} color="#FFF" />
+                </View>
+                <Text style={[styles.actionCardTitle, { color: colors.text }]}>Take Practice Quiz</Text>
+                <Text style={[styles.actionCardSub, { color: colors.textSecondary }]}>
+                  Real exam questions and explanations.
+                </Text>
               </View>
-              <Text style={[styles.cardDesc, { color: colors.textSecondary }]}>{t("home.trafficQuizzesSub")}</Text>
-              
-              <View style={styles.progressSection}>
-                 <View style={styles.progressHeader}>
-                   <Text style={[styles.progressLbl, { color: colors.textSecondary }]}>{t("home.progress")}</Text>
-                   <Text style={[styles.progressVal, {color: colors.text}]}>{avgScore}%</Text>
-                 </View>
-                 <ProgressBar progress={avgScore / 100} style={{marginBottom: 12, height: 6}} />
-                 <View style={styles.cardActionRow}>
-                    <Text style={[styles.cardActionText, { color: colors.error }]}>{t("home.startPracticing")}</Text>
-                    <Ionicons name="arrow-forward" size={16} color={colors.error} />
-                 </View>
+              <View style={styles.actionCardFooter}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Text style={{ fontSize: 13 }}>🎯</Text>
+                  <Text style={[styles.footerMetaText, { color: colors.textSecondary }]}>1,250+ Questions</Text>
+                </View>
+                <View style={[styles.arrowCircleBtn, { backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#F0F0F5' }]}>
+                  <Ionicons name="arrow-forward" size={16} color={colors.text} />
+                </View>
               </View>
             </Card>
           </View>
-
-          
-
-          {/* Huge Call to Action Row */}
-          <TouchableOpacity activeOpacity={0.9} onPress={() => onNavigateToTab?.('study')} style={{ marginTop: 8 }}>
-            <View style={[
-              styles.ctaContainer, 
-              { 
-                backgroundColor: colors.backgroundElement, 
-                borderColor: colors.border, 
-                borderWidth: 1,
-                ...Platform.select({
-                  web: { boxShadow: theme === 'dark' ? 'none' : '0 4px 20px rgba(26,26,46,0.06)' } as any,
-                  default: theme === 'light' ? {
-                    shadowColor: '#1A1A2E',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.08,
-                    shadowRadius: 16,
-                    elevation: 3,
-                  } : {},
-                }),
-              }
-            ]}>
-               <View style={[styles.ctaIconBg, { backgroundColor: `${colors.primary}1A` }]}>
-                  <Ionicons name="car-sport" size={32} color={colors.primary} />
-               </View>
-               <View style={styles.ctaTextContainer}>
-                 <Text style={[styles.ctaTitle, { color: colors.text }]}>{t("home.ctaTitle")}</Text>
-                 <Text style={[styles.ctaSub, { color: colors.textSecondary }]}>{t("home.ctaSub")}</Text>
-               </View>
-               <View style={[styles.ctaButton, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.ctaButtonText}>{t("home.ctaButton")}</Text>
-                  <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
-               </View>
-            </View>
-          </TouchableOpacity>
-
         </View>
+
+        {/* SWAPPED POSITION 2: My Progress Card */}
+        <View style={styles.sectionContainer}>
+          <Card style={[styles.progressCard, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
+            <View style={styles.progressCardContent}>
+              {/* Left Column: Overall Progress */}
+              <View style={styles.progressLeftCol}>
+                <View style={styles.progressHeaderRow}>
+                  <View style={styles.progressIconBadge}>
+                    <Ionicons name="bar-chart-sharp" size={18} color="#2E7D32" />
+                  </View>
+                  <Text style={[styles.progressTitle, { color: colors.text }]}>My Progress</Text>
+                </View>
+
+                <Text style={[styles.progressPercentText, { color: colors.text }]}>
+                  {studyProgressPercent}%
+                </Text>
+                <Text style={[styles.progressSubtext, { color: colors.textSecondary }]}>
+                  Overall Progress
+                </Text>
+
+                <View style={styles.progressTrackBg}>
+                  <View style={[styles.progressTrackFill, { backgroundColor: colors.primary, width: `${Math.max(10, studyProgressPercent)}%` }]} />
+                </View>
+              </View>
+
+              {/* Vertical Separator */}
+              <View style={[styles.colDivider, { backgroundColor: colors.border }]} />
+
+              {/* Right Column: Streak & Lessons Left */}
+              <View style={styles.progressRightCol}>
+                {/* Streak Item */}
+                <View style={styles.statItemRow}>
+                  <View style={styles.statIconFrame}>
+                    <Ionicons name="flame" size={22} color={colors.primary} />
+                  </View>
+                  <View>
+                    <Text style={[styles.statValueBold, { color: colors.primary }]}>{streak} Day Streak</Text>
+                    <Text style={[styles.statSubText, { color: colors.textSecondary }]}>Keep it going!</Text>
+                  </View>
+                </View>
+
+                {/* Lessons Left Item */}
+                <View style={[styles.statItemRow, { marginTop: 16 }]}>
+                  <View style={styles.statIconFrame}>
+                    <Ionicons name="calendar-outline" size={20} color="#0288D1" />
+                  </View>
+                  <View>
+                    <Text style={[styles.statValueBold, { color: colors.text }]}>{remainingLessons} Lessons Left</Text>
+                    <Text style={[styles.statSubText, { color: colors.textSecondary }]}>Until next milestone</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Card>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -510,25 +272,51 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 10,
-    paddingTop: 16,
+    paddingHorizontal: 12,
+    paddingTop: 12,
     paddingBottom: 40,
   },
   topNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
-    marginTop: Platform.OS === 'ios' ? 0 : 20,
+    marginBottom: 16,
+    marginTop: Platform.OS === 'ios' ? 0 : 12,
     zIndex: 100,
-    elevation: 10,
+  },
+  logoBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#E31837',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoBadgeText: {
+    color: '#FFF',
+    fontWeight: '900',
+    fontSize: 16,
+    fontStyle: 'italic',
+  },
+  logoBrandMain: {
+    fontWeight: '900',
+    fontSize: 14,
+    letterSpacing: 1.2,
+    lineHeight: 16,
+  },
+  logoBrandSub: {
+    color: '#E31837',
+    fontWeight: '800',
+    fontSize: 9,
+    letterSpacing: 1.5,
+    lineHeight: 11,
   },
   langSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 18,
     borderWidth: 1,
     gap: 6,
   },
@@ -546,276 +334,261 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
     zIndex: 999,
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
-      android: { elevation: 20 },
-      web: { boxShadow: '0 8px 24px rgba(0,0,0,0.12)' } as any,
-    }),
   },
   langDropdownItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     alignItems: 'center',
   },
   langDropdownText: {
     fontSize: 12,
     fontWeight: '700',
   },
-  heroBackground: {
-    width: '100%',
-    height: 380,
-    marginBottom: 16,
-    borderRadius: 28,
+  bellBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  bellBadgeDot: {
+    position: 'absolute',
+    top: 7,
+    right: 7,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#E31837',
+  },
+  // Hero Section
+  heroWrapper: {
+    marginBottom: 20,
+  },
+  heroCard: {
+    padding: 0,
+    borderRadius: 24,
+    overflow: 'hidden',
+    minHeight: 210,
+    position: 'relative',
+  },
+  heroBgImage: {
+    ...StyleSheet.absoluteFillObject,
+    left: '25%',
   },
   heroOverlay: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 28,
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
   },
-  heroTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  heroContent: {
+    padding: 20,
+    zIndex: 2,
   },
-  heroLocationBadge: {
+  greetingText: {
+    color: '#E31837',
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  heroHeadline: {
+    fontSize: 22,
+    fontWeight: '900',
+    lineHeight: 28,
+    maxWidth: '75%',
+    marginBottom: 20,
+  },
+  heroBtnRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 6,
+    gap: 10,
+    flexWrap: 'wrap',
   },
-  heroLocationText: {
-    fontSize: 11,
+  continueBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 25,
+    gap: 8,
+    ...Platform.select({
+      web: { boxShadow: '0 4px 14px rgba(227, 24, 55, 0.35)' } as any,
+    }),
+  },
+  continueBtnText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  quizBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 25,
+    borderWidth: 1,
+    gap: 8,
+  },
+  questionCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quizBtnText: {
+    fontSize: 13,
     fontWeight: '700',
-    letterSpacing: 1,
   },
-  heroBottomContent: {
-    marginTop: 'auto',
-  },
-  heroTitle: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    lineHeight: 38,
-    marginBottom: 12,
-  },
-  heroSubtitle: {
-    fontSize: 15,
-    color: 'rgba(255,255,255,0.85)',
+  // Section Headers
+  sectionContainer: {
     marginBottom: 20,
-    lineHeight: 22,
   },
-  langPills: {
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  viewAllText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  // Action Cards Row
+  actionCardsRow: {
     flexDirection: 'row',
     gap: 12,
   },
-  langPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  actionCard: {
+    flex: 1,
+    padding: 16,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'space-between',
+    minHeight: 180,
   },
-  langPillText: {
-    color: '#FFF',
-    fontSize: 13,
-    fontWeight: '600',
+  actionCardTop: {
+    marginBottom: 16,
   },
-  bentoGrid: {
-    gap: 16,
-  },
-  practiceQuizCard: {
-    padding: 20,
+  actionIconCircle: {
+    width: 48,
+    height: 48,
     borderRadius: 24,
-  },
-  practiceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginBottom: 24,
-  },
-  trophyIconBg: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+    marginBottom: 14,
   },
-  practiceTitle: {
-    fontSize: 20,
+  actionCardTitle: {
+    fontSize: 15,
     fontWeight: '800',
-    marginBottom: 4,
+    marginBottom: 6,
   },
-  practiceSub: {
-    fontSize: 13,
-    lineHeight: 18,
+  actionCardSub: {
+    fontSize: 12,
+    lineHeight: 17,
   },
-  practiceStatsRow: {
+  actionCardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: 8,
   },
-  statBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  statLabel: {
-    fontSize: 10,
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    marginHorizontal: 12,
-  },
-  takeQuizBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  takeQuizText: {
-    fontSize: 11,
+  footerMetaText: {
+    fontSize: 12,
     fontWeight: '700',
-    textAlign: 'left',
   },
-  bentoRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  bentoCardHalf: {
-    padding: 20,
-    borderRadius: 24,
-  },
-  cardHeaderRow: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  bentoIconWrapper: {
-    width: 48,
-    height: 48,
+  arrowCircleBtn: {
+    width: 32,
+    height: 32,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+  // Progress Card
+  progressCard: {
+    padding: 18,
+    borderRadius: 20,
+    borderWidth: 1,
   },
-  cardDesc: {
-    fontSize: 12,
-    lineHeight: 18,
-    marginBottom: 20,
-  },
-  progressSection: {
-    marginTop: 'auto',
-  },
-  progressHeader: {
+  progressCardContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    alignItems: 'center',
   },
-  progressLbl: {
-    fontSize: 12,
-    fontWeight: '600',
+  progressLeftCol: {
+    flex: 1.1,
+    paddingRight: 14,
   },
-  progressVal: {
+  progressHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  progressIconBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  progressTitle: {
     fontSize: 14,
     fontWeight: '800',
   },
-  cardActionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 4,
+  progressPercentText: {
+    fontSize: 30,
+    fontWeight: '900',
+    letterSpacing: -0.5,
   },
-  cardActionText: {
-    fontSize: 12,
-    fontWeight: '700',
+  progressSubtext: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 12,
   },
-  safetyTipCard: {
-    padding: 20,
-    borderRadius: 24,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 16,
+  progressTrackBg: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    overflow: 'hidden',
   },
-  safetyIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#E11D48',
-    justifyContent: 'center',
-    alignItems: 'center',
+  progressTrackFill: {
+    height: '100%',
+    borderRadius: 3,
   },
-  safetyContent: {
+  colDivider: {
+    width: 1,
+    height: '80%',
+    marginHorizontal: 4,
+  },
+  progressRightCol: {
     flex: 1,
+    paddingLeft: 14,
   },
-  safetyTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  safetyDesc: {
-    fontSize: 13,
-    lineHeight: 20,
-  },
-  ctaContainer: {
-    borderRadius: 24,
-    padding: 24,
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  ctaIconBg: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(225, 29, 72, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  ctaTextContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  ctaTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  ctaSub: {
-    fontSize: 13,
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-  ctaButton: {
+  statItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 16,
-    width: '100%',
+    gap: 10,
   },
-  ctaButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  statIconFrame: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statValueBold: {
+    fontSize: 13,
     fontWeight: '800',
+  },
+  statSubText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
 });
