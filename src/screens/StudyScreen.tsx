@@ -54,6 +54,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
   const [searchQuery, setSearchQuery] = useState('');
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [quickToolModal, setQuickToolModal] = useState<'bookmarks' | 'recent' | 'downloads' | 'notes' | null>(null);
+  const [isQuickNoteModalOpen, setIsQuickNoteModalOpen] = useState(false);
   const [noteInputText, setNoteInputText] = useState('');
   const [activeNoteChapterId, setActiveNoteChapterId] = useState<string | null>(null);
 
@@ -175,9 +176,8 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <TouchableOpacity 
               onPress={() => {
-                setActiveNoteChapterId(selectedChapter.id);
                 setNoteInputText(notes[selectedChapter.id] || '');
-                setQuickToolModal('notes');
+                setIsQuickNoteModalOpen(true);
               }}
               style={[styles.iconBtn, { backgroundColor: colors.background }]}
             >
@@ -958,6 +958,100 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               })()}
 
             </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* INSTANT QUICK NOTE POPUP MODAL (When reading inside a chapter)  */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <Modal
+        visible={isQuickNoteModalOpen && selectedChapter !== null}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setIsQuickNoteModalOpen(false)}
+      >
+        <View style={styles.modalOverlayBg}>
+          <View style={[styles.modalContentCard, { backgroundColor: colors.backgroundElement, borderColor: colors.border, paddingBottom: 24 }]}>
+            <View style={[styles.modalHeaderRow, { borderBottomColor: colors.border }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                <Ionicons name="journal" size={22} color="#2196F3" />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 10, color: colors.textSecondary, fontWeight: '800', letterSpacing: 0.5 }}>
+                    QUICK NOTE • CH {selectedChapter ? getChapterNum(selectedChapter) : 1}
+                  </Text>
+                  <Text style={[styles.modalTitleText, { color: colors.text }]} numberOfLines={1}>
+                    {selectedChapter ? loc(selectedChapter.title) : 'Study Note'}
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setIsQuickNoteModalOpen(false)} style={styles.modalCloseBtn}>
+                <Ionicons name="close" size={22} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ gap: 12, marginTop: 12 }}>
+              <TextInput 
+                style={[
+                  styles.noteInput, 
+                  { 
+                    color: colors.text, 
+                    backgroundColor: colors.background, 
+                    borderColor: colors.border,
+                    minHeight: 120,
+                    fontSize: 14,
+                    lineHeight: 20
+                  }
+                ]}
+                placeholder="Type your quick note or exam tip for this chapter..."
+                placeholderTextColor={colors.textSecondary}
+                multiline={true}
+                numberOfLines={5}
+                autoFocus={true}
+                value={noteInputText}
+                onChangeText={setNoteInputText}
+              />
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+                {selectedChapter && notes[selectedChapter.id] ? (
+                  <TouchableOpacity 
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8 }}
+                    onPress={() => {
+                      if (selectedChapter) {
+                        deleteChapterNote(selectedChapter.id);
+                        setNoteInputText('');
+                        setIsQuickNoteModalOpen(false);
+                      }
+                    }}
+                  >
+                    <Ionicons name="trash-outline" size={16} color={colors.error} />
+                    <Text style={{ color: colors.error, fontSize: 12, fontWeight: '700' }}>Delete Note</Text>
+                  </TouchableOpacity>
+                ) : <View />}
+
+                <View style={{ flexDirection: 'row', gap: 8, marginLeft: 'auto' }}>
+                  <TouchableOpacity 
+                    style={{ paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10 }}
+                    onPress={() => setIsQuickNoteModalOpen(false)}
+                  >
+                    <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600' }}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={[styles.modalActionBtn, { backgroundColor: '#2196F3', paddingHorizontal: 18, paddingVertical: 10 }]}
+                    onPress={() => {
+                      if (selectedChapter && noteInputText.trim()) {
+                        saveChapterNote(selectedChapter.id, noteInputText.trim());
+                        setIsQuickNoteModalOpen(false);
+                      }
+                    }}
+                  >
+                    <Ionicons name="checkmark-sharp" size={16} color="#FFF" />
+                    <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '800' }}>Save Quick Note</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
