@@ -584,34 +584,71 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
         </View>
 
         {/* Continue Reading Hero Card */}
-        <Card style={styles.continueReadingHero}>
-          <View style={styles.circularGaugeBox}>
-            <View style={styles.ringOuter}>
-              <Text style={styles.ringPercentText}>68%</Text>
-              <Text style={styles.ringCompleteText}>{t('study.complete')}</Text>
-            </View>
-          </View>
+        {(() => {
+          const lastChId = progress.lastReadChapterId || (activeChapters[0] ? activeChapters[0].id : 'ch_official_1');
+          const lastSubId = progress.lastReadSubtopicId;
+          const currentCh = activeChapters.find(c => c.id === lastChId) || activeChapters[0];
+          const chNum = currentCh ? getChapterNum(currentCh) : 1;
 
-          <View style={styles.continueDetailsCol}>
-            <Text style={styles.continueBadgeTag}>{t('study.continueReadingBadge')}</Text>
-            <Text style={[styles.continueChapterTitle, { color: colors.text }]}>Traffic Rules & Signals</Text>
-            <Text style={[styles.continueChapterSub, { color: colors.textSecondary }]}>Chapter 2 • Traffic Lights</Text>
+          const totalSubtopics = activeChapters.reduce((acc, c) => acc + (c.subtopics ? c.subtopics.length : 0), 0);
+          const completedCount = progress.completedSubtopics ? progress.completedSubtopics.length : 0;
+          const currentProgressPercent = totalSubtopics > 0 ? Math.round((completedCount / totalSubtopics) * 100) : 0;
 
-            <View style={styles.progressLineBg}>
-              <View style={[styles.progressLineFill, { width: '68%' }]} />
-            </View>
-            <Text style={[styles.lessonSubText, { color: colors.textSecondary }]}>
-              {t('study.lessonOf', { current: 8, total: 12 })}
-            </Text>
-          </View>
+          const currentSubtopic = currentCh && currentCh.subtopics ? currentCh.subtopics.find(s => s.id === lastSubId) || currentCh.subtopics[0] : null;
+          const currentLessonNum = completedCount > 0 ? completedCount : 1;
 
-          <TouchableOpacity 
-            style={styles.continueActionBtn}
-            onPress={() => setActiveCategory('car')}
-          >
-            <Ionicons name="chevron-forward" size={20} color="#FFF" />
-          </TouchableOpacity>
-        </Card>
+          return (
+            <Card 
+              style={styles.continueReadingHero}
+              onPress={() => {
+                if (currentCh) {
+                  setSelectedChapter(currentCh);
+                  addRecentChapter(currentCh.id);
+                  if (currentSubtopic) setSelectedSubtopic(currentSubtopic);
+                  setActiveCategory('car');
+                }
+              }}
+            >
+              <View style={styles.circularGaugeBox}>
+                <View style={styles.ringOuter}>
+                  <Text style={styles.ringPercentText}>{currentProgressPercent}%</Text>
+                  <Text style={styles.ringCompleteText}>{t('study.complete')}</Text>
+                </View>
+              </View>
+
+              <View style={styles.continueDetailsCol}>
+                <Text style={styles.continueBadgeTag}>{completedCount > 0 ? t('study.continueReadingBadge') : 'START STUDYING'}</Text>
+                <Text style={[styles.continueChapterTitle, { color: colors.text }]} numberOfLines={1}>
+                  {currentCh ? loc(currentCh.title) : 'Japan Driving Handbook'}
+                </Text>
+                <Text style={[styles.continueChapterSub, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {currentSubtopic ? loc(currentSubtopic.title) : `Chapter ${chNum}`}
+                </Text>
+
+                <View style={styles.progressLineBg}>
+                  <View style={[styles.progressLineFill, { width: `${currentProgressPercent}%` }]} />
+                </View>
+                <Text style={[styles.lessonSubText, { color: colors.textSecondary }]}>
+                  {t('study.lessonOf', { current: currentLessonNum, total: totalSubtopics || 14 })}
+                </Text>
+              </View>
+
+              <TouchableOpacity 
+                style={styles.continueActionBtn}
+                onPress={() => {
+                  if (currentCh) {
+                    setSelectedChapter(currentCh);
+                    addRecentChapter(currentCh.id);
+                    if (currentSubtopic) setSelectedSubtopic(currentSubtopic);
+                    setActiveCategory('car');
+                  }
+                }}
+              >
+                <Ionicons name="chevron-forward" size={20} color="#FFF" />
+              </TouchableOpacity>
+            </Card>
+          );
+        })()}
 
         {/* Study by Category Section */}
         <View style={styles.sectionContainer}>
@@ -635,7 +672,9 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                 styles.catBadgeRed,
                 { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
               ]}>
-                <Text style={[styles.catBadgeRedText, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>5 Chapters</Text>
+                <Text style={[styles.catBadgeRedText, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>
+                  {activeChapters.length} Chapters
+                </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
             </Card>
@@ -656,7 +695,9 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                 styles.catBadgeYellow,
                 { backgroundColor: theme === 'dark' ? 'rgba(255, 152, 0, 0.2)' : '#FFF8E1' }
               ]}>
-                <Text style={[styles.catBadgeYellowText, { color: theme === 'dark' ? '#FFB74D' : '#E65100' }]}>4 Chapters</Text>
+                <Text style={[styles.catBadgeYellowText, { color: theme === 'dark' ? '#FFB74D' : '#E65100' }]}>
+                  {activeChapters.length} Chapters
+                </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
             </Card>
@@ -677,7 +718,9 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                 styles.catBadgePurple,
                 { backgroundColor: theme === 'dark' ? 'rgba(156, 39, 176, 0.2)' : '#F3E5F5' }
               ]}>
-                <Text style={[styles.catBadgePurpleText, { color: theme === 'dark' ? '#CE93D8' : '#7B1FA2' }]}>6 Chapters</Text>
+                <Text style={[styles.catBadgePurpleText, { color: theme === 'dark' ? '#CE93D8' : '#7B1FA2' }]}>
+                  {activeChapters.length} Chapters
+                </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
             </Card>
