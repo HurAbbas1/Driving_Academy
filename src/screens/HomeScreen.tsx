@@ -27,20 +27,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
   const streak = profile?.streak?.current ?? 0;
   const username = profile?.displayName || 'Learner';
 
-  // Calculate study progress
-  const totalSubtopics = chapters.reduce((acc, c) => acc + c.subtopics.length, 0);
-  const completedSubtopics = progress.completedSubtopics.length;
+  // Calculate study progress dynamically
+  const totalSubtopics = chapters.reduce((acc, c) => acc + (c.subtopics ? c.subtopics.length : 0), 0);
+  const completedSubtopics = progress?.completedSubtopics?.length || 0;
   const studyProgressPercent = totalSubtopics > 0
     ? Math.round((completedSubtopics / totalSubtopics) * 100)
-    : 6;
+    : 0;
 
-  const remainingLessons = Math.max(0, totalSubtopics - completedSubtopics) || 51;
+  const remainingLessons = Math.max(0, totalSubtopics - completedSubtopics);
+  const totalChapters = chapters.length;
 
   const currentLang = useLanguageStore((state) => state.language);
   const setLanguage = useLanguageStore((state) => state.setLanguage);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
-
-  const totalChapters = chapters.length || 43;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>

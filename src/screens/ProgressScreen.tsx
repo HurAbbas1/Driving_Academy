@@ -27,9 +27,9 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
   // 1. Calculations for study progress
-  const totalSubtopics = chapters.reduce((acc, c) => acc + c.subtopics.length, 0);
-  const completedSubtopics = progress.completedSubtopics.length;
-  const studyProgressPercent = totalSubtopics > 0 ? (completedSubtopics / totalSubtopics) * 100 : 6;
+  const totalSubtopics = chapters.reduce((acc, c) => acc + (c.subtopics ? c.subtopics.length : 0), 0);
+  const completedSubtopics = progress?.completedSubtopics?.length || 0;
+  const studyProgressPercent = totalSubtopics > 0 ? (completedSubtopics / totalSubtopics) * 100 : 0;
 
   // 2. Calculations for quiz performance
   const totalQuizzes = history.length;
@@ -45,7 +45,7 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
   const totalIncorrect = history.reduce((acc, h) => acc + h.incorrectCount, 0);
 
   // 3. Readiness % (60% quiz avg + 40% study progress)
-  const readinessValue = Math.round((avgScore * 0.6) + (studyProgressPercent * 0.4)) || 2;
+  const readinessValue = Math.round((avgScore * 0.6) + (studyProgressPercent * 0.4));
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
