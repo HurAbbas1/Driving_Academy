@@ -1,52 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import {View, StyleSheet, SafeAreaView, FlatList, TextInput, Pressable, ScrollView, Platform, Image, TouchableOpacity} from 'react-native';
+import { View, StyleSheet, SafeAreaView, TextInput, Pressable, ScrollView, Platform, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Text } from '../components/ui/Text';
-
-import { Alert } from '../utils/alert';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
 import { useThemeStore } from '../stores/themeStore';
-import { useLanguageStore } from '../stores/languageStore';
+import { useLanguageStore, LanguageCode } from '../stores/languageStore';
 import { useStudyStore } from '../stores/studyStore';
-import { useQuizStore } from '../stores/quizStore';
-
 import { Chapter, Subtopic } from '../types/study';
 import { Card } from '../components/ui/Card';
-import { Badge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
 import { ContentRenderer } from '../components/study/ContentRenderer';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolate, Extrapolation, FadeInUp, FadeInDown } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
-
-type FontSize = 'small' | 'medium' | 'large';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 interface StudyScreenProps {
   onNavigateToTab?: (tab: 'home' | 'study' | 'quiz' | 'progress' | 'profile') => void;
 }
 
 export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => {
+  const { width } = useWindowDimensions();
   const { t } = useTranslation();
   const theme = useThemeStore((state) => state.theme);
   const colors = Colors[theme];
-  const lang = useLanguageStore((state) => state.language); // 'en' | 'ja' | 'zh' | 'pt'
-
-  // Safe localized text extractor — handles both multilingual objects and plain strings
-  const loc = (field: any): string => {
-    if (!field) return '';
-    if (typeof field === 'string') return field;
-    if (typeof field === 'object') {
-      const val = field[lang] ?? field.en ?? Object.values(field)[0] ?? '';
-      // If the resolved value is still an object (double nesting!), resolve it again
-      if (typeof val === 'object') {
-        const valInner = val[lang] ?? val.en ?? Object.values(val)[0] ?? '';
-        if (typeof valInner === 'object') return JSON.stringify(valInner);
-        return String(valInner);
-      }
-      return String(val);
-    }
-    return String(field);
-  };
+  const currentLang = useLanguageStore((state) => state.language);
+  const setLanguage = useLanguageStore((state) => state.setLanguage);
 
   // Store States
   const { 
@@ -60,878 +36,514 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
     toggleBookmark, 
     markAsRead, 
     setLastRead, 
-    downloadChapter, 
-    deleteDownload 
   } = useStudyStore();
 
-  // Local navigation states
-  const [activeSection, setActiveSection] = useState<'car' | 'bike' | null>(null);
-  const [selectedBook, setSelectedBook] = useState<any>(null);
+  // Navigation states
+  const [activeCategory, setActiveCategory] = useState<'car' | 'bike' | 'large' | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedSubtopic, setSelectedSubtopic] = useState<Subtopic | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [fontSize, setFontSize] = useState<FontSize>('medium');
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
-  // Handle global routing selection
+  // Handle external routing
   useEffect(() => {
-    if (selectedBookId && books.length > 0) {
-      const book = books.find(b => b.id === selectedBookId);
-      if (book) {
-        setSelectedBook(book);
-        setActiveSection(prev => prev || 'car');
-        // Clear global state so back navigation works normally next time
-        setSelectedBookId(null);
-      }
+    if (selectedBookId) {
+      setActiveCategory('car');
+      setSelectedBookId(null);
     }
-  }, [selectedBookId, books, setSelectedBookId]);
+  }, [selectedBookId, setSelectedBookId]);
 
-  // Parallax Scroll Animation State
-  const scrollY = useSharedValue(0);
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollY.value = event.contentOffset.y;
+  // Safe localized text extractor
+  const loc = (field: any): string => {
+    if (!field) return '';
+    if (typeof field === 'string') return field;
+    if (typeof field === 'object') {
+      const val = field[currentLang] ?? field.en ?? Object.values(field)[0] ?? '';
+      return String(val);
+    }
+    return String(field);
+  };
+
+  // Static Chapter Data with Thumbnails for Category View
+  const categoryChaptersData = [
+    {
+      id: 'ch-1',
+      num: 1,
+      titleKey: 'study.rulesForHighways',
+      descKey: 'study.rulesForHighwaysSub',
+      progress: 60,
+      topicsCount: 5,
+      image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=80',
     },
-  });
+    {
+      id: 'ch-2',
+      num: 2,
+      titleKey: 'study.rulesForPedestrians',
+      descKey: 'study.rulesForPedestriansSub',
+      progress: 40,
+      topicsCount: 6,
+      image: 'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=600&q=80',
+    },
+    {
+      id: 'ch-3',
+      num: 3,
+      titleKey: 'study.trafficSignsSignals',
+      descKey: 'study.trafficSignsSignalsSub',
+      progress: 30,
+      topicsCount: 7,
+      image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&q=80',
+    },
+    {
+      id: 'ch-4',
+      num: 4,
+      titleKey: 'study.intersectionsCrosswalks',
+      descKey: 'study.intersectionsCrosswalksSub',
+      progress: 0,
+      topicsCount: 4,
+      image: 'https://images.unsplash.com/photo-1578836537282-3171d77f8632?w=600&q=80',
+    },
+    {
+      id: 'ch-5',
+      num: 5,
+      titleKey: 'study.parkingStopping',
+      descKey: 'study.parkingStoppingSub',
+      progress: 0,
+      topicsCount: 5,
+      image: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=600&q=80',
+    },
+  ];
 
-  const headerAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateY: interpolate(scrollY.value, [-100, 0, 100], [-50, 0, 50], Extrapolation.CLAMP),
-        },
-        {
-          scale: interpolate(scrollY.value, [-100, 0, 100], [1.2, 1, 1], Extrapolation.CLAMP),
-        }
-      ],
-      opacity: interpolate(scrollY.value, [0, 150], [1, 0.3], Extrapolation.CLAMP),
-    };
-  });
-
-  const renderChapterExplanation = () => {
-    if (!selectedChapter) return null;
-
-    const langStrings: any = {
-      en: {
-        title: "Chapter Overview & Explanation",
-        intro: `This chapter covers the rules and safety guidelines for "${loc(selectedChapter.title)}".`,
-        topicsHeader: "Key learning topics:",
-        carFocus: "🚗 Car Driving Focus",
-        carText: "Keep vehicle dimensions in mind. Ensure all passenger seatbelts are fastened, maintain correct lane alignment, and check blind spots thoroughly before changing lanes.",
-        bikeFocus: "🏍️ Motorcycle Riding Focus",
-        bikeText: "Ensure your helmet is buckled securely. Maximize your visibility to heavy trucks, practice proper body positioning in corners, and watch out for road hazards like wet leaves or manhole covers."
-      },
-      ja: {
-        title: "章の概要と解説",
-        intro: `この章では、「${loc(selectedChapter.title)}」に関する規則と安全ガイドラインについて説明します。`,
-        topicsHeader: "主な学習項目：",
-        carFocus: "🚗 普通乗用車のポイント",
-        carText: "車両の大きさを意識してください。すべての同乗者のシートベルト着用を確認し、正しい車線維持を行い、車線変更時は死角を十分に確認してください。",
-        bikeFocus: "🏍️ 二輪バイクのポイント",
-        bikeText: "ヘルメットのあご紐を確実に締めてください。大型車からの死角に入らないよう視認性を確保し、コーナリング時の傾き姿勢に注意し、路面のマンホールや濡れた葉に警戒してください。"
-      },
-      zh: {
-        title: "章节概述与要点讲解",
-        intro: `本章详细介绍了关于“${loc(selectedChapter.title)}”的法规和安全准则。`,
-        topicsHeader: "核心学习内容：",
-        carFocus: "🚗 乘用汽车驾驶要点",
-        carText: "时刻注意车辆的车宽和盲区。确保所有乘员系好安全带，保持规范的车道居中行驶，变道时务必侧头扭头观察后方死角。",
-        bikeFocus: "🏍️ 摩托车骑行要点",
-        bikeText: "骑行前确保安全头盔佩戴扣紧。注意避开重型货车的视线盲区，掌握正确的压弯倾斜姿势，防范井盖、洒水路面或积雪落叶等路面湿滑隐患。"
-      },
-      pt: {
-        title: "Visão Geral e Explicação do Capítulo",
-        intro: `Este capítulo descreve as regras e diretrizes de segurança para "${loc(selectedChapter.title)}".`,
-        topicsHeader: "Tópicos importantes de aprendizagem:",
-        carFocus: "🚗 Foco em Condução de Carro",
-        carText: "Tenha em mente o tamanho do veículo. Garanta que todos os cintos de segurança dos passageiros estejam afivelados, mantenha o alinhamento adequado e verifique os pontos cegos ao mudar de faixa.",
-        bikeFocus: "🏍️ Foco em Pilotagem de Moto",
-        bikeText: "Certifique-se de que o capacete esteja afivelado firmemente. Melhore sua visibilidade para caminhões, adote postura correta nas curvas e evite perigos como tampas de bueiro ou folhas molhadas na pista."
-      }
-    };
-
-    const currentStrings = langStrings[lang] || langStrings.en;
-
-    return (
-      <Card style={styles.explanationCard}>
-        <View style={styles.explanationHeaderRow}>
-          <Ionicons name="information-circle-outline" size={24} color={colors.primary} />
-          <Text style={[styles.explanationCardTitle, { color: colors.primary }]}>
-            {currentStrings.title}
-          </Text>
-        </View>
-        
-        <Text style={[styles.explanationIntroText, { color: colors.text }]}>
-          {currentStrings.intro}
-        </Text>
-
-        <Text style={[styles.explanationSubtitle, { color: colors.text }]}>
-          {currentStrings.topicsHeader}
-        </Text>
-        {(selectedChapter.subtopics || []).map((sub) => (
-          <View key={sub.id} style={styles.takeawayRow}>
-            <Ionicons name="radio-button-on" size={8} color={colors.textSecondary} style={{ marginTop: 6 }} />
-            <Text style={[styles.takeawayText, { color: colors.textSecondary }]}>
-              {loc(sub.title)}
-            </Text>
-          </View>
-        ))}
-
-        <View style={[styles.explanationDivider, { backgroundColor: colors.border }]} />
-
-        {activeSection === 'car' ? (
-          <View style={[styles.vehicleFocusBox, { backgroundColor: `${colors.primary}05`, borderColor: `${colors.primary}20` }]}>
-            <Text style={[styles.vehicleFocusTitle, { color: colors.primary }]}>
-              {currentStrings.carFocus}
-            </Text>
-            <Text style={[styles.vehicleFocusText, { color: colors.textSecondary }]}>
-              {currentStrings.carText}
-            </Text>
-          </View>
-        ) : (
-          <View style={[styles.vehicleFocusBox, { backgroundColor: '#FFB30008', borderColor: '#FFB30030' }]}>
-            <Text style={[styles.vehicleFocusTitle, { color: '#FFB300' }]}>
-              {currentStrings.bikeFocus}
-            </Text>
-            <Text style={[styles.vehicleFocusText, { color: colors.textSecondary }]}>
-              {currentStrings.bikeText}
-            </Text>
-          </View>
-        )}
-      </Card>
-    );
-  };
-
-  const renderEmptySubtopics = () => {
-    return (
-      <View style={{ padding: 20, alignItems: 'center' }}>
-        <Ionicons name="document-text-outline" size={48} color={colors.textSecondary} style={{ opacity: 0.5, marginBottom: 16 }} />
-        <Text style={{ color: colors.textSecondary, fontSize: 16, textAlign: 'center', lineHeight: 24 }}>
-          {t('study.noSubtopics', 'The AI is still processing content for this chapter, or no subtopics were generated. Try re-ingesting the content.')}
-        </Text>
-      </View>
-    );
-  };
-
-  // Load reading position on mount if user wants to continue
-  const handleResumeReading = () => {
-    if (progress.lastReadSubtopicId && progress.lastReadChapterId) {
-      const chapter = chapters.find(c => c.id === progress.lastReadChapterId);
-      if (chapter) {
-        const subtopic = chapter.subtopics.find(s => s.id === progress.lastReadSubtopicId);
-        if (subtopic) {
-          setSelectedChapter(chapter);
-          setSelectedSubtopic(subtopic);
-        }
-      }
-    }
-  };
-
-  // Trigger reading position auto-save on subtopic load
-  useEffect(() => {
-    if (selectedSubtopic && selectedChapter) {
-      setLastRead(selectedSubtopic.id, selectedChapter.id);
-      markAsRead(selectedSubtopic.id, selectedChapter.id);
-    }
-  }, [selectedSubtopic, selectedChapter]);
-
-  // Calculate completion percentage for a chapter
-  const getChapterProgress = (chapter: Chapter) => {
-    if (!chapter.subtopics.length) return 0;
-    const completedCount = chapter.subtopics.filter(sub => 
-      progress.completedSubtopics.includes(sub.id)
-    ).length;
-    return Math.round((completedCount / chapter.subtopics.length) * 100);
-  };
-
-  // Find last read subtopic title
-  const getLastReadTitle = () => {
-    if (progress.lastReadSubtopicId && progress.lastReadChapterId) {
-      const chapter = chapters.find(c => c.id === progress.lastReadChapterId);
-      const subtopic = chapter?.subtopics.find(s => s.id === progress.lastReadSubtopicId);
-      return loc(subtopic?.title) || '';
-    }
-    return '';
-  };
-
-  // Search filter
-  const getSearchResults = () => {
-    if (!searchQuery.trim()) return [];
-    const query = searchQuery.toLowerCase().trim();
-    const results: { chapter: Chapter; subtopic: Subtopic }[] = [];
-
-    chapters.forEach(chapter => {
-      chapter.subtopics.forEach(subtopic => {
-        const titleMatch = loc(subtopic.title)?.toLowerCase().includes(query);
-        const contentMatch = loc(subtopic.content)?.toLowerCase().includes(query);
-        if (titleMatch || contentMatch) {
-          results.push({ chapter, subtopic });
-        }
-      });
-    });
-
-    return results;
-  };
-
-  const searchResults = getSearchResults();
-
-  // Navigation handlers within reader
-  const handleNextSubtopic = () => {
-    if (!selectedChapter || !selectedSubtopic) return;
-    const currentIndex = selectedChapter.subtopics.findIndex(s => s.id === selectedSubtopic.id);
-    if (currentIndex < selectedChapter.subtopics.length - 1) {
-      setSelectedSubtopic(selectedChapter.subtopics[currentIndex + 1]);
-    }
-  };
-
-  const handlePrevSubtopic = () => {
-    if (!selectedChapter || !selectedSubtopic) return;
-    const currentIndex = selectedChapter.subtopics.findIndex(s => s.id === selectedSubtopic.id);
-    if (currentIndex > 0) {
-      setSelectedSubtopic(selectedChapter.subtopics[currentIndex - 1]);
-    }
-  };
-
-  // Render Subtopic Reader Screen
+  // ----------------------------------------------------
+  // VIEW 3: SUBTOPIC READER VIEW (When reading a topic)
+  // ----------------------------------------------------
   if (selectedSubtopic && selectedChapter) {
-    const currentIndex = selectedChapter.subtopics.findIndex(s => s.id === selectedSubtopic.id);
-    const hasNext = currentIndex < selectedChapter.subtopics.length - 1;
-    const hasPrev = currentIndex > 0;
-    const isBookmarked = bookmarkedPages.includes(selectedSubtopic.id);
-    const readingProgressPercent = ((currentIndex + 1) / selectedChapter.subtopics.length);
+    const isBookmarked = bookmarkedPages.some(
+      b => b.chapterId === selectedChapter.id && b.subtopicId === selectedSubtopic.id
+    );
 
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.gradientOverlay, { backgroundColor: colors.background }]} />
-        
-        {/* Animated 1px progress line with a floating needle */}
-        <View style={[styles.readerProgressBg, { backgroundColor: colors.backgroundSelected, height: 1, position: 'relative' }]}>
-          <View style={[styles.readerProgressFill, { backgroundColor: colors.primary, width: `${readingProgressPercent * 100}%`, height: 1 }]} />
-          <View style={[
-            styles.readerNeedle, 
-            { 
-              backgroundColor: colors.primary, 
-              left: `${readingProgressPercent * 100}%`, 
-              marginLeft: -4 
-            }
-          ]} />
-        </View>
-
-        {/* Reader Header */}
-        <View style={[styles.readerHeader, { borderBottomColor: colors.border, zIndex: 10 }]}>
-          <Pressable onPress={() => setSelectedSubtopic(null)} style={styles.headerBtn}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </Pressable>
-
-          {/* Font Size Selector */}
-          <View style={styles.fontSizeSelector}>
-            <Pressable 
-              onPress={() => setFontSize('small')} 
-              style={[styles.fontSizeBtn, fontSize === 'small' && { backgroundColor: colors.primary }]}
-            >
-              <Text style={[styles.fontSizeText, { color: fontSize === 'small' ? '#FFF' : colors.text, fontSize: 12 }]}>A</Text>
-            </Pressable>
-            <Pressable 
-              onPress={() => setFontSize('medium')} 
-              style={[styles.fontSizeBtn, fontSize === 'medium' && { backgroundColor: colors.primary }]}
-            >
-              <Text style={[styles.fontSizeText, { color: fontSize === 'medium' ? '#FFF' : colors.text, fontSize: 15 }]}>A</Text>
-            </Pressable>
-            <Pressable 
-              onPress={() => setFontSize('large')} 
-              style={[styles.fontSizeBtn, fontSize === 'large' && { backgroundColor: colors.primary }]}
-            >
-              <Text style={[styles.fontSizeText, { color: fontSize === 'large' ? '#FFF' : colors.text, fontSize: 18 }]}>A</Text>
-            </Pressable>
-          </View>
-
-          {/* Bookmark Toggle */}
-          <Pressable onPress={() => toggleBookmark(selectedSubtopic.id)} style={styles.headerBtn}>
-            <Ionicons 
-              name={isBookmarked ? 'bookmark' : 'bookmark-outline'} 
-              size={24} 
-              color={isBookmarked ? colors.primary : colors.text} 
-            />
-          </Pressable>
-        </View>
-
-        {/* Reader Scroll Contents */}
-        <ScrollView contentContainerStyle={[styles.readerContent, { zIndex: 5 }]}>
-          <Text style={[styles.readerTitle, { color: colors.text }]}>
+        <View style={[styles.readerHeader, { borderBottomColor: colors.border, backgroundColor: colors.backgroundElement }]}>
+          <TouchableOpacity 
+            onPress={() => setSelectedSubtopic(null)}
+            style={[styles.iconBtn, { backgroundColor: colors.background }]}
+          >
+            <Ionicons name="arrow-back" size={20} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.readerTitle, { color: colors.text }]} numberOfLines={1}>
             {loc(selectedSubtopic.title)}
           </Text>
-
-          {selectedSubtopic.imageUrl && (
-            <Image 
-              source={{ uri: selectedSubtopic.imageUrl }} 
-              style={{ width: '100%', height: 220, borderRadius: 12, marginBottom: 20, backgroundColor: 'rgba(255,255,255,0.05)' }}
-              resizeMode="contain"
+          <TouchableOpacity 
+            onPress={() => toggleBookmark(selectedChapter.id, selectedSubtopic.id)}
+            style={[styles.iconBtn, { backgroundColor: colors.background }]}
+          >
+            <Ionicons 
+              name={isBookmarked ? "bookmark" : "bookmark-outline"} 
+              size={20} 
+              color={isBookmarked ? colors.primary : colors.text} 
             />
-          )}
-
-          <ContentRenderer content={loc(selectedSubtopic.content)} fontSize={fontSize} />
-
-          {/* Display localized tips if present */}
-          {selectedSubtopic.tip && (
-            <View style={[styles.tipCard, { backgroundColor: `${colors.primary}10`, borderColor: colors.primary }]}>
-              <View style={styles.tipHeader}>
-                <Ionicons name="bulb" size={20} color={colors.primary} />
-                <Text style={[styles.tipTitle, { color: colors.primary }]}>{t('study.drivingTip')}</Text>
-              </View>
-              <Text style={[styles.tipText, { color: colors.text }]}>
-                {loc(selectedSubtopic.tip)}
-              </Text>
-            </View>
-          )}
-        </ScrollView>
-
-        {/* Reader Navigation Footer */}
-        <View style={[styles.readerFooter, { borderTopColor: colors.border, backgroundColor: colors.backgroundElement }]}>
-          <Button
-            title={t('quiz.prev')}
-            onPress={handlePrevSubtopic}
-            disabled={!hasPrev}
-            variant="ghost"
-            style={styles.navBtn}
-          />
-          <Text style={[styles.pageNumber, { color: colors.textSecondary }]}>
-            {currentIndex + 1} / {selectedChapter.subtopics.length}
-          </Text>
-          <Button
-            title={t('quiz.next')}
-            onPress={handleNextSubtopic}
-            disabled={!hasNext}
-            variant="ghost"
-            style={styles.navBtn}
-          />
+          </TouchableOpacity>
         </View>
+
+        <ScrollView contentContainerStyle={styles.readerContent}>
+          <ContentRenderer 
+            content={selectedSubtopic.content} 
+            fontSize="medium" 
+          />
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // Render Chapter Subtopics List View
-  if (selectedChapter) {
+  // ----------------------------------------------------
+  // VIEW 2: CATEGORY CHAPTERS LIST VIEW (Screenshot 1)
+  // ----------------------------------------------------
+  if (activeCategory) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.content}>
-          {/* Header */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14, gap: 12 }}>
-            <Pressable 
-              onPress={() => {
-                Haptics.selectionAsync();
-                setSelectedChapter(null);
-              }} 
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: colors.backgroundElement,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: colors.border,
-                ...Platform.select({
-                  web: { boxShadow: theme === 'dark' ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)' } as any,
-                })
-              }}
-            >
-              <Ionicons name="arrow-back" size={20} color={colors.text} />
-            </Pressable>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          
+          {/* Top Header */}
+          <View style={styles.topNav}>
+            <TouchableOpacity onPress={() => setActiveCategory(null)} style={{ paddingRight: 8 }}>
+              <Ionicons name="arrow-back" size={22} color={colors.text} />
+            </TouchableOpacity>
 
-            <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <View style={{ backgroundColor: `${colors.primary}18`, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '800', color: colors.primary, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    {activeSection === 'car' ? '🚗 Car Guide' : activeSection === 'bike' ? '🏍️ Bike Guide' : '📖 Handbook'}
-                  </Text>
-                </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+              <View style={styles.logoBadge}>
+                <Text style={styles.logoBadgeText}>NS</Text>
               </View>
-              <Text style={{ fontSize: 18, fontWeight: '800', color: colors.text }} numberOfLines={1}>
-                {loc(selectedChapter.title)}
+              <View style={{ marginLeft: 8 }}>
+                <Text style={[styles.logoBrandMain, { color: colors.text }]}>NEW SUNSHINE</Text>
+                <Text style={styles.logoBrandSub}>DRIVING ACADEMY</Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, zIndex: 50 }}>
+              <View style={{ position: 'relative' }}>
+                <Pressable 
+                  style={[styles.langSelector, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}
+                  onPress={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                >
+                  <Ionicons name="globe-outline" size={16} color={colors.text} />
+                  <Text style={[styles.langText, { color: colors.text }]}>{currentLang.toUpperCase()}</Text>
+                  <Ionicons name="chevron-down" size={14} color={colors.textSecondary} />
+                </Pressable>
+
+                {isLangMenuOpen && (
+                  <View style={[styles.langDropdown, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
+                    {['en', 'ja', 'zh', 'pt'].map((l) => (
+                      <Pressable
+                        key={l}
+                        style={[styles.langDropdownItem, currentLang === l && { backgroundColor: `${colors.primary}15` }]}
+                        onPress={() => {
+                          setLanguage(l as LanguageCode);
+                          setIsLangMenuOpen(false);
+                        }}
+                      >
+                        <Text style={[styles.langDropdownText, { color: currentLang === l ? colors.primary : colors.text }]}>
+                          {l.toUpperCase()}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+          </View>
+
+          {/* Car License Category Hero Card */}
+          <View style={styles.categoryHeroCard}>
+            <Image 
+              source={{ uri: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&q=80' }}
+              style={styles.categoryHeroImage}
+              resizeMode="cover"
+            />
+            <View style={styles.categoryHeroOverlay} />
+
+            <View style={styles.categoryHeroContent}>
+              <View style={styles.carIconBadge}>
+                <Ionicons name="car-sport" size={24} color="#E31837" />
+              </View>
+              <Text style={[styles.categoryTitle, { color: colors.text }]}>
+                {t('study.carLicense')}
+              </Text>
+              <Text style={[styles.categorySub, { color: colors.textSecondary }]}>
+                {t('study.carLicenseSub')}
+              </Text>
+
+              {/* Progress */}
+              <View style={styles.categoryProgressRow}>
+                <Text style={styles.progressLbl}>Progress</Text>
+                <Text style={styles.progressVal}>32%</Text>
+              </View>
+              <View style={styles.progressTrackBg}>
+                <View style={[styles.progressTrackFill, { width: '32%' }]} />
+              </View>
+              <Text style={[styles.completedTopicsSub, { color: colors.textSecondary }]}>
+                {t('study.topicsCompleted', { completed: 8, total: 25 })}
               </Text>
             </View>
           </View>
 
-          {/* Chapter Quiz Trigger Hero Card */}
-          <Card 
-            style={{
-              marginHorizontal: 16,
-              marginTop: 4,
-              marginBottom: 16,
-              padding: 18,
-              borderRadius: 20,
-              borderWidth: 1.5,
-              borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.4)' : 'rgba(227, 24, 55, 0.2)',
-              backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.06)' : 'rgba(227, 24, 55, 0.02)',
-              ...Platform.select({
-                web: {
-                  boxShadow: theme === 'dark' ? '0 6px 20px rgba(227, 24, 55, 0.15)' : '0 6px 20px rgba(227, 24, 55, 0.06)',
-                } as any,
-              })
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-              <View style={{
-                width: 48,
-                height: 48,
-                borderRadius: 16,
-                backgroundColor: `${colors.primary}20`,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: `${colors.primary}30`
-              }}>
-                <Ionicons name="ribbon-sharp" size={26} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text, marginBottom: 2 }}>
-                  {t('study.chapterPracticeQuiz')}
-                </Text>
-                <Text style={{ fontSize: 12, lineHeight: 17, color: colors.textSecondary }}>
-                  {t('study.chapterQuizDesc')}
-                </Text>
-              </View>
-            </View>
+          {/* 4 Stat Boxes Row */}
+          <View style={styles.statBoxesRow}>
+            <Card style={styles.statBoxCard}>
+              <Ionicons name="book-outline" size={20} color="#E31837" />
+              <Text style={[styles.statBoxNum, { color: colors.text }]}>5</Text>
+              <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>Chapters</Text>
+            </Card>
 
-            <TouchableOpacity
-              activeOpacity={0.88}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                useQuizStore.getState().startNewQuiz(undefined, undefined, selectedChapter.id);
-                useQuizStore.getState().setViewMode('countdown');
-                if (onNavigateToTab) {
-                  onNavigateToTab('quiz');
-                }
-              }}
-              style={{
-                marginTop: 14,
-                backgroundColor: colors.primary,
-                paddingVertical: 12,
-                borderRadius: 14,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                ...Platform.select({
-                  web: {
-                    boxShadow: '0 4px 14px rgba(227, 24, 55, 0.35)',
-                    cursor: 'pointer'
-                  } as any
-                })
-              }}
-            >
-              <Ionicons name="play-circle-sharp" size={20} color="#FFF" />
-              <Text style={{ color: '#FFF', fontSize: 14, fontWeight: '800', letterSpacing: 0.3 }}>
-                {t('study.startChapterQuiz')}
-              </Text>
-            </TouchableOpacity>
-          </Card>
+            <Card style={styles.statBoxCard}>
+              <Ionicons name="checkbox-outline" size={20} color="#FF9800" />
+              <Text style={[styles.statBoxNum, { color: colors.text }]}>25</Text>
+              <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>{t('study.topics')}</Text>
+            </Card>
 
-          {/* Subtopics FlatList */}
-          <FlatList
-            data={selectedChapter.subtopics}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            ListHeaderComponent={renderChapterExplanation}
-            ListEmptyComponent={renderEmptySubtopics}
-            renderItem={({ item, index }) => {
-              const isRead = progress.completedSubtopics.includes(item.id);
+            <Card style={styles.statBoxCard}>
+              <Ionicons name="checkmark-circle-outline" size={20} color="#4CAF50" />
+              <Text style={[styles.statBoxNum, { color: colors.text }]}>8</Text>
+              <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>{t('study.complete')}</Text>
+            </Card>
+
+            <Card style={styles.statBoxCard}>
+              <Ionicons name="time-outline" size={20} color="#7C4DFF" />
+              <Text style={[styles.statBoxNum, { color: colors.text }]}>2h 15m</Text>
+              <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>{t('study.estTime')}</Text>
+            </Card>
+          </View>
+
+          {/* Chapters List */}
+          <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('study.chapters')}</Text>
+
+          <View style={{ gap: 14, marginBottom: 20 }}>
+            {categoryChaptersData.map((ch) => {
+              const realChapter = chapters[ch.num - 1] || chapters[0];
               return (
-                <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
-                  <Card 
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setSelectedSubtopic(item);
-                    }} 
-                    style={{
-                      marginHorizontal: 16,
-                      marginBottom: 10,
-                      padding: 16,
-                      borderRadius: 16,
-                      backgroundColor: colors.backgroundElement,
-                      borderWidth: 1,
-                      borderColor: isRead 
-                        ? (theme === 'dark' ? 'rgba(16, 185, 129, 0.35)' : 'rgba(16, 185, 129, 0.25)')
-                        : colors.border,
-                      ...Platform.select({
-                        web: {
-                          transition: 'all 0.15s ease-in-out',
-                          cursor: 'pointer'
-                        } as any
-                      })
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                      <View style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 18,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: isRead ? `${colors.success}20` : `${colors.primary}10`,
-                        borderWidth: 1,
-                        borderColor: isRead ? `${colors.success}40` : `${colors.primary}20`
-                      }}>
-                        {isRead ? (
-                          <Ionicons name="checkmark-sharp" size={18} color={colors.success} />
-                        ) : (
-                          <Text style={{ fontSize: 13, fontWeight: '800', color: colors.primary }}>
-                            {String(index + 1).padStart(2, '0')}
-                          </Text>
-                        )}
+                <Card 
+                  key={ch.id} 
+                  style={styles.chapterCardRow}
+                  onPress={() => {
+                    if (realChapter) {
+                      setSelectedChapter(realChapter);
+                      setSelectedSubtopic(realChapter.subtopics[0] || null);
+                    }
+                  }}
+                >
+                  <Image source={{ uri: ch.image }} style={styles.chapterThumb} />
+
+                  <View style={styles.chapterInfoCol}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <View style={styles.chapterNumBadge}>
+                        <Text style={styles.chapterNumText}>{ch.num}</Text>
                       </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 2 }}>
-                          {loc(item.title)}
-                        </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          <Ionicons name="book-outline" size={12} color={colors.textSecondary} />
-                          <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textSecondary }}>
-                            Lesson {index + 1}
-                          </Text>
-                        </View>
-                      </View>
-                      <View style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 16,
-                        backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}>
-                        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-                      </View>
+                      <Text style={[styles.chapterItemTitle, { color: colors.text }]} numberOfLines={1}>
+                        {t(ch.titleKey)}
+                      </Text>
                     </View>
-                  </Card>
-                </Animated.View>
+
+                    <Text style={[styles.chapterItemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
+                      {t(ch.descKey)}
+                    </Text>
+
+                    <View style={styles.chapterProgressFooter}>
+                      <View style={styles.miniProgressTrack}>
+                        <View style={[styles.miniProgressFill, { width: `${ch.progress}%` }]} />
+                      </View>
+                      <Text style={styles.miniProgressPercent}>{ch.progress}%</Text>
+                      <Text style={[styles.topicsCountMeta, { color: colors.textSecondary }]}>
+                        {t('study.topicsCount', { count: ch.topicsCount })}
+                      </Text>
+                      <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} style={{ marginLeft: 'auto' }} />
+                    </View>
+                  </View>
+                </Card>
               );
-            }}
-          />
-        </View>
+            })}
+          </View>
+
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // Render Main Chapters Grid / Search View
+  // ----------------------------------------------------
+  // VIEW 1: MAIN STUDY TAB VIEW (Screenshot 2)
+  // ----------------------------------------------------
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>{t('tabs.study')}</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
+        {/* Top Navigation */}
+        <View style={styles.topNav}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.logoBadge}>
+              <Text style={styles.logoBadgeText}>NS</Text>
+            </View>
+            <View style={{ marginLeft: 10 }}>
+              <Text style={[styles.logoBrandMain, { color: colors.text }]}>NEW SUNSHINE</Text>
+              <Text style={styles.logoBrandSub}>DRIVING ACADEMY</Text>
+            </View>
+          </View>
 
-        {/* Search Input */}
-        <View style={[styles.searchBox, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
-          <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
-          <TextInput
-            placeholder={t('study.searchPlaceholder')}
-            placeholderTextColor={colors.textSecondary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={[styles.searchInput, { color: colors.text }]}
-          />
-          {searchQuery ? (
-            <Pressable onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
-            </Pressable>
-          ) : null}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, zIndex: 50 }}>
+            <View style={{ position: 'relative' }}>
+              <Pressable 
+                style={[styles.langSelector, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}
+                onPress={() => setIsLangMenuOpen(!isLangMenuOpen)}
+              >
+                <Ionicons name="globe-outline" size={16} color={colors.text} />
+                <Text style={[styles.langText, { color: colors.text }]}>{currentLang.toUpperCase()}</Text>
+                <Ionicons name="chevron-down" size={14} color={colors.textSecondary} />
+              </Pressable>
+
+              {isLangMenuOpen && (
+                <View style={[styles.langDropdown, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
+                  {['en', 'ja', 'zh', 'pt'].map((l) => (
+                    <Pressable
+                      key={l}
+                      style={[styles.langDropdownItem, currentLang === l && { backgroundColor: `${colors.primary}15` }]}
+                      onPress={() => {
+                        setLanguage(l as LanguageCode);
+                        setIsLangMenuOpen(false);
+                      }}
+                    >
+                      <Text style={[styles.langDropdownText, { color: currentLang === l ? colors.primary : colors.text }]}>
+                        {l.toUpperCase()}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
+          </View>
         </View>
 
-        {/* Search Results rendering */}
-        {searchQuery ? (
-          <FlatList
-            data={searchResults}
-            keyExtractor={(item) => item.subtopic.id}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('study.noMatchingRules')}</Text>
-            }
-            renderItem={({ item }) => (
-              <Card 
-                onPress={() => {
-                  setSelectedChapter(item.chapter);
-                  setSelectedSubtopic(item.subtopic);
-                  setSearchQuery(''); // clear search on click
-                }}
-                style={styles.searchResultCard}
-              >
-                <Text style={[styles.searchResultChapter, { color: colors.primary }]}>
-                  {loc(item.chapter.title)}
-                </Text>
-                <Text style={[styles.searchResultSubtopic, { color: colors.text }]}>
-                  {loc(item.subtopic.title)}
-                </Text>
-                <Text style={[styles.searchResultContent, { color: colors.textSecondary }]} numberOfLines={2}>
-                  {loc(item.subtopic.content)}
-                </Text>
-              </Card>
-            )}
-          />
-        ) : (
-          <Animated.ScrollView 
-            onScroll={scrollHandler} 
-            scrollEventThrottle={16}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
+        {/* Page Title & Illustration Header */}
+        <View style={styles.pageTitleHeaderRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.mainPageTitle, { color: colors.text }]}>{t('tabs.study')}</Text>
+            <Text style={[styles.mainPageSub, { color: colors.textSecondary }]}>
+              {t('study.subtitle')}
+            </Text>
+          </View>
+          <View style={styles.carIllustrationFrame}>
+            <Ionicons name="car-sport" size={38} color="#E31837" />
+          </View>
+        </View>
+
+        {/* Search Bar + Filter Button */}
+        <View style={styles.searchRowContainer}>
+          <View style={[styles.searchBarBox, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
+            <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
+            <TextInput
+              style={[styles.searchInput, { color: colors.text }]}
+              placeholder={t('study.searchPlaceholder')}
+              placeholderTextColor={colors.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+          <TouchableOpacity style={[styles.filterBtnPill, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
+            <Ionicons name="options-outline" size={18} color={colors.text} />
+            <Text style={[styles.filterBtnText, { color: colors.text }]}>{t('study.filter')}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Continue Reading Hero Card */}
+        <Card style={styles.continueReadingHero}>
+          <View style={styles.circularGaugeBox}>
+            <View style={styles.ringOuter}>
+              <Text style={styles.ringPercentText}>68%</Text>
+              <Text style={styles.ringCompleteText}>{t('study.complete')}</Text>
+            </View>
+          </View>
+
+          <View style={styles.continueDetailsCol}>
+            <Text style={styles.continueBadgeTag}>{t('study.continueReadingBadge')}</Text>
+            <Text style={[styles.continueChapterTitle, { color: colors.text }]}>Traffic Rules & Signals</Text>
+            <Text style={[styles.continueChapterSub, { color: colors.textSecondary }]}>Chapter 2 • Traffic Lights</Text>
+
+            <View style={styles.progressLineBg}>
+              <View style={[styles.progressLineFill, { width: '68%' }]} />
+            </View>
+            <Text style={[styles.lessonSubText, { color: colors.textSecondary }]}>
+              {t('study.lessonOf', { current: 8, total: 12 })}
+            </Text>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.continueActionBtn}
+            onPress={() => setActiveCategory('car')}
           >
-            {/* Cinematic Parallax Header for Selected Book */}
-            {selectedBook && (
-              <Animated.View style={[{ height: 220, marginBottom: 24, borderRadius: 20, overflow: 'hidden', backgroundColor: `${colors.primary}15`, justifyContent: 'flex-end', padding: 20 }, headerAnimatedStyle]}>
-                {selectedBook.coverImage ? (
-                  <Image source={{ uri: selectedBook.coverImage }} style={[StyleSheet.absoluteFill]} resizeMode="cover" />
-                ) : null}
-                <View style={[StyleSheet.absoluteFill, { backgroundColor: selectedBook.coverImage ? 'rgba(0,0,0,0.55)' : 'transparent' }]} />
-                <Ionicons name="book" size={64} color={selectedBook.coverImage ? '#FFF' : colors.primary} style={{ opacity: 0.25, position: 'absolute', top: -10, right: -10, transform: [{ scale: 2 }] }} />
-                <Text style={{ fontSize: 28, fontWeight: '900', color: selectedBook.coverImage ? '#FFFFFF' : colors.text, marginBottom: 4 }}>
-                  {loc(selectedBook.title)}
-                </Text>
-                <Text style={{ fontSize: 16, fontWeight: '600', color: selectedBook.coverImage ? '#EEEEEE' : colors.textSecondary }}>
-                  {t('study.chaptersCount', { count: selectedBook.chapters?.length || 0 })}
-                </Text>
-              </Animated.View>
-            )}
+            <Ionicons name="chevron-forward" size={20} color="#FFF" />
+          </TouchableOpacity>
+        </Card>
 
-            {/* Continue Reading Banner */}
-            {!selectedBook && progress.lastReadSubtopicId && (
-              <Card onPress={handleResumeReading} variant="glass" style={styles.resumeCard}>
-                <View style={styles.resumeContent}>
-                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: `${colors.primary}1A`, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                    <Ionicons name="play" size={18} color={colors.primary} />
-                  </View>
-                  <View style={styles.resumeTextContainer}>
-                    <Text style={[styles.resumeLbl, { color: colors.textSecondary }]}>{t('study.resumeReading')}</Text>
-                    <Text style={[styles.resumeTitle, { color: colors.text }]} numberOfLines={1}>
-                      {getLastReadTitle()}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                </View>
-              </Card>
-            )}
+        {/* Study by Category Section */}
+        <View style={styles.sectionContainer}>
+          <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('study.studyByCategory')}</Text>
+          <Text style={[styles.sectionSubHeading, { color: colors.textSecondary }]}>{t('study.studyByCategorySub')}</Text>
 
-            {/* IF NO SECTION IS SELECTED: Render Car/Bike Selector */}
-            {!activeSection ? (
-              <View style={styles.selectorContainer}>
-                {/* Car Card */}
-                <Animated.View entering={FadeInUp.delay(100).springify()}>
-                  <Card
-                    onPress={() => setActiveSection('car')}
-                    style={[
-                      styles.selectorCard,
-                      {
-                        borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.35)' : 'rgba(227, 24, 55, 0.16)',
-                        ...Platform.select({
-                          web: {
-                            boxShadow: theme === 'dark' ? '0 0 16px rgba(227, 24, 55, 0.12)' : '0 0 16px rgba(227, 24, 55, 0.05)',
-                          } as any,
-                          default: {
-                            shadowColor: colors.primary,
-                            shadowOpacity: theme === 'dark' ? 0.22 : 0.05,
-                            shadowRadius: 10,
-                            elevation: 3,
-                          }
-                        })
-                      }
-                    ]}
-                  >
-                    <View style={[styles.selectorIconWrapper, { backgroundColor: `${colors.primary}12` }]}>
-                      <Ionicons name="car-sport-sharp" size={32} color={colors.primary} />
-                    </View>
-                    <View style={styles.selectorTextInfo}>
-                      <Text style={[styles.selectorCardTitle, { color: colors.text }]}>
-                        {t('study.carTitle')}
-                      </Text>
-                      <Text style={[styles.selectorCardSub, { color: colors.textSecondary }]}>
-                        {t('study.carSub')}
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                  </Card>
-                </Animated.View>
-
-                {/* Bike Card */}
-                <Animated.View entering={FadeInUp.delay(200).springify()}>
-                  <Card
-                    onPress={() => setActiveSection('bike')}
-                    style={[
-                      styles.selectorCard,
-                      {
-                        borderColor: theme === 'dark' ? 'rgba(255, 179, 0, 0.35)' : 'rgba(245, 158, 11, 0.16)',
-                        ...Platform.select({
-                          web: {
-                            boxShadow: theme === 'dark' ? '0 0 16px rgba(255, 179, 0, 0.12)' : '0 0 16px rgba(245, 158, 11, 0.05)',
-                          } as any,
-                          default: {
-                            shadowColor: '#FFB300',
-                            shadowOpacity: theme === 'dark' ? 0.22 : 0.05,
-                            shadowRadius: 10,
-                            elevation: 3,
-                          }
-                        })
-                      }
-                    ]}
-                  >
-                    <View style={[styles.selectorIconWrapper, { backgroundColor: '#FFB30015' }]}>
-                      <Ionicons name="bicycle-sharp" size={32} color="#FFB300" />
-                    </View>
-                    <View style={styles.selectorTextInfo}>
-                      <Text style={[styles.selectorCardTitle, { color: colors.text }]}>
-                        {t('study.bikeTitle')}
-                      </Text>
-                      <Text style={[styles.selectorCardSub, { color: colors.textSecondary }]}>
-                        {t('study.bikeSub')}
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                  </Card>
-                </Animated.View>
+          <View style={{ gap: 12, marginTop: 12 }}>
+            {/* Category Card 1: Car License */}
+            <Card style={styles.categoryCardRow} onPress={() => setActiveCategory('car')}>
+              <View style={[styles.catIconCircle, { backgroundColor: '#FFEBEE' }]}>
+                <Ionicons name="car-sport" size={22} color="#E31837" />
               </View>
-            ) : (
-              <>
-                {/* Back button if book is selected */}
-                {selectedBook && (
-                  <View style={[styles.chapterHeader, { marginBottom: 16 }]}>
-                    <Pressable 
-                      onPress={() => {
-                        Haptics.selectionAsync();
-                        setSelectedBook(null);
-                      }} 
-                      style={[styles.backBtn, { backgroundColor: colors.backgroundElement, borderRadius: 20, padding: 8 }]}
-                    >
-                      <Ionicons name="arrow-back" size={24} color={colors.text} />
-                    </Pressable>
-                  </View>
-                )}
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.catCardTitle, { color: colors.text }]}>{t('study.carLicense')}</Text>
+                <Text style={[styles.catCardSub, { color: colors.textSecondary }]}>{t('study.carLicenseSub')}</Text>
+              </View>
+              <View style={styles.catBadgeRed}>
+                <Text style={styles.catBadgeRedText}>5 Chapters</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+            </Card>
 
-                {/* Back button to clear activeSection if no book is selected */}
-                {!selectedBook && (
-                  <View style={[styles.chapterHeader, { marginBottom: 8 }]}>
-                    <Pressable onPress={() => setActiveSection(null)} style={styles.backBtn}>
-                      <Ionicons name="arrow-back" size={24} color={colors.text} />
-                    </Pressable>
-                    <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
-                      {activeSection === 'car' ? t('study.carCategory') : t('study.bikeCategory')}
-                    </Text>
-                  </View>
-                )}
+            {/* Category Card 2: Motorcycle License */}
+            <Card style={styles.categoryCardRow} onPress={() => setActiveCategory('bike')}>
+              <View style={[styles.catIconCircle, { backgroundColor: '#FFF8E1' }]}>
+                <Ionicons name="bicycle" size={22} color="#FF9800" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.catCardTitle, { color: colors.text }]}>{t('study.motorcycleLicense')}</Text>
+                <Text style={[styles.catCardSub, { color: colors.textSecondary }]}>{t('study.motorcycleLicenseSub')}</Text>
+              </View>
+              <View style={styles.catBadgeYellow}>
+                <Text style={styles.catBadgeYellowText}>4 Chapters</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+            </Card>
 
-                {/* If selectedBook is active, render its chapters */}
-                {selectedBook ? (
-                  (selectedBook.chapters || []).filter((ch: any) => {
-                    if (!activeSection) return true;
-                    return ch.licenseType === activeSection || ch.licenseType === 'both' || !ch.licenseType;
-                  }).map((chapter: any, index: number) => {
-                    const compPercent = getChapterProgress(chapter);
-                    const isDownloaded = downloadedChapters.includes(chapter.id);
+            {/* Category Card 3: Large Vehicle License */}
+            <Card style={styles.categoryCardRow} onPress={() => setActiveCategory('large')}>
+              <View style={[styles.catIconCircle, { backgroundColor: '#F3E5F5' }]}>
+                <Ionicons name="bus" size={22} color="#9C27B0" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.catCardTitle, { color: colors.text }]}>{t('study.largeVehicleLicense')}</Text>
+                <Text style={[styles.catCardSub, { color: colors.textSecondary }]}>{t('study.largeVehicleLicenseSub')}</Text>
+              </View>
+              <View style={styles.catBadgePurple}>
+                <Text style={styles.catBadgePurpleText}>6 Chapters</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+            </Card>
+          </View>
+        </View>
 
-                    const handleDownload = () => {
-                      if (isDownloaded) {
-                        Alert.alert(
-                          t('study.removeDownloadTitle'),
-                          t('study.removeDownloadConfirm'),
-                          [
-                            { text: t('common.cancel'), style: 'cancel' },
-                            { text: t('study.deleteDownload'), style: 'destructive', onPress: () => deleteDownload(chapter.id) }
-                          ]
-                        );
-                      } else {
-                        downloadChapter(chapter.id).then(() => {
-                          Alert.alert(t('study.downloadedTitle'), t('study.downloadedMessage'));
-                        });
-                      }
-                    };
+        {/* Quick Tools Section */}
+        <View style={styles.sectionContainer}>
+          <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('study.quickTools')}</Text>
+          <View style={styles.quickToolsGrid}>
+            <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
+              <View style={[styles.quickToolIconBadge, { backgroundColor: '#FFEBEE' }]}>
+                <Ionicons name="bookmark" size={22} color="#E31837" />
+              </View>
+              <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.bookmarks')}</Text>
+            </TouchableOpacity>
 
-                    return (
-                      <Animated.View key={chapter.id} entering={FadeInDown.delay(index * 100).springify()}>
-                        <Card 
-                          onPress={() => {
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                            setSelectedChapter(chapter);
-                          }} 
-                          style={styles.chapterCard}
-                        >
-                        <View style={styles.chapterHeaderRow}>
-                          <View style={[styles.chapterIconBox, { backgroundColor: `${colors.primary}10` }]}>
-                            <Ionicons name="book-outline" size={24} color={colors.primary} />
-                          </View>
-                          <View style={styles.chapterInfo}>
-                            <Text style={[styles.chapterCardTitle, { color: colors.text }]}>
-                              {loc(chapter.title)}
-                            </Text>
-                            <Text style={[styles.chapterCardSub, { color: colors.textSecondary }]}>
-                              {loc(chapter.title)}
-                            </Text>
-                          </View>
-                          {/* Download Toggle icon */}
-                          <Pressable onPress={handleDownload} style={styles.downloadIconBtn}>
-                            <Ionicons 
-                              name={isDownloaded ? 'cloud-done' : 'cloud-download-outline'} 
-                              size={22} 
-                              color={isDownloaded ? colors.success : colors.textSecondary} 
-                            />
-                          </Pressable>
-                        </View>
-                        
-                        {/* Progress Line */}
-                        <View style={styles.progressRow}>
-                          <View style={[styles.progressBarBg, { backgroundColor: colors.backgroundSelected }]}>
-                            <View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: `${compPercent}%` }]} />
-                          </View>
-                          <Text style={[styles.progressText, { color: colors.textSecondary }]}>
-                            {compPercent}%
-                          </Text>
-                        </View>
-                      </Card>
-                    </Animated.View>
-                    );
-                  })
-                ) : (
-                  /* Render Books list if no book is selected */
-                  books.map((book, index) => {
-                    const matchingChapters = (book.chapters || []).filter((ch: any) => {
-                      if (!activeSection) return true;
-                      return ch.licenseType === activeSection || ch.licenseType === 'both' || !ch.licenseType;
-                    });
-                    const totalChapters = matchingChapters.length;
-                    return (
-                      <Animated.View key={book.id} entering={FadeInDown.delay(index * 100).springify()}>
-                        <Card 
-                          onPress={() => setSelectedBook(book)} 
-                          style={styles.chapterCard}
-                        >
-                          <View style={styles.chapterHeaderRow}>
-                            {book.coverImage ? (
-                              <Image 
-                                source={{ uri: book.coverImage }} 
-                                style={{ width: 56, height: 56, borderRadius: 14, marginRight: 12 }} 
-                                resizeMode="cover" 
-                              />
-                            ) : (
-                              <View style={[styles.chapterIconBox, { backgroundColor: activeSection === 'car' ? `${colors.primary}10` : '#FFB30015' }]}>
-                                <Ionicons 
-                                  name={activeSection === 'car' ? "car-sport-outline" : "bicycle-outline"} 
-                                  size={24} 
-                                  color={activeSection === 'car' ? colors.primary : "#FFB300"} 
-                                />
-                              </View>
-                            )}
-                            <View style={styles.chapterInfo}>
-                              <Text style={[styles.chapterCardTitle, { color: colors.text }]}>
-                                {loc(book.title)}
-                              </Text>
-                              <Text style={[styles.chapterCardSub, { color: colors.textSecondary }]}>
-                                {loc(book.description)} | {t('study.chaptersCount', { count: totalChapters })}
-                              </Text>
-                            </View>
-                            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-                          </View>
-                        </Card>
-                      </Animated.View>
-                    );
-                  })
-                )}
-              </>
-            )}
-          </Animated.ScrollView>
-        )}
-      </View>
+            <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
+              <View style={[styles.quickToolIconBadge, { backgroundColor: '#FFF3E0' }]}>
+                <Ionicons name="time" size={22} color="#FF9800" />
+              </View>
+              <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.recent')}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
+              <View style={[styles.quickToolIconBadge, { backgroundColor: '#E8F5E9' }]}>
+                <Ionicons name="download" size={22} color="#4CAF50" />
+              </View>
+              <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.downloads')}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
+              <View style={[styles.quickToolIconBadge, { backgroundColor: '#E3F2FD' }]}>
+                <Ionicons name="journal" size={22} color="#2196F3" />
+              </View>
+              <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.notes')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Study Tip Banner */}
+        <Card style={styles.studyTipCard}>
+          <View style={styles.tipIconBadge}>
+            <Ionicons name="disc" size={28} color="#E31837" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.tipTitleHeader}>{t('study.studyTip')}</Text>
+            <Text style={[styles.tipMainText, { color: colors.text }]}>{t('study.studyTipTitle')}</Text>
+            <Text style={[styles.tipSubText, { color: colors.textSecondary }]}>{t('study.studyTipSub')}</Text>
+          </View>
+          <TouchableOpacity style={styles.viewTipsBtn}>
+            <Text style={styles.viewTipsText}>{t('study.viewTips')}</Text>
+            <Ionicons name="chevron-forward" size={14} color="#E31837" />
+          </TouchableOpacity>
+        </Card>
+
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -940,215 +552,515 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 10,
-    paddingTop: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginBottom: 16,
-  },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginBottom: 20,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-  },
-  listContent: {
-    gap: 16,
+  scrollContent: {
+    paddingHorizontal: 14,
+    paddingTop: 12,
     paddingBottom: 40,
   },
-  resumeCard: {
-    padding: 14,
-  },
-  resumeContent: {
+  topNav: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  resumePlayIcon: {
-    marginRight: 12,
-  },
-  resumeTextContainer: {
-    flex: 1,
-  },
-  resumeLbl: {
-    color: '#D0D0D0',
-    fontSize: 11,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  resumeTitle: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-    marginTop: 2,
-  },
-  chapterCard: {
-    padding: 16,
-  },
-  chapterHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 16,
+    zIndex: 100,
   },
-  chapterIconBox: {
-    width: 44,
-    height: 44,
+  logoBadge: {
+    width: 34,
+    height: 34,
     borderRadius: 10,
+    backgroundColor: '#E31837',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
   },
-  chapterInfo: {
-    flex: 1,
-    paddingRight: 8,
+  logoBadgeText: {
+    color: '#FFF',
+    fontWeight: '900',
+    fontSize: 15,
+    fontStyle: 'italic',
   },
-  chapterCardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
+  logoBrandMain: {
+    fontWeight: '900',
+    fontSize: 13,
+    letterSpacing: 1,
+    lineHeight: 15,
   },
-  chapterCardSub: {
-    fontSize: 12,
-    lineHeight: 16,
+  logoBrandSub: {
+    color: '#E31837',
+    fontWeight: '800',
+    fontSize: 8.5,
+    letterSpacing: 1.2,
+    lineHeight: 10,
   },
-  downloadIconBtn: {
-    padding: 4,
-  },
-  progressRow: {
+  langSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 18,
+    borderWidth: 1,
+    gap: 6,
   },
-  progressBarBg: {
-    flex: 1,
-    height: 6,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  progressText: {
+  langText: {
     fontSize: 12,
-    fontWeight: '600',
-    minWidth: 32,
-    textAlign: 'right',
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 24,
-    fontSize: 15,
-  },
-  searchResultCard: {
-    padding: 16,
-  },
-  searchResultChapter: {
-    fontSize: 11,
     fontWeight: '700',
-    textTransform: 'uppercase',
+  },
+  langDropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    marginTop: 8,
+    width: 80,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    zIndex: 999,
+  },
+  langDropdownItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  langDropdownText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  // Page Title & Header
+  pageTitleHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  mainPageTitle: {
+    fontSize: 30,
+    fontWeight: '900',
+    letterSpacing: -0.5,
     marginBottom: 4,
   },
-  searchResultSubtopic: {
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  searchResultContent: {
+  mainPageSub: {
     fontSize: 13,
     lineHeight: 18,
   },
-  chapterHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  backBtn: {
-    marginRight: 16,
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    flex: 1,
-  },
-  subtopicCard: {
-    padding: 16,
-  },
-  subtopicRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  subtopicIndex: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  carIllustrationFrame: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: '#FFEBEE',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
   },
-  subtopicIndexText: {
+  // Search & Filter
+  searchRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 18,
+  },
+  searchBarBox: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 22,
+    borderWidth: 1,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13.5,
+    padding: 0,
+  },
+  filterBtnPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 22,
+    borderWidth: 1,
+    gap: 6,
+  },
+  filterBtnText: {
     fontSize: 13,
     fontWeight: '700',
   },
-  subtopicInfo: {
-    flex: 1,
+  // Continue Reading Hero
+  continueReadingHero: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 22,
+    marginBottom: 22,
   },
-  subtopicTitle: {
+  circularGaugeBox: {
+    marginRight: 14,
+  },
+  ringOuter: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    borderWidth: 5,
+    borderColor: '#E31837',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ringPercentText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#E31837',
+  },
+  ringCompleteText: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#E31837',
+  },
+  continueDetailsCol: {
+    flex: 1,
+    paddingRight: 8,
+  },
+  continueBadgeTag: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#E31837',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  continueChapterTitle: {
     fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  continueChapterSub: {
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  progressLineBg: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#F0F0F5',
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  progressLineFill: {
+    height: '100%',
+    backgroundColor: '#E31837',
+    borderRadius: 3,
+  },
+  lessonSubText: {
+    fontSize: 11,
     fontWeight: '600',
   },
-  gradientOverlay: {
+  continueActionBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E31837',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // Categories Section
+  sectionContainer: {
+    marginBottom: 22,
+  },
+  sectionHeading: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  sectionSubHeading: {
+    fontSize: 12.5,
+  },
+  categoryCardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 20,
+    gap: 12,
+  },
+  catIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  catCardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  catCardSub: {
+    fontSize: 11.5,
+    lineHeight: 16,
+  },
+  catBadgeRed: {
+    backgroundColor: '#FFEBEE',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  catBadgeRedText: {
+    color: '#E31837',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  catBadgeYellow: {
+    backgroundColor: '#FFF8E1',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  catBadgeYellowText: {
+    color: '#F57F17',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  catBadgePurple: {
+    backgroundColor: '#F3E5F5',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  catBadgePurpleText: {
+    color: '#7B1FA2',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  // Quick Tools
+  quickToolsGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+  },
+  quickToolBox: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.02)',
+  },
+  quickToolIconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  quickToolLabel: {
+    fontSize: 11.5,
+    fontWeight: '700',
+  },
+  // Study Tip Card
+  studyTipCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: '#FFF5F5',
+    gap: 12,
+  },
+  tipIconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFEBEE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tipTitleHeader: {
+    color: '#E31837',
+    fontSize: 11,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  tipMainText: {
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  tipSubText: {
+    fontSize: 11.5,
+  },
+  viewTipsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E31837',
+    gap: 4,
+  },
+  viewTipsText: {
+    color: '#E31837',
+    fontSize: 11.5,
+    fontWeight: '800',
+  },
+
+  // Category Detail View Styles
+  categoryHeroCard: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    minHeight: 190,
+    marginBottom: 16,
+    position: 'relative',
+  },
+  categoryHeroImage: {
     position: 'absolute',
     top: 0,
-    left: 0,
     right: 0,
     bottom: 0,
-    ...Platform.select({
-      web: {
-        backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(227, 24, 55, 0.04) 0%, rgba(0, 0, 0, 0) 75%)',
-      } as any,
-    }),
+    width: '65%',
   },
-  readerProgressBg: {
-    height: 1,
-    width: '100%',
+  categoryHeroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    width: '60%',
   },
-  readerProgressFill: {
+  categoryHeroContent: {
+    padding: 20,
+  },
+  carIconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#FFEBEE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  categoryTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  categorySub: {
+    fontSize: 12.5,
+    maxWidth: '60%',
+    marginBottom: 14,
+  },
+  categoryProgressRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '55%',
+    marginBottom: 4,
+  },
+  progressLbl: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#666',
+  },
+  progressVal: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#E31837',
+  },
+  progressTrackBg: {
+    width: '55%',
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#E0E0E0',
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  progressTrackFill: {
     height: '100%',
+    backgroundColor: '#E31837',
+    borderRadius: 3,
   },
-  readerNeedle: {
-    position: 'absolute',
-    top: -3,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    ...Platform.select({
-      web: {
-        boxShadow: '0 0 8px #FF3B55',
-      } as any,
-      default: {
-        shadowColor: '#FF3B55',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.8,
-        shadowRadius: 4,
-        elevation: 2,
-      },
-    }),
+  completedTopicsSub: {
+    fontSize: 11,
+    fontWeight: '600',
   },
+  // 4 Stat Boxes
+  statBoxesRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 20,
+  },
+  statBoxCard: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 18,
+    alignItems: 'center',
+  },
+  statBoxNum: {
+    fontSize: 15,
+    fontWeight: '900',
+    marginTop: 4,
+  },
+  statBoxLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  // Chapter Cards Row
+  chapterCardRow: {
+    flexDirection: 'row',
+    padding: 12,
+    borderRadius: 20,
+    gap: 12,
+  },
+  chapterThumb: {
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+  },
+  chapterInfoCol: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  chapterNumBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FFEBEE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chapterNumText: {
+    color: '#E31837',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  chapterItemTitle: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    flex: 1,
+  },
+  chapterItemDesc: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    marginBottom: 8,
+  },
+  chapterProgressFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  miniProgressTrack: {
+    width: 60,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#E0E0E0',
+    overflow: 'hidden',
+  },
+  miniProgressFill: {
+    height: '100%',
+    backgroundColor: '#E31837',
+  },
+  miniProgressPercent: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#E31837',
+  },
+  topicsCountMeta: {
+    fontSize: 10,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+
+  // Reader View Styles
   readerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1157,191 +1069,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  headerBtn: {
-    padding: 6,
-  },
-  fontSizeSelector: {
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: '#CCC',
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  fontSizeBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  fontSizeText: {
-    fontWeight: '700',
-  },
-  readerContent: {
-    paddingHorizontal: 24,
-    paddingVertical: 28,
-  },
   readerTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginBottom: 24,
-    lineHeight: 30,
-    letterSpacing: 0.5,
-  },
-  tipCard: {
-    marginTop: 28,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  tipHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  tipTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  tipText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  readerFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-  },
-  navBtn: {
-    minHeight: 36,
-    paddingVertical: 6,
-  },
-  pageNumber: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  chapterQuizCard: {
-    padding: 16,
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  chapterQuizRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  chapterQuizInfo: {
-    flex: 1,
-  },
-  chapterQuizTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  chapterQuizSub: {
-    fontSize: 12,
-  },
-  // Car / Bike vehicle selector styling
-  selectorContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    gap: 16,
-  },
-  selectorCard: {
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    ...Platform.select({
-      web: {
-        transition: 'all 0.2s ease-in-out',
-        cursor: 'pointer',
-      } as any,
-    }),
-  },
-  selectorIconWrapper: {
-    width: 68,
-    height: 68,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  selectorTextInfo: {
-    flex: 1,
-  },
-  selectorCardTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  selectorCardSub: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  // Chapter Explanation styling
-  explanationCard: {
-    padding: 20,
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 20,
-    borderRadius: 16,
-  },
-  explanationHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 12,
-  },
-  explanationCardTitle: {
     fontSize: 16,
     fontWeight: '800',
-  },
-  explanationIntroText: {
-    fontSize: 14,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
-  explanationSubtitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  takeawayRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 6,
-    alignItems: 'flex-start',
-  },
-  takeawayText: {
-    fontSize: 13,
-    lineHeight: 18,
     flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 12,
   },
-  explanationDivider: {
-    height: 1,
-    marginVertical: 16,
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  vehicleFocusBox: {
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  vehicleFocusTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    marginBottom: 6,
-  },
-  vehicleFocusText: {
-    fontSize: 13,
-    lineHeight: 18,
+  readerContent: {
+    padding: 20,
   },
 });
