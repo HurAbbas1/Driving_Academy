@@ -397,6 +397,73 @@ export default function App() {
     }
   };
 
+  
+  // Robust AI completion runner with automatic model fallback to avoid upstream idle timeouts
+  const fetchOpenRouterAI = async (apiKey: string, messagesContent: any[]): Promise<any> => {
+    const models = [
+      'google/gemini-2.0-flash-001',
+      'meta-llama/llama-3.3-70b-instruct',
+      'google/gemini-2.0-flash-lite-001',
+      'qwen/qwen-2.5-coder-32b-instruct',
+      'nvidia/nemotron-nano-12b-v2-vl:free'
+    ];
+
+    let lastErrorMessage = '';
+
+    for (const model of models) {
+      try {
+        console.log(`[AI Pipeline] Requesting model: ${model}...`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s safety timeout
+
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'http://localhost:3000',
+            'X-Title': 'NCS Admin Ingestion'
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: model,
+            max_tokens: 6000,
+            response_format: { type: "json_object" },
+            messages: [
+              {
+                role: 'user',
+                content: messagesContent
+              }
+            ]
+          })
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          if (!data.error && data.choices?.[0]?.message?.content) {
+            console.log(`[AI Pipeline] Successfully received response from ${model}!`);
+            return data;
+          }
+          if (data.error) {
+            lastErrorMessage = data.error.message || JSON.stringify(data.error);
+            console.warn(`[AI Pipeline] Model ${model} returned API error: ${lastErrorMessage}`);
+          }
+        } else {
+          const errText = await response.text().catch(() => '');
+          lastErrorMessage = `HTTP ${response.status}: ${errText}`;
+          console.warn(`[AI Pipeline] Model ${model} returned status ${lastErrorMessage}`);
+        }
+      } catch (err: any) {
+        lastErrorMessage = err?.name === 'AbortError' ? 'Request timed out after 45s' : (err?.message || String(err));
+        console.warn(`[AI Pipeline] Model ${model} failed: ${lastErrorMessage}`);
+      }
+    }
+
+    throw new Error(`AI Synthesis Error: ${lastErrorMessage || 'All AI models timed out. Please try again.'}`);
+  };
+
   const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
 
   const handleStartIngestion = async (e: React.FormEvent) => {
@@ -429,6 +496,10 @@ export default function App() {
         }
       } else if (fileContent || rawTextPaste) {
         extractedText = fileContent || rawTextPaste;
+      if (extractedText.length > 15000) {
+        console.log("[Ingestion] Trimming extracted text to 15,000 characters for optimal AI performance...");
+        extractedText = extractedText.slice(0, 15000);
+      }
       } else {
         alert("Please select a PDF/TXT file or paste raw handbook text.");
         setIsIngesting(false);
@@ -439,7 +510,7 @@ export default function App() {
       setIngestionStep(2);
       console.log("[Ingestion] Launching concurrent Multimodal Ingestion pipelines via OpenRouter...");
 
-      const model = 'nvidia/nemotron-nano-12b-v2-vl:free';
+      // Using multi-model fallback list in fetchOpenRouterAI
 
       // Build the message contents array containing the prompt text and images
       const chapterContent: any[] = [
@@ -468,68 +539,11 @@ export default function App() {
         quizContent.push(imageElement);
       });
 
-      const chapterPromise = fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'http://localhost:3000', 
-          'X-Title': 'Auto-Mod-AR Ingestion'
-        },
-        body: JSON.stringify({
-          model: model,
-          max_tokens: 8000,
-          response_format: { type: "json_object" },
-          messages: [
-            {
-              role: 'user',
-              content: chapterContent
-            }
-          ]
-        })
-      });
-
       setIngestionStep(3);
-      const quizPromise = fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'http://localhost:3000', 
-          'X-Title': 'Auto-Mod-AR Ingestion'
-        },
-        body: JSON.stringify({
-          model: model,
-          max_tokens: 8000,
-          response_format: { type: "json_object" },
-          messages: [
-            {
-              role: 'user',
-              content: quizContent
-            }
-          ]
-        })
-      });
+      const chapterData = await fetchOpenRouterAI(OPENROUTER_API_KEY, chapterContent);
 
       setIngestionStep(4);
-      const [chapterRes, quizRes] = await Promise.all([chapterPromise, quizPromise]);
-
-      if (chapterRes.status === 429 || quizRes.status === 429) {
-        console.warn('[Rate Limit] Throttled. Waiting 30 seconds...');
-        alert('Rate limit hit. Please try again in 1 minute.');
-        setIsIngesting(false);
-        setIngestionStep(0);
-        return;
-      }
-
-      if (!chapterRes.ok || !quizRes.ok) {
-        const chErr = !chapterRes.ok ? await chapterRes.text() : '';
-        const qErr = !quizRes.ok ? await quizRes.text() : '';
-        throw new Error(`OpenRouter connection error.\nChapter: ${chapterRes.status} (${chErr})\nQuiz: ${quizRes.status} (${qErr})`);
-      }
-
-      const chapterData = await chapterRes.json();
-      const quizData = await quizRes.json();
+      const quizData = await fetchOpenRouterAI(OPENROUTER_API_KEY, quizContent);
 
       if (chapterData.error) throw new Error(`AI Synthesis Error: ${chapterData.error.message || JSON.stringify(chapterData.error)}`);
       if (quizData.error) throw new Error(`AI Quiz Error: ${quizData.error.message || JSON.stringify(quizData.error)}`);
