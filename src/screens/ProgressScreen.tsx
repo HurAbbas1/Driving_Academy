@@ -141,7 +141,7 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
             {/* Radial Dial Circle */}
             <View style={styles.gaugeCircleFrame}>
               <View style={styles.gaugeDialCircle}>
-                <Text style={styles.gaugePercentVal}>{readinessValue}%</Text>
+                <Text style={[styles.gaugePercentVal, { color: colors.text }]}>{readinessValue}%</Text>
                 <Text style={styles.gaugeSubLbl}>{t('progress.ready')}</Text>
               </View>
             </View>
