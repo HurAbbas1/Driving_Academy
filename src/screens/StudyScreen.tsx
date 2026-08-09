@@ -64,6 +64,22 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
     return String(field);
   };
 
+  // Active Handbook & filtered Chapters selection
+  const officialMasterBook = books.find(b => b.id === 'book_official_japan_handbook') || books[0];
+  const activeBook = selectedBookId ? books.find(b => b.id === selectedBookId) || officialMasterBook : officialMasterBook;
+  
+  // Get ONLY the chapters belonging to activeBook
+  const activeChapters = activeBook?.chapters && activeBook.chapters.length > 0 
+    ? activeBook.chapters 
+    : chapters.filter(c => c.id.startsWith('ch_official_') || c.id.startsWith('ch_'));
+
+  const activeTopicsCount = activeChapters.reduce((acc, c) => acc + (c.subtopics ? c.subtopics.length : 0), 0);
+  const activeCompletedCount = activeChapters.reduce((acc, c) => {
+    const subs = c.subtopics || [];
+    return acc + subs.filter(s => progress.completedSubtopics.includes(s.id)).length;
+  }, 0);
+  const activeProgressPercent = activeTopicsCount > 0 ? Math.round((activeCompletedCount / activeTopicsCount) * 100) : 0;
+
   // Static Chapter Data with Thumbnails for Category View
   const categoryChaptersData = [
     {
@@ -232,22 +248,24 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                 <Ionicons name="car-sport" size={24} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
               </View>
               <Text style={[styles.categoryTitle, { color: colors.text }]}>
-                {t('study.carLicense')}
+                {loc(activeBook?.title || t('study.carLicense'))}
               </Text>
               <Text style={[styles.categorySub, { color: colors.textSecondary }]}>
-                {t('study.carLicenseSub')}
+                {loc(activeBook?.description || t('study.carLicenseSub'))}
               </Text>
 
               {/* Progress */}
               <View style={styles.categoryProgressRow}>
                 <Text style={[styles.progressLbl, { color: colors.textSecondary }]}>Progress</Text>
-                <Text style={[styles.progressVal, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>32%</Text>
+                <Text style={[styles.progressVal, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>
+                  {activeProgressPercent}%
+                </Text>
               </View>
               <View style={[styles.progressTrackBg, { backgroundColor: theme === 'dark' ? '#232633' : '#E0E0E0' }]}>
-                <View style={[styles.progressTrackFill, { width: '32%', backgroundColor: theme === 'dark' ? '#FF4D6D' : '#E31837' }]} />
+                <View style={[styles.progressTrackFill, { width: `${activeProgressPercent}%`, backgroundColor: theme === 'dark' ? '#FF4D6D' : '#E31837' }]} />
               </View>
               <Text style={[styles.completedTopicsSub, { color: colors.textSecondary }]}>
-                {t('study.topicsCompleted', { completed: 8, total: 25 })}
+                {t('study.topicsCompleted', { completed: activeCompletedCount, total: activeTopicsCount })}
               </Text>
             </View>
           </View>
@@ -256,21 +274,19 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           <View style={styles.statBoxesRow}>
             <Card style={styles.statBoxCard}>
               <Ionicons name="book-outline" size={20} color="#E31837" />
-              <Text style={[styles.statBoxNum, { color: colors.text }]}>{chapters.length || 3}</Text>
+              <Text style={[styles.statBoxNum, { color: colors.text }]}>{activeChapters.length}</Text>
               <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>Chapters</Text>
             </Card>
 
             <Card style={styles.statBoxCard}>
               <Ionicons name="checkbox-outline" size={20} color="#FF9800" />
-              <Text style={[styles.statBoxNum, { color: colors.text }]}>
-                {chapters.reduce((acc, c) => acc + (c.subtopics ? c.subtopics.length : 0), 0) || 35}
-              </Text>
+              <Text style={[styles.statBoxNum, { color: colors.text }]}>{activeTopicsCount}</Text>
               <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>{t('study.topics')}</Text>
             </Card>
 
             <Card style={styles.statBoxCard}>
               <Ionicons name="checkmark-circle-outline" size={20} color="#4CAF50" />
-              <Text style={[styles.statBoxNum, { color: colors.text }]}>{progress.completedSubtopics.length}</Text>
+              <Text style={[styles.statBoxNum, { color: colors.text }]}>{activeCompletedCount}</Text>
               <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>{t('study.complete')}</Text>
             </Card>
 
@@ -285,7 +301,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('study.chapters')}</Text>
 
           <View style={{ gap: 14, marginBottom: 20 }}>
-            {chapters.map((ch, idx) => {
+            {activeChapters.map((ch, idx) => {
               const subCount = ch.subtopics ? ch.subtopics.length : 0;
               const readCount = ch.subtopics ? ch.subtopics.filter(s => progress.completedSubtopics.includes(s.id)).length : 0;
               const percent = subCount > 0 ? Math.round((readCount / subCount) * 100) : 0;

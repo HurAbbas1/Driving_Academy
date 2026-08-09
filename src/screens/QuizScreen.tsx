@@ -309,7 +309,11 @@ export const QuizScreen: React.FC = () => {
                 <Card
                   key={index}
                   onPress={hasAnswered ? undefined : () => {
-                    Haptics.selectionAsync().catch(() => {});
+                    if (Platform.OS !== 'web') {
+                      try {
+                        Haptics.selectionAsync().catch(() => {});
+                      } catch (e) {}
+                    }
                     selectAnswer(currentQ.id, index);
                   }}
                   style={[

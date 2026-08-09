@@ -41,7 +41,11 @@ const TabButton = ({ icon, label, isActive, onPress, color, isCenter }: any) => 
       <Pressable
         onPressIn={() => {
           scale.value = withSpring(0.85, { damping: 15, stiffness: 300 });
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+          if (Platform.OS !== 'web') {
+            try {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+            } catch (e) {}
+          }
         }}
         onPressOut={() => {
           scale.value = withSpring(1, { damping: 15, stiffness: 300 });
