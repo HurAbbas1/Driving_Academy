@@ -826,10 +826,22 @@ export const QuizScreen: React.FC = () => {
             <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>{t('study.practiceByChapter')}</Text>
             
             {(() => {
+              const getChapterNum = (ch: any): number => {
+                if (ch.orderNum) return Number(ch.orderNum);
+                if (ch.order_num) return Number(ch.order_num);
+                const matchId = String(ch.id || '').match(/ch_(?:official_)?(\d+)/);
+                if (matchId) return parseInt(matchId[1], 10);
+                const matchTitle = (typeof ch.title === 'string' ? ch.title : ch.title?.en || '')?.match(/Chapter\s*(\d+)/i);
+                if (matchTitle) return parseInt(matchTitle[1], 10);
+                return 0;
+              };
+
               const officialMasterBook = books.find(b => b.id === 'book_official_japan_handbook') || books[0];
-              const activeChaptersList = officialMasterBook?.chapters && officialMasterBook.chapters.length > 0 
+              const rawChapters = officialMasterBook?.chapters && officialMasterBook.chapters.length > 0 
                 ? officialMasterBook.chapters 
                 : chapters.filter(c => c.id.startsWith('ch_official_') || c.id.startsWith('ch_'));
+
+              const activeChaptersList = [...rawChapters].sort((a, b) => getChapterNum(a) - getChapterNum(b));
 
               const quizChapterImages = [
                 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=800&q=80',
@@ -851,7 +863,8 @@ export const QuizScreen: React.FC = () => {
               return (
                 <View style={{ gap: 12, marginBottom: 24 }}>
                   {activeChaptersList.map((ch, idx) => {
-                    const thumb = ch.cover_image || quizChapterImages[idx % quizChapterImages.length];
+                    const chNum = getChapterNum(ch) || (idx + 1);
+                    const thumb = ch.cover_image || quizChapterImages[(chNum - 1) % quizChapterImages.length];
                     return (
                       <Card 
                         key={`${ch.id}-${idx}`} 
@@ -862,7 +875,7 @@ export const QuizScreen: React.FC = () => {
                         <View style={{ flex: 1 }}>
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                             <View style={{ backgroundColor: colors.primary, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
-                              <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '900' }}>CH {ch.orderNum || (idx + 1)}</Text>
+                              <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '900' }}>CH {chNum}</Text>
                             </View>
                           </View>
                           <Text style={{ color: colors.text, fontSize: 14, fontWeight: '800', lineHeight: 18, marginBottom: 6 }} numberOfLines={2}>

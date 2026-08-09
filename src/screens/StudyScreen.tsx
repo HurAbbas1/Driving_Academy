@@ -68,10 +68,22 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
   const officialMasterBook = books.find(b => b.id === 'book_official_japan_handbook') || books[0];
   const activeBook = selectedBookId ? books.find(b => b.id === selectedBookId) || officialMasterBook : officialMasterBook;
   
+  const getChapterNum = (ch: any): number => {
+    if (ch.orderNum) return Number(ch.orderNum);
+    if (ch.order_num) return Number(ch.order_num);
+    const matchId = String(ch.id || '').match(/ch_(?:official_)?(\d+)/);
+    if (matchId) return parseInt(matchId[1], 10);
+    const matchTitle = (typeof ch.title === 'string' ? ch.title : ch.title?.en || '')?.match(/Chapter\s*(\d+)/i);
+    if (matchTitle) return parseInt(matchTitle[1], 10);
+    return 0;
+  };
+
   // Get ONLY the chapters belonging to activeBook
-  const activeChapters = activeBook?.chapters && activeBook.chapters.length > 0 
+  const rawChapters = activeBook?.chapters && activeBook.chapters.length > 0 
     ? activeBook.chapters 
     : chapters.filter(c => c.id.startsWith('ch_official_') || c.id.startsWith('ch_'));
+
+  const activeChapters = [...rawChapters].sort((a, b) => getChapterNum(a) - getChapterNum(b));
 
   const activeTopicsCount = activeChapters.reduce((acc, c) => acc + (c.subtopics ? c.subtopics.length : 0), 0);
   const activeCompletedCount = activeChapters.reduce((acc, c) => {
@@ -302,6 +314,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
 
           <View style={{ gap: 14, marginBottom: 20 }}>
             {activeChapters.map((ch, idx) => {
+              const chNum = getChapterNum(ch) || (idx + 1);
               const subCount = ch.subtopics ? ch.subtopics.length : 0;
               const readCount = ch.subtopics ? ch.subtopics.filter(s => progress.completedSubtopics.includes(s.id)).length : 0;
               const percent = subCount > 0 ? Math.round((readCount / subCount) * 100) : 0;
@@ -321,7 +334,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&q=80', // Ch 13: Shaken Vehicle Inspection & Engine Maintenance (Verified 200 OK)
                 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80', // Ch 14: Japanese Driving License Cockpit View & Foreign Reset
               ];
-              const thumb = ch.cover_image || chapterImages[idx % chapterImages.length];
+              const thumb = ch.cover_image || chapterImages[(chNum - 1) % chapterImages.length];
 
               return (
                 <Card 
@@ -339,7 +352,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                   <View style={styles.chapterInfoCol}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <View style={styles.chapterNumBadge}>
-                        <Text style={styles.chapterNumText}>{ch.orderNum || (idx + 1)}</Text>
+                        <Text style={styles.chapterNumText}>{chNum}</Text>
                       </View>
                       <Text style={[styles.chapterItemTitle, { color: colors.text }]} numberOfLines={1}>
                         {loc(ch.title)}
@@ -347,7 +360,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                     </View>
 
                     <Text style={[styles.chapterItemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
-                      {loc(ch.title)}
+                      {ch.subtopics && ch.subtopics[0] ? loc(ch.subtopics[0].title) : loc(ch.title)}
                     </Text>
 
                     <View style={styles.chapterProgressFooter}>
