@@ -21,6 +21,7 @@ interface StudyState {
   selectedBookId: string | null;
 
   // Actions
+  addBook: (book: Book) => void;
   setSelectedBookId: (id: string | null) => void;
   toggleBookmark: (subtopicId: string) => Promise<void>;
   markAsRead: (subtopicId: string, chapterId: string) => Promise<void>;
@@ -43,6 +44,14 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   downloadedChapters: [],
   loading: false,
   selectedBookId: null,
+
+  addBook: (newBook) => {
+    const { books, chapters } = get();
+    const updatedBooks = [newBook, ...books];
+    const updatedChapters = [...newBook.chapters, ...chapters];
+    set({ books: updatedBooks, chapters: updatedChapters });
+    AsyncStorage.setItem('ai-custom-books', JSON.stringify(updatedBooks)).catch(() => {});
+  },
 
   setSelectedBookId: (id) => set({ selectedBookId: id }),
 
@@ -235,6 +244,19 @@ export const useStudyStore = create<StudyState>((set, get) => ({
             finalChapters.push(...mb.chapters);
           }
         }
+      }
+
+      const storedCustomBooks = await AsyncStorage.getItem('ai-custom-books');
+      if (storedCustomBooks) {
+        try {
+          const customBooks: Book[] = JSON.parse(storedCustomBooks);
+          for (const cb of customBooks) {
+            if (!finalBooks.some((b) => b.id === cb.id)) {
+              finalBooks.unshift(cb);
+              finalChapters.unshift(...cb.chapters);
+            }
+          }
+        } catch (e) {}
       }
 
       set({

@@ -22,6 +22,7 @@ interface QuizState {
   setViewMode: (mode: QuizViewMode) => void;
 
   // Actions
+  addQuestions: (newQuestions: any[]) => void;
   startNewQuiz: (questionIdsFilter?: string[], bookIdFilter?: string, chapterIdFilter?: string) => void;
   selectAnswer: (questionId: string, optionIndex: number) => void;
   toggleFlagQuestion: (questionId: string) => void;
@@ -52,6 +53,13 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   wrongQuestions: [],
   activeSession: null,
   loading: false,
+
+  addQuestions: (newQuestions) => {
+    const { questions } = get();
+    const updated = [...newQuestions, ...questions];
+    set({ questions: updated });
+    AsyncStorage.setItem('ai-custom-questions', JSON.stringify(updated)).catch(() => {});
+  },
 
   startNewQuiz: (questionIdsFilter, bookIdFilter, chapterIdFilter) => {
     const { questions } = get();
@@ -418,6 +426,14 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         }
       } catch (dbErr) {
         console.warn("[Supabase] Failed to fetch quiz questions:", dbErr);
+      }
+
+      const storedCustomQuestions = await AsyncStorage.getItem('ai-custom-questions');
+      if (storedCustomQuestions) {
+        try {
+          const customQs = JSON.parse(storedCustomQuestions);
+          dbQuestions = [...customQs, ...dbQuestions];
+        } catch (e) {}
       }
 
       set({
