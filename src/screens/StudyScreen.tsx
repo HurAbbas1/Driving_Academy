@@ -318,7 +318,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                 'https://images.unsplash.com/photo-1532105956626-9569c03602f6?w=800&q=80', // Ch 10: Japanese Train Level Crossing Gate (踏切)
                 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800&q=80', // Ch 11: Fastened Car Seatbelt Buckle & Safety Gear
                 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&q=80', // Ch 12: Driver Steering Wheel & Police Checkpoint DUI Rules
-                'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800&q=80', // Ch 13: Shaken Vehicle Inspection & Engine Maintenance
+                'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&q=80', // Ch 13: Shaken Vehicle Inspection & Engine Maintenance (Verified 200 OK)
                 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80', // Ch 14: Japanese Driving License Cockpit View & Foreign Reset
               ];
               const thumb = ch.cover_image || chapterImages[idx % chapterImages.length];
