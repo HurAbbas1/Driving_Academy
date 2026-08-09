@@ -112,13 +112,30 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   },
 
   toggleBookmarkChapter: async (chapterId) => {
-    const { bookmarkedChapters } = get();
-    const newBookmarks = bookmarkedChapters.includes(chapterId)
-      ? bookmarkedChapters.filter(id => id !== chapterId)
-      : [...bookmarkedChapters, chapterId];
+    const { bookmarkedChapters, bookmarkedPages, chapters } = get();
+    const isBookmarked = bookmarkedChapters.includes(chapterId) || bookmarkedPages.some(id => id === chapterId || id.startsWith(chapterId));
+    
+    const targetChapter = chapters.find(c => c.id === chapterId);
+    const subtopicIds = targetChapter && targetChapter.subtopics ? targetChapter.subtopics.map(s => s.id) : [];
 
-    set({ bookmarkedChapters: newBookmarks });
-    await AsyncStorage.setItem('bookmarked-chapters', JSON.stringify(newBookmarks));
+    let newBookmarkedChapters: string[];
+    let newBookmarkedPages: string[];
+
+    if (isBookmarked) {
+      newBookmarkedChapters = bookmarkedChapters.filter(id => id !== chapterId);
+      newBookmarkedPages = bookmarkedPages.filter(id => id !== chapterId && !subtopicIds.includes(id) && !id.startsWith(chapterId));
+    } else {
+      newBookmarkedChapters = Array.from(new Set([...bookmarkedChapters, chapterId]));
+      newBookmarkedPages = Array.from(new Set([...bookmarkedPages, chapterId, ...subtopicIds]));
+    }
+
+    set({ 
+      bookmarkedChapters: newBookmarkedChapters,
+      bookmarkedPages: newBookmarkedPages
+    });
+
+    await AsyncStorage.setItem('bookmarked-chapters', JSON.stringify(newBookmarkedChapters));
+    await AsyncStorage.setItem('bookmarked-pages', JSON.stringify(newBookmarkedPages));
   },
 
   addRecentChapter: async (chapterId) => {

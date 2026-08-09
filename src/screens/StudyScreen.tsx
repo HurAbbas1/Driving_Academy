@@ -159,7 +159,9 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
   // VIEW 3: SUBTOPIC READER VIEW (When reading a topic)
   // ----------------------------------------------------
   if (selectedSubtopic && selectedChapter) {
-    const isBookmarked = bookmarkedChapters.includes(selectedChapter.id) || bookmarkedPages.includes(selectedSubtopic.id);
+    const isBookmarked = bookmarkedChapters.includes(selectedChapter.id) || 
+                         bookmarkedPages.includes(selectedChapter.id) || 
+                         bookmarkedPages.includes(selectedSubtopic.id);
     const hasNote = Boolean(notes[selectedChapter.id]);
 
     return (
@@ -192,10 +194,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               />
             </TouchableOpacity>
             <TouchableOpacity 
-              onPress={() => {
-                toggleBookmarkChapter(selectedChapter.id);
-                toggleBookmark(selectedSubtopic.id);
-              }}
+              onPress={() => toggleBookmarkChapter(selectedChapter.id)}
               style={[styles.iconBtn, { backgroundColor: colors.background }]}
             >
               <Ionicons 
