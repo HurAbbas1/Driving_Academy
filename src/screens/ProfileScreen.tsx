@@ -17,8 +17,6 @@ import { useQuizStore } from '../stores/quizStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
-import { AdminWordUploadModal } from '../components/admin/AdminWordUploadModal';
-
 interface ProfileScreenProps {
   onNavigateToLanguageSelect: () => void;
   onNavigateToAdmin?: () => void;
@@ -33,7 +31,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateToLangua
   const profile = useAuthStore((state) => state.profile);
   const currentLang = useLanguageStore((state) => state.language);
   const colors = Colors[theme];
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -175,23 +172,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateToLangua
           </Card>
         </Animated.View>
 
-        {/* Admin Management Section */}
-        <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 12 }]}>Admin Management</Text>
-        <Animated.View entering={FadeInUp.delay(250).springify()}>
-          <Card style={styles.settingGroupCard}>
-            <Pressable onPress={() => onNavigateToAdmin ? onNavigateToAdmin() : setIsAdminModalOpen(true)} style={styles.settingRow}>
-              <View style={styles.settingLeft}>
-                <Ionicons name="sparkles" size={22} color={colors.primary} />
-                <View>
-                  <Text style={[styles.settingLabel, { color: colors.text, fontWeight: '800' }]}>👑 Admin Portal: Upload Word Book</Text>
-                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>Generate 2-page AI chapters & visual/scenario quizzes</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-            </Pressable>
-          </Card>
-        </Animated.View>
-
         {/* Logout */}
         <Animated.View entering={FadeInUp.delay(300).springify()}>
           <Button
@@ -201,12 +181,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateToLangua
             style={styles.logoutBtn}
           />
         </Animated.View>
-
-        {/* Admin Word Upload Modal */}
-        <AdminWordUploadModal 
-          visible={isAdminModalOpen} 
-          onClose={() => setIsAdminModalOpen(false)} 
-        />
       </ScrollView>
     </SafeAreaView>
   );
