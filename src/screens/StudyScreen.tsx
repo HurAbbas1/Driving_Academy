@@ -306,11 +306,22 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               const readCount = ch.subtopics ? ch.subtopics.filter(s => progress.completedSubtopics.includes(s.id)).length : 0;
               const percent = subCount > 0 ? Math.round((readCount / subCount) * 100) : 0;
               const chapterImages = [
-                'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=80',
-                'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&q=80',
-                'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=600&q=80',
+                'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80', // Ch 1: Driving Foundations
+                'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&q=80', // Ch 2: Traffic Signals & Signs
+                'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=800&q=80', // Ch 3: Road Position & Lanes
+                'https://images.unsplash.com/photo-1578836537282-3171d77f8632?w=800&q=80', // Ch 4: Intersections & Priority
+                'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80', // Ch 5: Pedestrian Safety & Shibuya Crosswalk
+                'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&q=80', // Ch 6: Speed Limits & Braking
+                'https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80', // Ch 7: Parking Restrictions
+                'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80', // Ch 8: Snow & Bad Weather Mountain Roads
+                'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&q=80', // Ch 9: Night Driving & Expressway Trails
+                'https://images.unsplash.com/photo-1532105956626-9569c03602f6?w=800&q=80', // Ch 10: Railway Level Crossings
+                'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800&q=80', // Ch 11: Seatbelts & Vehicle Safety Interior
+                'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80', // Ch 12: DUI Zero-Tolerance Awareness
+                'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800&q=80', // Ch 13: Shaken Vehicle Inspection Workshop
+                'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80', // Ch 14: Foreign Driver Reset & Mt. Fuji Route
               ];
-              const thumb = chapterImages[idx % chapterImages.length];
+              const thumb = ch.cover_image || chapterImages[idx % chapterImages.length];
 
               return (
                 <Card 
