@@ -275,19 +275,6 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                 {loc(activeBook?.description || t('study.carLicenseSub'))}
               </Text>
 
-              {/* Progress */}
-              <View style={styles.categoryProgressRow}>
-                <Text style={[styles.progressLbl, { color: colors.textSecondary }]}>Progress</Text>
-                <Text style={[styles.progressVal, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>
-                  {activeProgressPercent}%
-                </Text>
-              </View>
-              <View style={[styles.progressTrackBg, { backgroundColor: theme === 'dark' ? '#232633' : '#E0E0E0' }]}>
-                <View style={[styles.progressTrackFill, { width: `${activeProgressPercent}%`, backgroundColor: theme === 'dark' ? '#FF4D6D' : '#E31837' }]} />
-              </View>
-              <Text style={[styles.completedTopicsSub, { color: colors.textSecondary }]}>
-                {t('study.topicsCompleted', { completed: activeCompletedCount, total: activeTopicsCount })}
-              </Text>
             </View>
           </View>
 
