@@ -67,6 +67,15 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
     }
   }, [selectedBookId, setSelectedBookId]);
 
+  // Auto-record progress, recent history, and last-read whenever reading a topic
+  useEffect(() => {
+    if (selectedChapter && selectedSubtopic) {
+      addRecentChapter(selectedChapter.id);
+      markAsRead(selectedSubtopic.id);
+      setLastRead(selectedSubtopic.id, selectedChapter.id);
+    }
+  }, [selectedChapter?.id, selectedSubtopic?.id]);
+
   // Safe localized text extractor
   const loc = (field: any): string => {
     if (!field) return '';
@@ -461,8 +470,12 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                   style={styles.chapterCardRow}
                   onPress={() => {
                     setSelectedChapter(ch);
-                    if (ch.subtopics && ch.subtopics.length > 0) {
-                      setSelectedSubtopic(ch.subtopics[0]);
+                    addRecentChapter(ch.id);
+                    const targetSubtopic = ch.subtopics && ch.subtopics.length > 0 ? ch.subtopics[0] : null;
+                    if (targetSubtopic) {
+                      setSelectedSubtopic(targetSubtopic);
+                      markAsRead(targetSubtopic.id);
+                      setLastRead(targetSubtopic.id, ch.id);
                     }
                   }}
                 >
