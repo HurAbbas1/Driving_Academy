@@ -27,9 +27,13 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
   // 1. Calculations for study progress
-  const totalSubtopics = chapters.reduce((acc, c) => acc + (c.subtopics ? c.subtopics.length : 0), 0);
-  const completedSubtopics = progress?.completedSubtopics?.length || 0;
-  const studyProgressPercent = totalSubtopics > 0 ? (completedSubtopics / totalSubtopics) * 100 : 0;
+  const activeSubtopicIds = new Set(
+    chapters.flatMap(c => (c.subtopics || []).map(s => s.id))
+  );
+  const validCompletedSubtopics = (progress?.completedSubtopics || []).filter(id => activeSubtopicIds.has(id));
+  const totalSubtopics = activeSubtopicIds.size || 14;
+  const completedSubtopics = validCompletedSubtopics.length;
+  const studyProgressPercent = totalSubtopics > 0 ? Math.min(100, Math.round((completedSubtopics / totalSubtopics) * 100)) : 0;
 
   // 2. Calculations for quiz performance
   const totalQuizzes = history.length;

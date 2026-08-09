@@ -590,12 +590,16 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           const currentCh = activeChapters.find(c => c.id === lastChId) || activeChapters[0];
           const chNum = currentCh ? getChapterNum(currentCh) : 1;
 
-          const totalSubtopics = activeChapters.reduce((acc, c) => acc + (c.subtopics ? c.subtopics.length : 0), 0);
-          const completedCount = progress.completedSubtopics ? progress.completedSubtopics.length : 0;
-          const currentProgressPercent = totalSubtopics > 0 ? Math.round((completedCount / totalSubtopics) * 100) : 0;
+          const activeSubtopicIds = new Set(
+            activeChapters.flatMap(c => (c.subtopics || []).map(s => s.id))
+          );
+          const validCompletedSubtopics = (progress.completedSubtopics || []).filter(id => activeSubtopicIds.has(id));
+          const totalSubtopics = activeSubtopicIds.size || 14;
+          const completedCount = validCompletedSubtopics.length;
+          const currentProgressPercent = totalSubtopics > 0 ? Math.min(100, Math.round((completedCount / totalSubtopics) * 100)) : 0;
 
           const currentSubtopic = currentCh && currentCh.subtopics ? currentCh.subtopics.find(s => s.id === lastSubId) || currentCh.subtopics[0] : null;
-          const currentLessonNum = completedCount > 0 ? completedCount : 1;
+          const currentLessonNum = Math.min(totalSubtopics, completedCount > 0 ? completedCount : 1);
 
           return (
             <Card 
