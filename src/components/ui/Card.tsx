@@ -24,8 +24,10 @@ export const Card: React.FC<CardProps> = ({
 
   const handlePress = () => {
     if (!onPress) return;
-    if (hapticFeedback) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    if (hapticFeedback && Platform.OS !== 'web') {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      } catch (e) {}
     }
     onPress();
   };

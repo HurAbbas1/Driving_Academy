@@ -34,8 +34,10 @@ export const Button: React.FC<ButtonProps> = ({
 
   const handlePress = (event?: any) => {
     if (disabled || loading) return;
-    if (hapticFeedback) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    if (hapticFeedback && Platform.OS !== 'web') {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      } catch (e) {}
     }
     onPress(event);
   };

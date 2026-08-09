@@ -44,6 +44,79 @@ const shuffleArray = <T>(array: T[]): T[] => {
   return arr;
 };
 
+const DEFAULT_FALLBACK_QUESTIONS: Question[] = [
+  {
+    id: 'q_fallback_1',
+    bookId: 'book_official_japan_handbook',
+    chapterId: 'ch_official_1',
+    category: 'Rules of the Road',
+    difficulty: 'medium',
+    text: {
+      en: "When turning left at an intersection onto a two-lane road in Japan, which lane must you enter?",
+      ja: "日本で交差点を左折して片側2車線の道路に入るとき、どの車線に入らなければなりませんか？",
+      zh: "在日本交叉路口左转进入同向两车道道路时，必须驶入哪条车道？",
+      pt: "Ao virar à esquerda em um cruzamento para uma via de duas faixas no Japão, em qual faixa você deve entrar?"
+    },
+    options: [
+      { en: "The leftmost lane, keeping tight along the curb.", ja: "道路の左端に沿って一番左側の車線に入る。", zh: "紧靠路边驶入最左侧车道。", pt: "A faixa mais à esquerda, mantendo-se junto ao meio-fio.", isCorrect: true },
+      { en: "The right lane directly to prepare for overtaking.", ja: "追越しに備えて直接右側車線に入る。", zh: "为了准备超车直接驶入右侧车道。", pt: "A faixa da direita diretamente para se preparar para ultrapassar.", isCorrect: false },
+      { en: "Any lane as long as you do not hit oncoming cars.", ja: "対向車にぶつからなければどちらの車線でも良い。", zh: "只要不庄到对向车辆，任何车道都可以。", pt: "Qualquer faixa, desde que não atinja os carros no sentido contrário.", isCorrect: false }
+    ],
+    explanation: {
+      en: "Japan is a left-driving country. Drivers making a left turn must keep tightly along the left curb and enter the leftmost lane.",
+      ja: "日本は左側通行です。左折するときは道路の左端に寄って小さく曲がり、一番左側の車線に入ります。",
+      zh: "日本实行靠左行驶。左转时必须紧靠道路左侧小转弯并驶入最左侧车道。",
+      pt: "O Japão é um país de condução pela esquerda. Ao virar à esquerda, mantenha-se junto ao meio-fio e entre na faixa da esquerda."
+    }
+  },
+  {
+    id: 'q_fallback_2',
+    bookId: 'book_official_japan_handbook',
+    chapterId: 'ch_official_1',
+    category: 'Pedestrian Protection',
+    difficulty: 'hard',
+    text: {
+      en: "A pedestrian is waiting to cross at a signal-less crosswalk. What is your legal obligation?",
+      ja: "信号のない横断歩道で歩行者が渡ろうとして待っています。ドライバーの法的義務は何ですか？",
+      zh: "在没有信号灯的人行横道前，有行人正在等待过马路。驾驶员的法定义务是什么？",
+      pt: "Um pedestre está aguardando para atravessar em uma faixa sem semáforo. Qual é a sua obrigação legal?"
+    },
+    options: [
+      { en: "Stop completely before the stop line and yield right-of-way to the pedestrian.", ja: "停止線の手前で完全静止し、歩行者に道を譲る。", zh: "在停止线前完全停稳，礼让行人优先通行。", pt: "Parar totalmente antes da linha de retenção e dar preferência ao pedestre.", isCorrect: true },
+      { en: "Honk your horn to warn the pedestrian and continue at constant speed.", ja: "クラクションを鳴らして歩行者に警告し、そのままの速度で進む。", zh: "按喇叭警告行人并保持原速通过。", pt: "Buzinar para alertar o pedestre e continuar na mesma velocidade.", isCorrect: false }
+    ],
+    explanation: {
+      en: "Under Article 38 of the Road Traffic Law, drivers must stop cleanly before crosswalk stop lines when pedestrians are waiting to cross.",
+      ja: "道路交通法第38条に基づき、歩行者が渡ろうとしている横断歩道の手前では完全静止しなければなりません。",
+      zh: "根据道路交通法第38条，当横断步道有行人等待时，必须在停止线前停稳礼让。",
+      pt: "De acordo com o Artigo 38 da Lei de Trânsito, o motorista deve parar totalmente antes da faixa quando houver pedestres aguardando."
+    }
+  },
+  {
+    id: 'q_fallback_3',
+    bookId: 'book_official_japan_handbook',
+    chapterId: 'ch_official_2',
+    category: 'Traffic Signals',
+    difficulty: 'medium',
+    text: {
+      en: "Is it legal to turn left or right on a steady red traffic signal in Japan?",
+      ja: "日本で赤信号のときに左折または右折することは許可されていますか？",
+      zh: "在日本面对红灯信号时，是否允许红灯左转或右转？",
+      pt: "É permitido virar à esquerda ou à direita no sinal vermelho no Japão?"
+    },
+    options: [
+      { en: "No, turning on red is strictly prohibited unless a 'Left Turn Permitted (左折可)' sign is posted.", ja: "いいえ、「左折可」の標示板がない限り、赤信号での曲がりは禁止されています。", zh: "不允许，除非立有“左折可”特殊告示牌，否则严禁红灯转弯。", pt: "Não, virar no vermelho é estritamente proibido, a menos que haja a placa 'Conversão à Esquerda Permitida (左折可)'.", isCorrect: true },
+      { en: "Yes, left turns on red are allowed after making a full stop.", ja: "はい、一時停止した後であれば左折は許可されています。", zh: "允许，只要完全停稳后就可以红灯左转。", pt: "Sim, virar à esquerda no vermelho é permitido após parada total.", isCorrect: false }
+    ],
+    explanation: {
+      en: "Japan does not have a general 'turn on red' rule. Red means mandatory stop unless an explicit 'Left Turn Permitted' (左折可) sign is present.",
+      ja: "日本には一般的な赤信号右左折ルールはありません。「左折可」の標示がない限り赤信号での通行は禁止です。",
+      zh: "日本没有通用的红灯转弯规则。红灯必须停车，除非有明确的“左折可”标志。",
+      pt: "O Japão não possui permissão geral para virar no vermelho. Vermelho significa parada obrigatória."
+    }
+  }
+];
+
 export const useQuizStore = create<QuizState>((set, get) => ({
   questions: [],
   viewMode: 'dashboard',
@@ -74,40 +147,45 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       if (chapterIdFilter) {
         let chapterPool = pool.filter(q => q.chapterId === chapterIdFilter);
         
-        // Fallback: If no questions are found for this specific chapter, load questions for the entire book
+        // Fallback 1: If no questions found for chapterId, try bookId
         if (chapterPool.length === 0) {
-          console.log(`[QuizStore] No questions found for chapter ${chapterIdFilter}. Falling back to book questions...`);
           const studyState = useStudyStore.getState();
           const book = studyState.books.find(b => b.chapters.some(c => c.id === chapterIdFilter));
           if (book) {
             chapterPool = pool.filter(q => q.bookId === book.id);
           }
         }
-  
-        let selected = shuffleArray(chapterPool).slice(0, 5);
-      
-      selected = selected.map(q => {
-        const originalOptions = [...q.options];
-        const shuffledOptions = shuffleArray(originalOptions);
-        return {
-          ...q,
-          options: shuffledOptions,
+
+        // Fallback 2: If still empty, use all available questions in pool
+        if (chapterPool.length === 0) {
+          chapterPool = pool.length > 0 ? pool : DEFAULT_FALLBACK_QUESTIONS;
+        }
+
+        let selected = shuffleArray(chapterPool).slice(0, Math.min(5, chapterPool.length));
+        if (selected.length === 0) selected = DEFAULT_FALLBACK_QUESTIONS;
+
+        selected = selected.map(q => {
+          const originalOptions = [...q.options];
+          const shuffledOptions = shuffleArray(originalOptions);
+          return {
+            ...q,
+            options: shuffledOptions,
+          };
+        });
+
+        const session: QuizSession = {
+          id: Math.random().toString(36).substr(2, 9),
+          questions: selected,
+          currentIndex: 0,
+          userAnswers: {},
+          flaggedQuestions: [],
+          startTime: Date.now(),
+          elapsedSeconds: 0,
         };
-      });
 
-      const session: QuizSession = {
-        id: Math.random().toString(36).substr(2, 9),
-        questions: selected,
-        currentIndex: 0,
-        userAnswers: {},
-        flaggedQuestions: [],
-        startTime: Date.now(),
-        elapsedSeconds: 0,
-      };
-
-      set({ activeSession: session });
-      return;
-    }
+        set({ activeSession: session });
+        return;
+      }
 
     // Overall Final Exam Randomizer (draw up to 15 questions per dynamic book)
     if (bookIdFilter === 'final') {
@@ -437,7 +515,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       }
 
       set({
-        questions: dbQuestions,
+        questions: dbQuestions.length > 0 ? dbQuestions : DEFAULT_FALLBACK_QUESTIONS,
         history: storedHistory ? JSON.parse(storedHistory) : [],
         bookmarkedQuestions: storedBookmarks ? JSON.parse(storedBookmarks) : [],
         wrongQuestions: storedWrong ? JSON.parse(storedWrong) : [],
