@@ -43,7 +43,7 @@ export const QuizScreen: React.FC = () => {
     setViewMode
   } = useQuizStore();
   const { books, chapters } = useStudyStore();
-  const [activeSection, setActiveSection] = useState<'car' | 'bike' | null>('car');
+  const [activeSection, setActiveSection] = useState<'car' | 'bike' | null>(null);
   const [countdown, setCountdown] = useState(3);
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const timerRef = useRef<any>(null);
