@@ -22,7 +22,6 @@ import { StudyScreen } from '../screens/StudyScreen';
 import { QuizScreen } from '../screens/QuizScreen';
 import { ProgressScreen } from '../screens/ProgressScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
-import { AdminScreen } from '../screens/AdminScreen';
 
 // UI Primitive & Icons
 import { LoadingScreen } from '../components/ui/LoadingScreen';
@@ -167,8 +166,6 @@ export default function IndexScreen() {
   // 4. Main App Tab Router Flow
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'admin':
-        return <AdminScreen onBackToApp={() => setActiveTab('profile')} />;
       case 'study':
         return <StudyScreen onNavigateToTab={setActiveTab} />;
       case 'quiz':
@@ -176,7 +173,7 @@ export default function IndexScreen() {
       case 'progress':
         return <ProgressScreen />;
       case 'profile':
-        return <ProfileScreen onNavigateToLanguageSelect={() => setForceLangSelect(true)} onNavigateToAdmin={() => setActiveTab('admin')} />;
+        return <ProfileScreen onNavigateToLanguageSelect={() => setForceLangSelect(true)} />;
       case 'home':
       default:
         return <HomeScreen onNavigateToTab={setActiveTab} />;
