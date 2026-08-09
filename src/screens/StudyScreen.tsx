@@ -241,7 +241,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           </View>
 
           {/* Car License Category Hero Card */}
-          <View style={styles.categoryHeroCard}>
+          <View style={[styles.categoryHeroCard, { backgroundColor: theme === 'dark' ? colors.backgroundElement : '#FFFFFF' }]}>
             <Image 
               source={{ uri: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=1200&q=80' }}
               style={styles.categoryHeroImage}
@@ -249,7 +249,16 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
             />
             <View style={[
               styles.categoryHeroOverlay,
-              { backgroundColor: theme === 'dark' ? 'rgba(11, 12, 16, 0.90)' : 'rgba(255,255,255,0.88)' }
+              Platform.select({
+                web: {
+                  backgroundImage: theme === 'dark' 
+                    ? 'linear-gradient(to right, #14161D 0%, #14161D 35%, rgba(20,22,29,0.85) 55%, rgba(20,22,29,0) 80%)'
+                    : 'linear-gradient(to right, #FFFFFF 0%, #FFFFFF 35%, rgba(255,255,255,0.85) 55%, rgba(255,255,255,0) 80%)',
+                } as any,
+                default: {
+                  backgroundColor: theme === 'dark' ? 'rgba(20,22,29,0.7)' : 'rgba(255,255,255,0.7)',
+                }
+              })
             ]} />
 
             <View style={styles.categoryHeroContent}>
@@ -1002,12 +1011,11 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     bottom: 0,
-    width: '65%',
+    width: '72%',
   },
   categoryHeroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.85)',
-    width: '60%',
+    width: '100%',
   },
   categoryHeroContent: {
     padding: 20,
