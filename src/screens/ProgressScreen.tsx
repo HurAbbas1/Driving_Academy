@@ -22,9 +22,18 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
   const setLanguage = useLanguageStore((state) => state.setLanguage);
 
   // Store data
-  const { history, wrongQuestions, bookmarkedQuestions } = useQuizStore();
+  const { 
+    questions,
+    history, 
+    wrongQuestions, 
+    bookmarkedQuestions, 
+    toggleBookmarkQuestion, 
+    startNewQuiz,
+    setViewMode 
+  } = useQuizStore();
   const { chapters, progress } = useStudyStore();
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const [activeListModal, setActiveListModal] = useState<'bookmarks' | 'review' | null>(null);
 
   // 1. Calculations for study progress
   const activeSubtopicIds = new Set(
@@ -279,7 +288,7 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
 
           {/* Row 3: 2 Link Counter Cards */}
           <View style={{ gap: 10, marginTop: 12 }}>
-            <Card style={styles.linkCounterRow} onPress={() => onNavigateToTab?.('quiz')}>
+            <Card style={styles.linkCounterRow} onPress={() => setActiveListModal('bookmarks')}>
               <View style={[styles.linkIconCircle, { backgroundColor: theme === 'dark' ? 'rgba(142, 36, 170, 0.2)' : '#F3E5F5' }]}>
                 <Ionicons name="bookmark-outline" size={20} color={theme === 'dark' ? '#BA68C8' : '#8E24AA'} />
               </View>
@@ -290,7 +299,7 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} style={{ marginLeft: 8 }} />
             </Card>
 
-            <Card style={styles.linkCounterRow} onPress={() => onNavigateToTab?.('quiz')}>
+            <Card style={styles.linkCounterRow} onPress={() => setActiveListModal('review')}>
               <View style={[styles.linkIconCircle, { backgroundColor: theme === 'dark' ? 'rgba(245, 124, 0, 0.2)' : '#FFF3E0' }]}>
                 <Ionicons name="time-outline" size={20} color={theme === 'dark' ? '#FFB74D' : '#F57C00'} />
               </View>
@@ -337,6 +346,162 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
         </Card>
 
       </ScrollView>
+
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* INTERACTIVE BOOKMARKED / REVIEW QUEUE QUESTIONS POPUP MODAL     */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <Modal
+        visible={activeListModal !== null}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setActiveListModal(null)}
+      >
+        <View style={styles.modalOverlayBg}>
+          <View style={[styles.modalContentCard, { backgroundColor: colors.backgroundElement, borderColor: colors.border, paddingBottom: 20 }]}>
+            {/* Modal Header */}
+            <View style={[styles.modalHeaderRow, { borderBottomColor: colors.border }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                <Ionicons 
+                  name={activeListModal === 'bookmarks' ? "bookmark" : "time"} 
+                  size={24} 
+                  color={activeListModal === 'bookmarks' ? "#8E24AA" : "#F57C00"} 
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.modalTitleText, { color: colors.text }]}>
+                    {activeListModal === 'bookmarks' 
+                      ? `${t('progress.bookmarkedQuestions')} (${bookmarkedQuestions.length})`
+                      : `${t('progress.questionsInReviewQueue')} (${wrongQuestions.length})`}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                    {activeListModal === 'bookmarks'
+                      ? 'Saved questions for quick practice and quick review.'
+                      : 'Incorrectly answered questions queued for spaced repetition.'}
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setActiveListModal(null)} style={styles.modalCloseBtn}>
+                <Ionicons name="close" size={22} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Content List */}
+            {(() => {
+              const targetQuestionIds = activeListModal === 'bookmarks'
+                ? bookmarkedQuestions
+                : wrongQuestions.map(w => w.questionId);
+
+              const matchingQuestions = questions.filter(q => targetQuestionIds.includes(q.id));
+
+              if (matchingQuestions.length === 0) {
+                return (
+                  <View style={{ paddingVertical: 40, alignItems: 'center', gap: 8 }}>
+                    <Ionicons 
+                      name={activeListModal === 'bookmarks' ? "bookmark-outline" : "checkmark-circle-outline"} 
+                      size={48} 
+                      color={colors.textSecondary} 
+                    />
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>
+                      {activeListModal === 'bookmarks' ? 'No Bookmarked Questions' : 'Review Queue is Empty! 🎉'}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: colors.textSecondary, textAlign: 'center', paddingHorizontal: 20 }}>
+                      {activeListModal === 'bookmarks' 
+                        ? 'Flag questions during quizzes to review them here anytime.'
+                        : 'Great job! You have cleared all your review questions.'}
+                    </Text>
+                  </View>
+                );
+              }
+
+              return (
+                <View style={{ flex: 1 }}>
+                  {/* Action Bar: Start Targeted Quiz */}
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justify: 'center',
+                      gap: 8,
+                      backgroundColor: activeListModal === 'bookmarks' ? '#8E24AA' : '#F57C00',
+                      paddingVertical: 12,
+                      borderRadius: 14,
+                      marginTop: 10,
+                      marginBottom: 10,
+                    }}
+                    onPress={() => {
+                      startNewQuiz(targetQuestionIds);
+                      setViewMode('countdown');
+                      onNavigateToTab?.('quiz');
+                      setActiveListModal(null);
+                    }}
+                  >
+                    <Ionicons name="play-circle" size={20} color="#FFF" />
+                    <Text style={{ color: '#FFF', fontSize: 14, fontWeight: '800' }}>
+                      Practice {matchingQuestions.length} {activeListModal === 'bookmarks' ? 'Bookmarked' : 'Review'} Questions Now
+                    </Text>
+                  </TouchableOpacity>
+
+                  <ScrollView style={{ maxHeight: 400 }} contentContainerStyle={{ gap: 10, paddingBottom: 10 }}>
+                    {matchingQuestions.map((q, idx) => (
+                      <Card key={q.id || idx} style={{ padding: 14, gap: 8 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>
+                            QUESTION {idx + 1}
+                          </Text>
+                          {activeListModal === 'bookmarks' && (
+                            <TouchableOpacity 
+                              onPress={() => toggleBookmarkQuestion(q.id)}
+                              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                            >
+                              <Ionicons name="trash-outline" size={14} color={colors.error} />
+                              <Text style={{ fontSize: 11, color: colors.error, fontWeight: '700' }}>Remove</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+
+                        <Text style={{ fontSize: 13.5, fontWeight: '700', color: colors.text, lineHeight: 19 }}>
+                          {loc(q.text)}
+                        </Text>
+
+                        {/* Options preview */}
+                        <View style={{ gap: 4, marginTop: 4 }}>
+                          {q.options && q.options.map((opt: any, oIdx: number) => {
+                            const isCorrect = oIdx === q.correctAnswerIndex;
+                            return (
+                              <View 
+                                key={oIdx} 
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                  gap: 6,
+                                  padding: 8,
+                                  borderRadius: 8,
+                                  backgroundColor: isCorrect 
+                                    ? (theme === 'dark' ? 'rgba(76, 175, 80, 0.2)' : '#E8F5E9') 
+                                    : (theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F8F9FA')
+                                }}
+                              >
+                                <Ionicons 
+                                  name={isCorrect ? "checkmark-circle" : "ellipse-outline"} 
+                                  size={16} 
+                                  color={isCorrect ? "#4CAF50" : colors.textSecondary} 
+                                />
+                                <Text style={{ fontSize: 12, color: isCorrect ? (theme === 'dark' ? '#81C784' : '#2E7D32') : colors.text, flex: 1, fontWeight: isCorrect ? '700' : '400' }}>
+                                  {loc(opt.text || opt)}
+                                </Text>
+                              </View>
+                            );
+                          })}
+                        </View>
+                      </Card>
+                    ))}
+                  </ScrollView>
+                </View>
+              );
+            })()}
+
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -721,5 +886,32 @@ const styles = StyleSheet.create({
     color: '#E31837',
     fontSize: 11.5,
     fontWeight: '800',
+  },
+  // Modal styles
+  modalOverlayBg: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContentCard: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 20,
+    borderWidth: 1,
+    maxHeight: '85%',
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+  },
+  modalTitleText: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  modalCloseBtn: {
+    padding: 6,
   },
 });
