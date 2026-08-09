@@ -35,6 +35,17 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [activeListModal, setActiveListModal] = useState<'bookmarks' | 'review' | null>(null);
 
+  // Safe localized text extractor
+  const loc = (field: any): string => {
+    if (!field) return '';
+    if (typeof field === 'string') return field;
+    if (typeof field === 'object') {
+      const val = field[currentLang] ?? field.en ?? Object.values(field)[0] ?? '';
+      return String(val);
+    }
+    return String(field);
+  };
+
   // 1. Calculations for study progress
   const activeSubtopicIds = new Set(
     chapters.flatMap(c => (c.subtopics || []).map(s => s.id))
