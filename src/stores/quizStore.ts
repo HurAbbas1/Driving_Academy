@@ -161,7 +161,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
           chapterPool = pool.length > 0 ? pool : DEFAULT_FALLBACK_QUESTIONS;
         }
 
-        let selected = shuffleArray(chapterPool).slice(0, Math.min(5, chapterPool.length));
+        let selected = shuffleArray(chapterPool).slice(0, Math.min(6, chapterPool.length));
         if (selected.length === 0) selected = DEFAULT_FALLBACK_QUESTIONS;
 
         selected = selected.map(q => {
@@ -187,22 +187,10 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         return;
       }
 
-    // Overall Final Exam Randomizer (draw up to 15 questions per dynamic book)
+    // Overall Final Exam Randomizer (draw 50 questions from all chapters)
     if (bookIdFilter === 'final') {
-      const selectedQuestions: Question[] = [];
-      const uniqueBookIds = Array.from(new Set(pool.map(q => q.bookId).filter(Boolean)));
-      
-      if (uniqueBookIds.length > 0) {
-        uniqueBookIds.forEach((bId) => {
-          const bookPool = pool.filter(q => q.bookId === bId);
-          const bookSelected = shuffleArray(bookPool).slice(0, 15);
-          selectedQuestions.push(...bookSelected);
-        });
-      } else {
-        selectedQuestions.push(...shuffleArray(pool).slice(0, 30));
-      }
-      
-      let selected = shuffleArray(selectedQuestions);
+      let selected = shuffleArray(pool).slice(0, 50);
+      if (selected.length === 0) selected = DEFAULT_FALLBACK_QUESTIONS;
       
       selected = selected.map(q => {
         const originalOptions = [...q.options];
