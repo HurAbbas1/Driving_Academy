@@ -21,9 +21,10 @@ import { AdminWordUploadModal } from '../components/admin/AdminWordUploadModal';
 
 interface ProfileScreenProps {
   onNavigateToLanguageSelect: () => void;
+  onNavigateToAdmin?: () => void;
 }
 
-export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateToLanguageSelect }) => {
+export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateToLanguageSelect, onNavigateToAdmin }) => {
   const { t } = useTranslation();
   const theme = useThemeStore((state) => state.theme);
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
@@ -178,7 +179,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onNavigateToLangua
         <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 12 }]}>Admin Management</Text>
         <Animated.View entering={FadeInUp.delay(250).springify()}>
           <Card style={styles.settingGroupCard}>
-            <Pressable onPress={() => setIsAdminModalOpen(true)} style={styles.settingRow}>
+            <Pressable onPress={() => onNavigateToAdmin ? onNavigateToAdmin() : setIsAdminModalOpen(true)} style={styles.settingRow}>
               <View style={styles.settingLeft}>
                 <Ionicons name="sparkles" size={22} color={colors.primary} />
                 <View>

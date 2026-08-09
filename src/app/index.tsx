@@ -22,6 +22,7 @@ import { StudyScreen } from '../screens/StudyScreen';
 import { QuizScreen } from '../screens/QuizScreen';
 import { ProgressScreen } from '../screens/ProgressScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
+import { AdminScreen } from '../screens/AdminScreen';
 
 // UI Primitive & Icons
 import { LoadingScreen } from '../components/ui/LoadingScreen';
@@ -73,7 +74,7 @@ const TabButton = ({ icon, label, isActive, onPress, color, isCenter }: any) => 
   );
 };
 
-type ActiveTab = 'home' | 'study' | 'quiz' | 'progress' | 'profile';
+type ActiveTab = 'home' | 'study' | 'quiz' | 'progress' | 'profile' | 'admin';
 type AuthRoute = 'login' | 'signup' | 'forgotPassword';
 
 export default function IndexScreen() {
@@ -166,6 +167,8 @@ export default function IndexScreen() {
   // 4. Main App Tab Router Flow
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'admin':
+        return <AdminScreen onBackToApp={() => setActiveTab('profile')} />;
       case 'study':
         return <StudyScreen onNavigateToTab={setActiveTab} />;
       case 'quiz':
@@ -173,7 +176,7 @@ export default function IndexScreen() {
       case 'progress':
         return <ProgressScreen />;
       case 'profile':
-        return <ProfileScreen onNavigateToLanguageSelect={() => setForceLangSelect(true)} />;
+        return <ProfileScreen onNavigateToLanguageSelect={() => setForceLangSelect(true)} onNavigateToAdmin={() => setActiveTab('admin')} />;
       case 'home':
       default:
         return <HomeScreen onNavigateToTab={setActiveTab} />;
@@ -186,7 +189,7 @@ export default function IndexScreen() {
       <View style={styles.tabContent}>{renderTabContent()}</View>
 
       {/* Premium Floating Glass Tab Bar */}
-      {!(activeTab === 'quiz' && (quizViewMode === 'active' || quizViewMode === 'countdown')) && (
+      {activeTab !== 'admin' && !(activeTab === 'quiz' && (quizViewMode === 'active' || quizViewMode === 'countdown')) && (
         <View style={styles.floatingTabBarContainer}>
           <View style={[
             styles.floatingTabBar, 
