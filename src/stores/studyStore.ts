@@ -259,9 +259,18 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         } catch (e) {}
       }
 
+      // Deduplicate chapters by unique ID to prevent duplicate React keys
+      const uniqueChaptersMap = new Map<string, Chapter>();
+      finalChapters.forEach((ch) => {
+        if (!uniqueChaptersMap.has(ch.id)) {
+          uniqueChaptersMap.set(ch.id, ch);
+        }
+      });
+      const uniqueChapters = Array.from(uniqueChaptersMap.values());
+
       set({
         books: finalBooks,
-        chapters: finalChapters,
+        chapters: uniqueChapters,
         bookmarkedPages: storedBookmarks ? JSON.parse(storedBookmarks) : [],
         progress: storedProgress ? JSON.parse(storedProgress) : { completedSubtopics: [], lastReadSubtopicId: null, lastReadChapterId: null },
         downloadedChapters: storedDownloads ? JSON.parse(storedDownloads) : [],

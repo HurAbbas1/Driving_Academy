@@ -298,7 +298,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
 
               return (
                 <Card 
-                  key={ch.id} 
+                  key={`${ch.id}-${idx}`} 
                   style={styles.chapterCardRow}
                   onPress={() => {
                     setSelectedChapter(ch);
