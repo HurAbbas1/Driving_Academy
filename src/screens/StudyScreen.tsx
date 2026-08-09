@@ -306,20 +306,20 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               const readCount = ch.subtopics ? ch.subtopics.filter(s => progress.completedSubtopics.includes(s.id)).length : 0;
               const percent = subCount > 0 ? Math.round((readCount / subCount) * 100) : 0;
               const chapterImages = [
-                'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80', // Ch 1: Driving Foundations
-                'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&q=80', // Ch 2: Traffic Signals & Signs
-                'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=800&q=80', // Ch 3: Road Position & Lanes
-                'https://images.unsplash.com/photo-1578836537282-3171d77f8632?w=800&q=80', // Ch 4: Intersections & Priority
-                'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80', // Ch 5: Pedestrian Safety & Shibuya Crosswalk
-                'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&q=80', // Ch 6: Speed Limits & Braking
-                'https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80', // Ch 7: Parking Restrictions
-                'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80', // Ch 8: Snow & Bad Weather Mountain Roads
-                'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&q=80', // Ch 9: Night Driving & Expressway Trails
-                'https://images.unsplash.com/photo-1532105956626-9569c03602f6?w=800&q=80', // Ch 10: Railway Level Crossings
-                'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800&q=80', // Ch 11: Seatbelts & Vehicle Safety Interior
-                'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80', // Ch 12: DUI Zero-Tolerance Awareness
-                'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800&q=80', // Ch 13: Shaken Vehicle Inspection Workshop
-                'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80', // Ch 14: Foreign Driver Reset & Mt. Fuji Route
+                'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=800&q=80', // Ch 1: Japanese Street Driving & Keep-Left Lane Rules
+                'https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80', // Ch 2: Japanese Traffic Lights & STOP Signs
+                'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=800&q=80', // Ch 3: Multi-Lane Road Marking & Yellow Line Discipline
+                'https://images.unsplash.com/photo-1578836537282-3171d77f8632?w=800&q=80', // Ch 4: City 4-Way Intersection Right-of-Way
+                'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80', // Ch 5: Pedestrian Crosswalk & Zebra Crossing Rules
+                'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&q=80', // Ch 6: Speedometer & Speed Limit Rules
+                'https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80', // Ch 7: Parking Restrictions & Street Parking Signs
+                'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80', // Ch 8: Mountain Hazard Warning Signs & Foggy Weather
+                'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&q=80', // Ch 9: Expressway ETC Toll Gate & Headlight Night Rules
+                'https://images.unsplash.com/photo-1532105956626-9569c03602f6?w=800&q=80', // Ch 10: Japanese Train Level Crossing Gate (踏切)
+                'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800&q=80', // Ch 11: Fastened Car Seatbelt Buckle & Safety Gear
+                'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&q=80', // Ch 12: Driver Steering Wheel & Police Checkpoint DUI Rules
+                'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800&q=80', // Ch 13: Shaken Vehicle Inspection & Engine Maintenance
+                'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80', // Ch 14: Japanese Driving License Cockpit View & Foreign Reset
               ];
               const thumb = ch.cover_image || chapterImages[idx % chapterImages.length];
 
