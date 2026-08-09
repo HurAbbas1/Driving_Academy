@@ -14,6 +14,16 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ content, fontS
   const theme = useThemeStore((state) => state.theme);
   const colors = Colors[theme];
 
+  const safeContentText = (() => {
+    if (!content) return '';
+    if (typeof content === 'string') return content;
+    if (typeof content === 'object') {
+      const val = (content as any).en || (content as any).ja || (content as any).zh || (content as any).pt || Object.values(content)[0] || '';
+      return typeof val === 'string' ? val : String(val);
+    }
+    return String(content);
+  })();
+
   const getFontSize = () => {
     switch (fontSize) {
       case 'small': return 14;
@@ -35,7 +45,8 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ content, fontS
   };
 
   const renderBoldText = (text: string) => {
-    const parts = text.split('**');
+    const str = typeof text === 'string' ? text : String(text || '');
+    const parts = str.split('**');
     return parts.map((part, i) => {
       if (i % 2 === 1) {
         return (
@@ -49,7 +60,8 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ content, fontS
   };
 
   const parseMarkdown = (text: string) => {
-    const lines = text.split('\n');
+    const str = typeof text === 'string' ? text : String(text || '');
+    const lines = str.split('\n');
     return lines.map((line, index) => {
       // Image
       if (line.match(/^\s*!\[.*?\]\((.*?)\)/)) {
@@ -140,7 +152,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ content, fontS
     });
   };
 
-  return <View style={styles.container}>{parseMarkdown(content)}</View>;
+  return <View style={styles.container}>{parseMarkdown(safeContentText)}</View>;
 };
 
 const styles = StyleSheet.create({

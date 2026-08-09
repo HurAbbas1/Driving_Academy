@@ -147,7 +147,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
 
         <ScrollView contentContainerStyle={styles.readerContent}>
           <ContentRenderer 
-            content={selectedSubtopic.content} 
+            content={loc(selectedSubtopic.content)} 
             fontSize="medium" 
           />
         </ScrollView>
