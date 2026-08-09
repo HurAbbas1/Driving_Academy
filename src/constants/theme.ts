@@ -21,16 +21,16 @@ export const Colors = {
   },
   dark: {
     text: '#FFFFFF',
-    background: '#0D0D0D', // Dark Background from logo
-    backgroundElement: '#1A1A1A',
-    backgroundSelected: '#1A1A1A',
-    textSecondary: '#B0B0B0',
-    primary: '#E31837', // Accent Red from logo
+    background: '#0B0C10',
+    backgroundElement: '#14161D',
+    backgroundSelected: '#1E202B',
+    textSecondary: '#94A3B8',
+    primary: '#E31837',
     primaryLight: '#FF3B55',
-    success: '#00C853',
-    warning: '#FFB300',
+    success: '#00E676',
+    warning: '#FFC107',
     error: '#FF1744',
-    border: '#2A2A2A',
+    border: '#232633',
   },
 } as const;
 

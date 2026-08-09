@@ -130,9 +130,16 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
               </Text>
 
               {/* Soft Alert Box */}
-              <View style={styles.alertBoxContainer}>
-                <Ionicons name="disc-outline" size={16} color="#E31837" />
-                <Text style={styles.alertBoxText}>
+              <View style={[
+                styles.alertBoxContainer,
+                { 
+                  backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.15)' : '#FFF5F5',
+                  borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.3)' : 'transparent',
+                  borderWidth: theme === 'dark' ? 1 : 0
+                }
+              ]}>
+                <Ionicons name="disc-outline" size={16} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
+                <Text style={[styles.alertBoxText, { color: colors.text }]}>
                   {t('progress.readinessAlertBox')}
                 </Text>
               </View>
@@ -187,26 +194,54 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
           {/* Row 1: Big Trend Cards */}
           <View style={styles.trendCardsRow}>
             {/* Average Score Card */}
-            <Card style={[styles.trendCard, { backgroundColor: '#FFF5F5' }]}>
-              <View style={[styles.trendIconBadge, { backgroundColor: '#FFEBEE' }]}>
-                <Ionicons name="trending-up" size={20} color="#E31837" />
+            <Card style={[
+              styles.trendCard, 
+              { 
+                backgroundColor: theme === 'dark' ? '#1C1216' : '#FFF5F5',
+                borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.3)' : '#FFE0E0'
+              }
+            ]}>
+              <View style={[
+                styles.trendIconBadge, 
+                { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.25)' : '#FFEBEE' }
+              ]}>
+                <Ionicons name="trending-up" size={20} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
               </View>
               <Text style={[styles.trendCardTitle, { color: colors.textSecondary }]}>{t('progress.averageScore')}</Text>
               <Text style={[styles.trendValText, { color: colors.text }]}>{avgScore}%</Text>
-              <View style={styles.badgePillRed}>
-                <Text style={styles.badgePillRedText}>↑ {t('progress.keepPracticing')}</Text>
+              <View style={[
+                styles.badgePillRed,
+                { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.25)' : '#FFEBEE' }
+              ]}>
+                <Text style={[styles.badgePillRedText, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>
+                  ↑ {t('progress.keepPracticing')}
+                </Text>
               </View>
             </Card>
 
             {/* Best Practice Score Card */}
-            <Card style={[styles.trendCard, { backgroundColor: '#F1F8E9' }]}>
-              <View style={[styles.trendIconBadge, { backgroundColor: '#DCEDC8' }]}>
-                <Ionicons name="trophy" size={20} color="#558B2F" />
+            <Card style={[
+              styles.trendCard, 
+              { 
+                backgroundColor: theme === 'dark' ? '#111E16' : '#F1F8E9',
+                borderColor: theme === 'dark' ? 'rgba(0, 230, 118, 0.3)' : '#DCEDC8'
+              }
+            ]}>
+              <View style={[
+                styles.trendIconBadge, 
+                { backgroundColor: theme === 'dark' ? 'rgba(0, 230, 118, 0.25)' : '#DCEDC8' }
+              ]}>
+                <Ionicons name="trophy" size={20} color={theme === 'dark' ? '#00E676' : '#558B2F'} />
               </View>
               <Text style={[styles.trendCardTitle, { color: colors.textSecondary }]}>{t('progress.bestPracticeScore')}</Text>
               <Text style={[styles.trendValText, { color: colors.text }]}>{bestScore}%</Text>
-              <View style={styles.badgePillGreen}>
-                <Text style={styles.badgePillGreenText}>↑ {t('progress.aimHigher')}</Text>
+              <View style={[
+                styles.badgePillGreen,
+                { backgroundColor: theme === 'dark' ? 'rgba(0, 230, 118, 0.25)' : '#DCEDC8' }
+              ]}>
+                <Text style={[styles.badgePillGreenText, { color: theme === 'dark' ? '#00E676' : '#33691E' }]}>
+                  ↑ {t('progress.aimHigher')}
+                </Text>
               </View>
             </Card>
           </View>
@@ -214,24 +249,24 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
           {/* Row 2: 3 Counters Row */}
           <View style={styles.threeCountersRow}>
             <Card style={styles.counterBox}>
-              <View style={[styles.counterIconCircle, { backgroundColor: '#E3F2FD' }]}>
-                <Ionicons name="clipboard-outline" size={18} color="#1E88E5" />
+              <View style={[styles.counterIconCircle, { backgroundColor: theme === 'dark' ? 'rgba(30, 136, 229, 0.2)' : '#E3F2FD' }]}>
+                <Ionicons name="clipboard-outline" size={18} color={theme === 'dark' ? '#64B5F6' : '#1E88E5'} />
               </View>
               <Text style={[styles.counterLabelText, { color: colors.textSecondary }]}>{t('progress.quizzesCompleted')}</Text>
               <Text style={[styles.counterValBold, { color: colors.text }]}>{totalQuizzes}</Text>
             </Card>
 
             <Card style={styles.counterBox}>
-              <View style={[styles.counterIconCircle, { backgroundColor: '#E8F5E9' }]}>
-                <Ionicons name="checkmark-circle-outline" size={18} color="#4CAF50" />
+              <View style={[styles.counterIconCircle, { backgroundColor: theme === 'dark' ? 'rgba(76, 175, 80, 0.2)' : '#E8F5E9' }]}>
+                <Ionicons name="checkmark-circle-outline" size={18} color={theme === 'dark' ? '#81C784' : '#4CAF50'} />
               </View>
               <Text style={[styles.counterLabelText, { color: colors.textSecondary }]}>{t('progress.correctAnswers')}</Text>
               <Text style={[styles.counterValBold, { color: colors.text }]}>{totalCorrect}</Text>
             </Card>
 
             <Card style={styles.counterBox}>
-              <View style={[styles.counterIconCircle, { backgroundColor: '#FFEBEE' }]}>
-                <Ionicons name="close-circle-outline" size={18} color="#E31837" />
+              <View style={[styles.counterIconCircle, { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }]}>
+                <Ionicons name="close-circle-outline" size={18} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
               </View>
               <Text style={[styles.counterLabelText, { color: colors.textSecondary }]}>{t('progress.incorrectAnswers')}</Text>
               <Text style={[styles.counterValBold, { color: colors.text }]}>{totalIncorrect}</Text>
@@ -241,8 +276,8 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
           {/* Row 3: 2 Link Counter Cards */}
           <View style={{ gap: 10, marginTop: 12 }}>
             <Card style={styles.linkCounterRow} onPress={() => onNavigateToTab?.('quiz')}>
-              <View style={[styles.linkIconCircle, { backgroundColor: '#F3E5F5' }]}>
-                <Ionicons name="bookmark-outline" size={20} color="#8E24AA" />
+              <View style={[styles.linkIconCircle, { backgroundColor: theme === 'dark' ? 'rgba(142, 36, 170, 0.2)' : '#F3E5F5' }]}>
+                <Ionicons name="bookmark-outline" size={20} color={theme === 'dark' ? '#BA68C8' : '#8E24AA'} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.linkLabelText, { color: colors.text }]}>{t('progress.bookmarkedQuestions')}</Text>
@@ -252,8 +287,8 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
             </Card>
 
             <Card style={styles.linkCounterRow} onPress={() => onNavigateToTab?.('quiz')}>
-              <View style={[styles.linkIconCircle, { backgroundColor: '#FFF3E0' }]}>
-                <Ionicons name="time-outline" size={20} color="#F57C00" />
+              <View style={[styles.linkIconCircle, { backgroundColor: theme === 'dark' ? 'rgba(245, 124, 0, 0.2)' : '#FFF3E0' }]}>
+                <Ionicons name="time-outline" size={20} color={theme === 'dark' ? '#FFB74D' : '#F57C00'} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.linkLabelText, { color: colors.text }]}>{t('progress.questionsInReviewQueue')}</Text>
@@ -264,25 +299,36 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({ onNavigateToTab 
           </View>
         </View>
 
-        {/* Bottom Encouragement Banner (Screenshot 3) */}
-        <Card style={styles.bottomEncouragementCard}>
-          <View style={styles.bannerIconBadge}>
-            <Ionicons name="disc" size={28} color="#E31837" />
+        {/* Bottom Encouragement Banner */}
+        <Card style={[
+          styles.bottomEncouragementCard,
+          { 
+            backgroundColor: theme === 'dark' ? '#18141F' : '#FFF5F5',
+            borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.3)' : '#FFE0E0'
+          }
+        ]}>
+          <View style={[
+            styles.bannerIconBadge,
+            { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
+          ]}>
+            <Ionicons name="disc" size={28} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.bannerMainText, { color: colors.text }]}>
-              {t('progress.smallStepsEveryday')} <Text style={{ color: '#E31837', fontWeight: '900' }}>{t('progress.bigResultsAhead')}</Text>
+              {t('progress.smallStepsEveryday')} <Text style={{ color: theme === 'dark' ? '#FF4D6D' : '#E31837', fontWeight: '900' }}>{t('progress.bigResultsAhead')}</Text>
             </Text>
             <Text style={[styles.bannerSubText, { color: colors.textSecondary }]}>
               {t('progress.stayConsistent')}
             </Text>
           </View>
           <TouchableOpacity 
-            style={styles.studyNowBtn}
+            style={[styles.studyNowBtn, { borderColor: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}
             onPress={() => onNavigateToTab?.('study')}
           >
-            <Text style={styles.studyNowBtnText}>{t('progress.studyNow')}</Text>
-            <Ionicons name="chevron-forward" size={14} color="#E31837" />
+            <Text style={[styles.studyNowBtnText, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>
+              {t('progress.studyNow')}
+            </Text>
+            <Ionicons name="chevron-forward" size={14} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
           </TouchableOpacity>
         </Card>
 

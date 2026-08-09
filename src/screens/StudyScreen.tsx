@@ -219,11 +219,17 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               style={styles.categoryHeroImage}
               resizeMode="cover"
             />
-            <View style={styles.categoryHeroOverlay} />
+            <View style={[
+              styles.categoryHeroOverlay,
+              { backgroundColor: theme === 'dark' ? 'rgba(11, 12, 16, 0.90)' : 'rgba(255,255,255,0.88)' }
+            ]} />
 
             <View style={styles.categoryHeroContent}>
-              <View style={styles.carIconBadge}>
-                <Ionicons name="car-sport" size={24} color="#E31837" />
+              <View style={[
+                styles.carIconBadge,
+                { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
+              ]}>
+                <Ionicons name="car-sport" size={24} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
               </View>
               <Text style={[styles.categoryTitle, { color: colors.text }]}>
                 {t('study.carLicense')}
@@ -234,11 +240,11 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
 
               {/* Progress */}
               <View style={styles.categoryProgressRow}>
-                <Text style={styles.progressLbl}>Progress</Text>
-                <Text style={styles.progressVal}>32%</Text>
+                <Text style={[styles.progressLbl, { color: colors.textSecondary }]}>Progress</Text>
+                <Text style={[styles.progressVal, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>32%</Text>
               </View>
-              <View style={styles.progressTrackBg}>
-                <View style={[styles.progressTrackFill, { width: '32%' }]} />
+              <View style={[styles.progressTrackBg, { backgroundColor: theme === 'dark' ? '#232633' : '#E0E0E0' }]}>
+                <View style={[styles.progressTrackFill, { width: '32%', backgroundColor: theme === 'dark' ? '#FF4D6D' : '#E31837' }]} />
               </View>
               <Text style={[styles.completedTopicsSub, { color: colors.textSecondary }]}>
                 {t('study.topicsCompleted', { completed: 8, total: 25 })}
@@ -448,45 +454,63 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           <View style={{ gap: 12, marginTop: 12 }}>
             {/* Category Card 1: Car License */}
             <Card style={styles.categoryCardRow} onPress={() => setActiveCategory('car')}>
-              <View style={[styles.catIconCircle, { backgroundColor: '#FFEBEE' }]}>
-                <Ionicons name="car-sport" size={22} color="#E31837" />
+              <View style={[
+                styles.catIconCircle, 
+                { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
+              ]}>
+                <Ionicons name="car-sport" size={22} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.catCardTitle, { color: colors.text }]}>{t('study.carLicense')}</Text>
                 <Text style={[styles.catCardSub, { color: colors.textSecondary }]}>{t('study.carLicenseSub')}</Text>
               </View>
-              <View style={styles.catBadgeRed}>
-                <Text style={styles.catBadgeRedText}>5 Chapters</Text>
+              <View style={[
+                styles.catBadgeRed,
+                { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
+              ]}>
+                <Text style={[styles.catBadgeRedText, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>5 Chapters</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
             </Card>
 
             {/* Category Card 2: Motorcycle License */}
             <Card style={styles.categoryCardRow} onPress={() => setActiveCategory('bike')}>
-              <View style={[styles.catIconCircle, { backgroundColor: '#FFF8E1' }]}>
-                <Ionicons name="bicycle" size={22} color="#FF9800" />
+              <View style={[
+                styles.catIconCircle, 
+                { backgroundColor: theme === 'dark' ? 'rgba(255, 152, 0, 0.2)' : '#FFF8E1' }
+              ]}>
+                <Ionicons name="bicycle" size={22} color={theme === 'dark' ? '#FFB74D' : '#FF9800'} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.catCardTitle, { color: colors.text }]}>{t('study.motorcycleLicense')}</Text>
                 <Text style={[styles.catCardSub, { color: colors.textSecondary }]}>{t('study.motorcycleLicenseSub')}</Text>
               </View>
-              <View style={styles.catBadgeYellow}>
-                <Text style={styles.catBadgeYellowText}>4 Chapters</Text>
+              <View style={[
+                styles.catBadgeYellow,
+                { backgroundColor: theme === 'dark' ? 'rgba(255, 152, 0, 0.2)' : '#FFF8E1' }
+              ]}>
+                <Text style={[styles.catBadgeYellowText, { color: theme === 'dark' ? '#FFB74D' : '#E65100' }]}>4 Chapters</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
             </Card>
 
             {/* Category Card 3: Large Vehicle License */}
             <Card style={styles.categoryCardRow} onPress={() => setActiveCategory('large')}>
-              <View style={[styles.catIconCircle, { backgroundColor: '#F3E5F5' }]}>
-                <Ionicons name="bus" size={22} color="#9C27B0" />
+              <View style={[
+                styles.catIconCircle, 
+                { backgroundColor: theme === 'dark' ? 'rgba(156, 39, 176, 0.2)' : '#F3E5F5' }
+              ]}>
+                <Ionicons name="bus" size={22} color={theme === 'dark' ? '#CE93D8' : '#9C27B0'} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.catCardTitle, { color: colors.text }]}>{t('study.largeVehicleLicense')}</Text>
                 <Text style={[styles.catCardSub, { color: colors.textSecondary }]}>{t('study.largeVehicleLicenseSub')}</Text>
               </View>
-              <View style={styles.catBadgePurple}>
-                <Text style={styles.catBadgePurpleText}>6 Chapters</Text>
+              <View style={[
+                styles.catBadgePurple,
+                { backgroundColor: theme === 'dark' ? 'rgba(156, 39, 176, 0.2)' : '#F3E5F5' }
+              ]}>
+                <Text style={[styles.catBadgePurpleText, { color: theme === 'dark' ? '#CE93D8' : '#7B1FA2' }]}>6 Chapters</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
             </Card>
@@ -498,29 +522,41 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('study.quickTools')}</Text>
           <View style={styles.quickToolsGrid}>
             <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
-              <View style={[styles.quickToolIconBadge, { backgroundColor: '#FFEBEE' }]}>
-                <Ionicons name="bookmark" size={22} color="#E31837" />
+              <View style={[
+                styles.quickToolIconBadge, 
+                { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
+              ]}>
+                <Ionicons name="bookmark" size={22} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
               </View>
               <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.bookmarks')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
-              <View style={[styles.quickToolIconBadge, { backgroundColor: '#FFF3E0' }]}>
-                <Ionicons name="time" size={22} color="#FF9800" />
+              <View style={[
+                styles.quickToolIconBadge, 
+                { backgroundColor: theme === 'dark' ? 'rgba(255, 152, 0, 0.2)' : '#FFF3E0' }
+              ]}>
+                <Ionicons name="time" size={22} color={theme === 'dark' ? '#FFB74D' : '#FF9800'} />
               </View>
               <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.recent')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
-              <View style={[styles.quickToolIconBadge, { backgroundColor: '#E8F5E9' }]}>
-                <Ionicons name="download" size={22} color="#4CAF50" />
+              <View style={[
+                styles.quickToolIconBadge, 
+                { backgroundColor: theme === 'dark' ? 'rgba(76, 175, 80, 0.2)' : '#E8F5E9' }
+              ]}>
+                <Ionicons name="download" size={22} color={theme === 'dark' ? '#81C784' : '#4CAF50'} />
               </View>
               <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.downloads')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
-              <View style={[styles.quickToolIconBadge, { backgroundColor: '#E3F2FD' }]}>
-                <Ionicons name="journal" size={22} color="#2196F3" />
+              <View style={[
+                styles.quickToolIconBadge, 
+                { backgroundColor: theme === 'dark' ? 'rgba(33, 150, 243, 0.2)' : '#E3F2FD' }
+              ]}>
+                <Ionicons name="journal" size={22} color={theme === 'dark' ? '#64B5F6' : '#2196F3'} />
               </View>
               <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.notes')}</Text>
             </TouchableOpacity>
@@ -528,18 +564,27 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
         </View>
 
         {/* Study Tip Banner */}
-        <Card style={styles.studyTipCard}>
-          <View style={styles.tipIconBadge}>
-            <Ionicons name="disc" size={28} color="#E31837" />
+        <Card style={[
+          styles.studyTipCard,
+          { 
+            backgroundColor: theme === 'dark' ? '#18141F' : '#FFF5F5',
+            borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.3)' : '#FFE0E0'
+          }
+        ]}>
+          <View style={[
+            styles.tipIconBadge,
+            { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
+          ]}>
+            <Ionicons name="disc" size={28} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitleHeader}>{t('study.studyTip')}</Text>
+            <Text style={[styles.tipTitleHeader, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>{t('study.studyTip')}</Text>
             <Text style={[styles.tipMainText, { color: colors.text }]}>{t('study.studyTipTitle')}</Text>
             <Text style={[styles.tipSubText, { color: colors.textSecondary }]}>{t('study.studyTipSub')}</Text>
           </View>
-          <TouchableOpacity style={styles.viewTipsBtn}>
-            <Text style={styles.viewTipsText}>{t('study.viewTips')}</Text>
-            <Ionicons name="chevron-forward" size={14} color="#E31837" />
+          <TouchableOpacity style={[styles.viewTipsBtn, { borderColor: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>
+            <Text style={[styles.viewTipsText, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>{t('study.viewTips')}</Text>
+            <Ionicons name="chevron-forward" size={14} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
           </TouchableOpacity>
         </Card>
 

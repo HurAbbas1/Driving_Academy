@@ -109,7 +109,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
                 Platform.select({
                   web: {
                     backgroundImage: theme === 'dark' 
-                      ? 'linear-gradient(to right, #1A1A2E 0%, #1A1A2E 35%, rgba(26,26,46,0.85) 55%, rgba(26,26,46,0) 80%)'
+                      ? 'linear-gradient(to right, #14161D 0%, #14161D 35%, rgba(20,22,29,0.85) 55%, rgba(20,22,29,0) 80%)'
                       : 'linear-gradient(to right, #FFFFFF 0%, #FFFFFF 35%, rgba(255,255,255,0.85) 55%, rgba(255,255,255,0) 80%)',
                   } as any,
                   default: {
