@@ -311,6 +311,8 @@ export default function App() {
         setFileContent(text);
       };
       reader.readAsText(file);
+    } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+      parseDocxFile(file).then(text => setFileContent(text)).catch(() => setFileContent(''));
     } else {
       setFileContent('');
     }
@@ -377,6 +379,24 @@ export default function App() {
     return { text: fullText, images };
   };
 
+  
+  // Helper to extract clean text from .docx Word document
+  const parseDocxFile = async (file: File): Promise<string> => {
+    try {
+      const buffer = await file.arrayBuffer();
+      const decoder = new TextDecoder('utf-8', { fatal: false });
+      const rawXml = decoder.decode(buffer);
+      const matches = rawXml.match(/<w:t[^>]*>(.*?)<\/w:t>/gi);
+      if (matches && matches.length > 0) {
+        return matches.map(m => m.replace(/<[^>]+>/g, '')).filter(t => t.trim().length > 0).join(' ');
+      }
+      return rawXml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    } catch (e) {
+      console.error("Docx parsing error:", e);
+      return "";
+    }
+  };
+
   const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
 
   const handleStartIngestion = async (e: React.FormEvent) => {
@@ -395,6 +415,8 @@ export default function App() {
           const parsed = await parsePdfFile(selectedFile);
           extractedText = parsed.text;
           pageImages = parsed.images;
+        } else if (selectedFile.name.endsWith('.docx') || selectedFile.name.endsWith('.doc')) {
+          extractedText = fileContent || await parseDocxFile(selectedFile);
         } else if (selectedFile.name.endsWith('.txt')) {
           extractedText = fileContent;
         }
@@ -416,14 +438,14 @@ export default function App() {
       const chapterContent: any[] = [
         {
           type: 'text',
-          text: 'Analyze the attached driving handbook pages (shown as images below) and the extracted text. Read all the text, tables, and visually describe all road signs, traffic rules, and lane layouts in complete detail. Include a practical, real-life driving scenario/example for better user understanding within each subtopic content. Translate all descriptive sections into 4 language blocks: en, ja, zh, and pt. Keep numerical limits exact. Output a single structured JSON object matching this schema: {"title": "Handbook Overview", "description": "Overview description", "subtopics": [{"title": {"en": "", "ja": "", "zh": "", "pt": ""}, "content": {"en": "", "ja": "", "zh": "", "pt": ""}}]}' + (extractedText ? `\n\nExtracted Text:\n${extractedText}` : '')
+          text: 'Analyze the uploaded Word document/text content. Extract key chapters and subtopics. For EACH subtopic, generate a comprehensive, highly detailed explanation of at least 2 full pages worth of content (minimum 1,000 words per subtopic) including: 1. Core Rule Overview & Legal Principle, 2. Legal Requirements, Fines & Penalties (points deduction, fines in Yen, suspensions), 3. Step-by-Step Practical Driving Procedure (approach, mirror checks, blind spot 45-degree check, signal timing), 4. Critical Hazard Recognition & Blind Spot Warnings (pedestrian crosswalk priority, railway crossing procedures, emergency vehicle yielding), 5. Vehicle Focus: Car Drivers (四輪) vs. Motorcycle Riders (二輪). Translate all descriptive sections into 4 complete language blocks: en, ja, zh, and pt. Keep numerical limits exact. Output a single structured JSON object matching this schema: {"title": "Handbook Overview", "description": "Overview description", "subtopics": [{"title": {"en": "", "ja": "", "zh": "", "pt": ""}, "content": {"en": "", "ja": "", "zh": "", "pt": ""}}]}' + (extractedText ? `\n\nExtracted Text:\n${extractedText}` : '')
         }
       ];
 
       const quizContent: any[] = [
         {
           type: 'text',
-          text: 'Analyze the attached driving handbook pages (shown as images below) and the extracted text. Generate exactly 8 multilingual multiple choice questions (MCQs) testing rules, signs, and driving regulations. Every question, option array string, and explanation field must be fully localized into en, ja, zh, and pt. Output a single JSON object matching this schema: {"questions": [{"question": {"en": "", "ja": "", "zh": "", "pt": ""}, "options": [{"en": "", "ja": "", "zh": "", "pt": ""}], "correctOptionIndex": 0, "explanation": {"en": "", "ja": "", "zh": "", "pt": ""}}]}' + (extractedText ? `\n\nExtracted Text:\n${extractedText}` : '')
+          text: 'Analyze the uploaded Word document/text content. Generate a rich mixture of at least 10 multilingual multiple choice questions (MCQs), specifically including: (1) Visual Traffic Sign & Road Marking Questions with sign names/types, and (2) Real-World Driving Scenario Questions (e.g., wet road braking, railway crossings, night driving, moped two-step turns). Every question, option array string, and explanation field must be fully localized into en, ja, zh, and pt. Output a single JSON object matching this schema: {"questions": [{"question": {"en": "", "ja": "", "zh": "", "pt": ""}, "options": [{"en": "", "ja": "", "zh": "", "pt": ""}], "correctOptionIndex": 0, "explanation": {"en": "", "ja": "", "zh": "", "pt": ""}}]}' + (extractedText ? `\n\nExtracted Text:\n${extractedText}` : '')
         }
       ];
 
@@ -1587,10 +1609,10 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
                     disabled={isIngesting}
                   />
 
-                  <label style={styles.fieldLabel}>Select File (PDF or TXT)</label>
+                  <label style={styles.fieldLabel}>Select File (Word .docx, PDF, or TXT)</label>
                   <input 
                     type="file" 
-                    accept="application/pdf,text/plain"
+                    accept=".docx,.doc,.pdf,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     onChange={handleFileChange}
                     style={styles.fileInput} 
                     disabled={isIngesting}
