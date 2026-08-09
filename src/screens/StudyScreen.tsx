@@ -55,6 +55,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [quickToolModal, setQuickToolModal] = useState<'bookmarks' | 'recent' | 'downloads' | 'notes' | null>(null);
   const [isQuickNoteModalOpen, setIsQuickNoteModalOpen] = useState(false);
+  const [isTipsModalOpen, setIsTipsModalOpen] = useState(false);
   const [noteInputText, setNoteInputText] = useState('');
   const [activeNoteChapterId, setActiveNoteChapterId] = useState<string | null>(null);
 
@@ -730,13 +731,16 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
         </View>
 
         {/* Study Tip Banner */}
-        <Card style={[
-          styles.studyTipCard,
-          { 
-            backgroundColor: theme === 'dark' ? '#18141F' : '#FFF5F5',
-            borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.3)' : '#FFE0E0'
-          }
-        ]}>
+        <Card 
+          style={[
+            styles.studyTipCard,
+            { 
+              backgroundColor: theme === 'dark' ? '#18141F' : '#FFF5F5',
+              borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.3)' : '#FFE0E0'
+            }
+          ]}
+          onPress={() => setIsTipsModalOpen(true)}
+        >
           <View style={[
             styles.tipIconBadge,
             { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
@@ -748,7 +752,10 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
             <Text style={[styles.tipMainText, { color: colors.text }]}>{t('study.studyTipTitle')}</Text>
             <Text style={[styles.tipSubText, { color: colors.textSecondary }]}>{t('study.studyTipSub')}</Text>
           </View>
-          <TouchableOpacity style={[styles.viewTipsBtn, { borderColor: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>
+          <TouchableOpacity 
+            style={[styles.viewTipsBtn, { borderColor: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}
+            onPress={() => setIsTipsModalOpen(true)}
+          >
             <Text style={[styles.viewTipsText, { color: theme === 'dark' ? '#FF4D6D' : '#E31837' }]}>{t('study.viewTips')}</Text>
             <Ionicons name="chevron-forward" size={14} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
           </TouchableOpacity>
@@ -1051,6 +1058,99 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               })()}
 
             </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* EXAM STUDY TIPS & STRATEGIES POPUP MODAL                         */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <Modal
+        visible={isTipsModalOpen}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsTipsModalOpen(false)}
+      >
+        <View style={styles.modalOverlayBg}>
+          <View style={[styles.modalContentCard, { backgroundColor: colors.backgroundElement, borderColor: colors.border, paddingBottom: 24 }]}>
+            <View style={[styles.modalHeaderRow, { borderBottomColor: colors.border }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Ionicons name="bulb" size={24} color="#FF9800" />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.modalTitleText, { color: colors.text }]}>
+                    Japanese Exam Study Tips & Strategy
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                    Essential rules to pass your Japanese driving test on the first attempt!
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setIsTipsModalOpen(false)} style={styles.modalCloseBtn}>
+                <Ionicons name="close" size={22} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={{ maxHeight: 460 }} contentContainerStyle={{ paddingVertical: 12, gap: 12 }}>
+              {[
+                {
+                  icon: 'shield-checkmark',
+                  color: '#E31837',
+                  title: '1. Pedestrian Crosswalk Strict Stop (歩行者優先)',
+                  desc: 'If a pedestrian is waiting at a zebra crossing, you MUST come to a full stop. Failing to yield carries an automatic test fail and 2 penalty points under Article 38.'
+                },
+                {
+                  icon: 'eye',
+                  color: '#2196F3',
+                  title: '2. Makikomi Blind-Spot Squeeze (巻き込み確認)',
+                  desc: 'Before making any left turn, check mirror AND physically turn your head 45 degrees over left shoulder to prevent catching scooters or cyclists in your blind spot.'
+                },
+                {
+                  icon: 'subway',
+                  color: '#FF9800',
+                  title: '3. Train Level Crossing Protocol (踏切)',
+                  desc: 'Always stop completely before the line, roll down window, listen for bells, verify tracks clear, and check that space exists past the gate before crossing.'
+                },
+                {
+                  icon: 'speedometer',
+                  color: '#4CAF50',
+                  title: '4. Speedometer & Distance Rules',
+                  desc: 'Remember: 60 km/h is standard default for general roads, 100 km/h for expressways. Keep 2-second follow distance in dry weather, 4-second in wet weather.'
+                },
+                {
+                  icon: 'construct',
+                  color: '#9C27B0',
+                  title: '5. S-Curve & Crank Narrow Turns (S字・クランク)',
+                  desc: 'Approach at crawling speed (徐行). Keep front tires aligned wide along outer curb to prevent rear tires from clipping inner curb corners.'
+                },
+                {
+                  icon: 'alert-circle',
+                  color: '#FF5722',
+                  title: '6. Zero Tolerance DUI & High Fines',
+                  desc: 'Japan strictly enforces 0.03% BAC limit. Penalties include up to 5 years imprisonment or ¥1,000,000 fine — Passengers and alcohol servers are also penalized!'
+                }
+              ].map((tip, idx) => (
+                <Card key={idx} style={{ padding: 14, gap: 8, flexDirection: 'row', alignItems: 'flex-start' }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: `${tip.color}15`, justifyContent: 'center', alignItems: 'center' }}>
+                    <Ionicons name={tip.icon as any} size={22} color={tip.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text, marginBottom: 4 }}>
+                      {tip.title}
+                    </Text>
+                    <Text style={{ fontSize: 12.5, color: colors.textSecondary, lineHeight: 18 }}>
+                      {tip.desc}
+                    </Text>
+                  </View>
+                </Card>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity 
+              style={[styles.modalActionBtn, { backgroundColor: colors.primary, justifyContent: 'center', marginTop: 8, paddingVertical: 12 }]}
+              onPress={() => setIsTipsModalOpen(false)}
+            >
+              <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '800' }}>Got It! Back to Study</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
