@@ -48,7 +48,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
   } = useStudyStore();
 
   // Navigation & Quick Tools states
-  const [activeCategory, setActiveCategory] = useState<'car' | 'bike' | 'large' | null>('car');
+  const [activeCategory, setActiveCategory] = useState<'car' | 'bike' | 'large' | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedSubtopic, setSelectedSubtopic] = useState<Subtopic | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
