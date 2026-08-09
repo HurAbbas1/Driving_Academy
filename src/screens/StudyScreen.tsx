@@ -351,10 +351,6 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
                     </Text>
 
                     <View style={styles.chapterProgressFooter}>
-                      <View style={styles.miniProgressTrack}>
-                        <View style={[styles.miniProgressFill, { width: `${percent}%` }]} />
-                      </View>
-                      <Text style={styles.miniProgressPercent}>{percent}%</Text>
                       <Text style={[styles.topicsCountMeta, { color: colors.textSecondary }]}>
                         {t('study.topicsCount', { count: subCount })}
                       </Text>
