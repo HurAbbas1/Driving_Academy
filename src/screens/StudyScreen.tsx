@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, TextInput, Pressable, ScrollView, Platform, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, SafeAreaView, TextInput, Pressable, ScrollView, Platform, Image, TouchableOpacity, useWindowDimensions, Modal } from 'react-native';
 import { Text } from '../components/ui/Text';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
@@ -29,21 +29,33 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
     books, 
     chapters, 
     bookmarkedPages, 
+    bookmarkedChapters,
+    recentChapters,
     progress, 
     downloadedChapters, 
+    notes,
     selectedBookId, 
     setSelectedBookId, 
     toggleBookmark, 
+    toggleBookmarkChapter,
+    addRecentChapter,
+    clearRecentChapters,
+    toggleDownloadChapter,
+    saveChapterNote,
+    deleteChapterNote,
     markAsRead, 
     setLastRead, 
   } = useStudyStore();
 
-  // Navigation states
+  // Navigation & Quick Tools states
   const [activeCategory, setActiveCategory] = useState<'car' | 'bike' | 'large' | null>('car');
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedSubtopic, setSelectedSubtopic] = useState<Subtopic | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const [quickToolModal, setQuickToolModal] = useState<'bookmarks' | 'recent' | 'downloads' | 'notes' | null>(null);
+  const [noteInputText, setNoteInputText] = useState('');
+  const [activeNoteChapterId, setActiveNoteChapterId] = useState<string | null>(null);
 
   // Handle external routing
   useEffect(() => {
@@ -145,9 +157,8 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
   // VIEW 3: SUBTOPIC READER VIEW (When reading a topic)
   // ----------------------------------------------------
   if (selectedSubtopic && selectedChapter) {
-    const isBookmarked = bookmarkedPages.some(
-      b => b.chapterId === selectedChapter.id && b.subtopicId === selectedSubtopic.id
-    );
+    const isBookmarked = bookmarkedChapters.includes(selectedChapter.id) || bookmarkedPages.includes(selectedSubtopic.id);
+    const hasNote = Boolean(notes[selectedChapter.id]);
 
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -161,16 +172,35 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           <Text style={[styles.readerTitle, { color: colors.text }]} numberOfLines={1}>
             {loc(selectedSubtopic.title)}
           </Text>
-          <TouchableOpacity 
-            onPress={() => toggleBookmark(selectedChapter.id, selectedSubtopic.id)}
-            style={[styles.iconBtn, { backgroundColor: colors.background }]}
-          >
-            <Ionicons 
-              name={isBookmarked ? "bookmark" : "bookmark-outline"} 
-              size={20} 
-              color={isBookmarked ? colors.primary : colors.text} 
-            />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <TouchableOpacity 
+              onPress={() => {
+                setActiveNoteChapterId(selectedChapter.id);
+                setNoteInputText(notes[selectedChapter.id] || '');
+                setQuickToolModal('notes');
+              }}
+              style={[styles.iconBtn, { backgroundColor: colors.background }]}
+            >
+              <Ionicons 
+                name={hasNote ? "journal" : "journal-outline"} 
+                size={20} 
+                color={hasNote ? colors.primary : colors.text} 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => {
+                toggleBookmarkChapter(selectedChapter.id);
+                toggleBookmark(selectedSubtopic.id);
+              }}
+              style={[styles.iconBtn, { backgroundColor: colors.background }]}
+            >
+              <Ionicons 
+                name={isBookmarked ? "bookmark" : "bookmark-outline"} 
+                size={20} 
+                color={isBookmarked ? colors.primary : colors.text} 
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView contentContainerStyle={styles.readerContent}>
@@ -564,7 +594,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
         <View style={styles.sectionContainer}>
           <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('study.quickTools')}</Text>
           <View style={styles.quickToolsGrid}>
-            <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
+            <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('bookmarks')}>
               <View style={[
                 styles.quickToolIconBadge, 
                 { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
@@ -574,7 +604,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.bookmarks')}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
+            <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('recent')}>
               <View style={[
                 styles.quickToolIconBadge, 
                 { backgroundColor: theme === 'dark' ? 'rgba(255, 152, 0, 0.2)' : '#FFF3E0' }
@@ -584,7 +614,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.recent')}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
+            <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('downloads')}>
               <View style={[
                 styles.quickToolIconBadge, 
                 { backgroundColor: theme === 'dark' ? 'rgba(76, 175, 80, 0.2)' : '#E8F5E9' }
@@ -594,7 +624,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.downloads')}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickToolBox} onPress={() => {}}>
+            <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('notes')}>
               <View style={[
                 styles.quickToolIconBadge, 
                 { backgroundColor: theme === 'dark' ? 'rgba(33, 150, 243, 0.2)' : '#E3F2FD' }
@@ -632,6 +662,305 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
         </Card>
 
       </ScrollView>
+
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* QUICK TOOLS MODAL (Bookmarks, Recent, Downloads, Notes)        */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <Modal
+        visible={quickToolModal !== null}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setQuickToolModal(null)}
+      >
+        <View style={styles.modalOverlayBg}>
+          <View style={[styles.modalContentCard, { backgroundColor: colors.backgroundElement, borderColor: colors.border }]}>
+            {/* Modal Header */}
+            <View style={[styles.modalHeaderRow, { borderBottomColor: colors.border }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                {quickToolModal === 'bookmarks' && <Ionicons name="bookmark" size={22} color="#E31837" />}
+                {quickToolModal === 'recent' && <Ionicons name="time" size={22} color="#FF9800" />}
+                {quickToolModal === 'downloads' && <Ionicons name="download" size={22} color="#4CAF50" />}
+                {quickToolModal === 'notes' && <Ionicons name="journal" size={22} color="#2196F3" />}
+                <Text style={[styles.modalTitleText, { color: colors.text }]}>
+                  {quickToolModal === 'bookmarks' && 'Bookmarked Chapters'}
+                  {quickToolModal === 'recent' && 'Recently Read Chapters'}
+                  {quickToolModal === 'downloads' && 'Offline Downloaded Chapters'}
+                  {quickToolModal === 'notes' && 'Personal Study Notes'}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setQuickToolModal(null)} style={styles.modalCloseBtn}>
+                <Ionicons name="close" size={22} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Modal Body Scroll */}
+            <ScrollView style={{ maxHeight: 450 }} contentContainerStyle={{ paddingVertical: 12, gap: 12 }}>
+              
+              {/* 1. BOOKMARKS MODAL BODY */}
+              {quickToolModal === 'bookmarks' && (() => {
+                const bookmarkedList = activeChapters.filter(c => 
+                  bookmarkedChapters.includes(c.id) || bookmarkedPages.some(p => p.startsWith(c.id))
+                );
+
+                if (bookmarkedList.length === 0) {
+                  return (
+                    <View style={styles.emptyModalBox}>
+                      <Ionicons name="bookmark-outline" size={48} color={colors.textSecondary} />
+                      <Text style={[styles.emptyModalTitle, { color: colors.text }]}>No Bookmarks Saved Yet</Text>
+                      <Text style={[styles.emptyModalSub, { color: colors.textSecondary }]}>
+                        Tap the 🔖 bookmark icon while reading any chapter to save it here for quick access!
+                      </Text>
+                    </View>
+                  );
+                }
+
+                return bookmarkedList.map((ch) => {
+                  const chNum = getChapterNum(ch);
+                  return (
+                    <Card key={ch.id} style={styles.modalItemRow}>
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                          <View style={styles.modalBadge}>
+                            <Text style={styles.modalBadgeText}>CH {chNum}</Text>
+                          </View>
+                          <Text style={[styles.modalItemTitle, { color: colors.text }]} numberOfLines={1}>
+                            {loc(ch.title)}
+                          </Text>
+                        </View>
+                        {ch.subtopics && ch.subtopics[0] && (
+                          <Text style={{ fontSize: 12, color: colors.textSecondary }} numberOfLines={1}>
+                            {loc(ch.subtopics[0].title)}
+                          </Text>
+                        )}
+                      </View>
+                      <TouchableOpacity 
+                        style={[styles.modalActionBtn, { backgroundColor: colors.primary }]}
+                        onPress={() => {
+                          setSelectedChapter(ch);
+                          addRecentChapter(ch.id);
+                          if (ch.subtopics && ch.subtopics.length > 0) setSelectedSubtopic(ch.subtopics[0]);
+                          setQuickToolModal(null);
+                        }}
+                      >
+                        <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '700' }}>Read</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={{ padding: 6 }} 
+                        onPress={() => toggleBookmarkChapter(ch.id)}
+                      >
+                        <Ionicons name="trash-outline" size={18} color={colors.error} />
+                      </TouchableOpacity>
+                    </Card>
+                  );
+                });
+              })()}
+
+              {/* 2. RECENT MODAL BODY */}
+              {quickToolModal === 'recent' && (() => {
+                const recentList = recentChapters
+                  .map(item => ({ item, ch: activeChapters.find(c => c.id === item.chapterId) }))
+                  .filter(entry => entry.ch !== undefined);
+
+                if (recentList.length === 0) {
+                  return (
+                    <View style={styles.emptyModalBox}>
+                      <Ionicons name="time-outline" size={48} color={colors.textSecondary} />
+                      <Text style={[styles.emptyModalTitle, { color: colors.text }]}>No Recent Reading History</Text>
+                      <Text style={[styles.emptyModalSub, { color: colors.textSecondary }]}>
+                        Open any chapter from the study list to start tracking your reading history automatically!
+                      </Text>
+                    </View>
+                  );
+                }
+
+                return (
+                  <>
+                    {recentList.map(({ item, ch }) => {
+                      if (!ch) return null;
+                      const chNum = getChapterNum(ch);
+                      const dateStr = new Date(item.accessedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                      return (
+                        <Card key={ch.id} style={styles.modalItemRow}>
+                          <View style={{ flex: 1 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                              <View style={styles.modalBadge}>
+                                <Text style={styles.modalBadgeText}>CH {chNum}</Text>
+                              </View>
+                              <Text style={{ fontSize: 10, color: colors.textSecondary }}>Opened {dateStr}</Text>
+                            </View>
+                            <Text style={[styles.modalItemTitle, { color: colors.text }]} numberOfLines={1}>
+                              {loc(ch.title)}
+                            </Text>
+                          </View>
+                          <TouchableOpacity 
+                            style={[styles.modalActionBtn, { backgroundColor: '#FF9800' }]}
+                            onPress={() => {
+                              setSelectedChapter(ch);
+                              addRecentChapter(ch.id);
+                              if (ch.subtopics && ch.subtopics.length > 0) setSelectedSubtopic(ch.subtopics[0]);
+                              setQuickToolModal(null);
+                            }}
+                          >
+                            <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '700' }}>Resume</Text>
+                          </TouchableOpacity>
+                        </Card>
+                      );
+                    })}
+
+                    <TouchableOpacity 
+                      style={[styles.clearBtn, { borderColor: colors.border }]} 
+                      onPress={clearRecentChapters}
+                    >
+                      <Ionicons name="trash-outline" size={16} color={colors.error} />
+                      <Text style={{ color: colors.error, fontSize: 12, fontWeight: '700' }}>Clear Recent History</Text>
+                    </TouchableOpacity>
+                  </>
+                );
+              })()}
+
+              {/* 3. DOWNLOADS MODAL BODY */}
+              {quickToolModal === 'downloads' && (() => {
+                return activeChapters.map((ch) => {
+                  const chNum = getChapterNum(ch);
+                  const isDownloaded = downloadedChapters.includes(ch.id);
+                  return (
+                    <Card key={ch.id} style={styles.modalItemRow}>
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                          <View style={[styles.modalBadge, isDownloaded && { backgroundColor: '#4CAF50' }]}>
+                            <Text style={styles.modalBadgeText}>CH {chNum}</Text>
+                          </View>
+                          {isDownloaded && (
+                            <Text style={{ fontSize: 10, color: '#4CAF50', fontWeight: '800' }}>✓ Available Offline</Text>
+                          )}
+                        </View>
+                        <Text style={[styles.modalItemTitle, { color: colors.text }]} numberOfLines={1}>
+                          {loc(ch.title)}
+                        </Text>
+                      </View>
+
+                      <TouchableOpacity 
+                        style={[
+                          styles.modalActionBtn, 
+                          { backgroundColor: isDownloaded ? '#4CAF50' : colors.primary }
+                        ]}
+                        onPress={() => toggleDownloadChapter(ch.id)}
+                      >
+                        <Ionicons name={isDownloaded ? "checkmark-circle" : "download-outline"} size={16} color="#FFF" />
+                        <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '700' }}>
+                          {isDownloaded ? 'Downloaded' : 'Download'}
+                        </Text>
+                      </TouchableOpacity>
+                    </Card>
+                  );
+                });
+              })()}
+
+              {/* 4. NOTES MODAL BODY */}
+              {quickToolModal === 'notes' && (() => {
+                const noteEntries = Object.entries(notes);
+
+                return (
+                  <>
+                    {/* Add / Edit Note Input Box */}
+                    <Card style={{ padding: 12, gap: 8, backgroundColor: theme === 'dark' ? '#1E202B' : '#F5F5FA' }}>
+                      <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
+                        {activeNoteChapterId ? `Editing Note for Chapter` : 'Write Study Note'}
+                      </Text>
+                      <TextInput 
+                        style={[
+                          styles.noteInput, 
+                          { color: colors.text, backgroundColor: colors.background, borderColor: colors.border }
+                        ]}
+                        placeholder="Write key notes, memory hooks, or exam tips here..."
+                        placeholderTextColor={colors.textSecondary}
+                        multiline={true}
+                        numberOfLines={3}
+                        value={noteInputText}
+                        onChangeText={setNoteInputText}
+                      />
+                      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
+                        {activeNoteChapterId && (
+                          <TouchableOpacity 
+                            style={{ paddingHorizontal: 12, paddingVertical: 6 }} 
+                            onPress={() => {
+                              setActiveNoteChapterId(null);
+                              setNoteInputText('');
+                            }}
+                          >
+                            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Cancel</Text>
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity 
+                          style={[styles.modalActionBtn, { backgroundColor: '#2196F3' }]}
+                          onPress={() => {
+                            const targetId = activeNoteChapterId || (selectedChapter ? selectedChapter.id : activeChapters[0]?.id);
+                            if (targetId && noteInputText.trim()) {
+                              saveChapterNote(targetId, noteInputText.trim());
+                              setNoteInputText('');
+                              setActiveNoteChapterId(null);
+                            }
+                          }}
+                        >
+                          <Ionicons name="save-outline" size={14} color="#FFF" />
+                          <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '700' }}>Save Note</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </Card>
+
+                    {/* Notes List */}
+                    {noteEntries.length === 0 ? (
+                      <View style={styles.emptyModalBox}>
+                        <Ionicons name="journal-outline" size={48} color={colors.textSecondary} />
+                        <Text style={[styles.emptyModalTitle, { color: colors.text }]}>No Study Notes Created Yet</Text>
+                        <Text style={[styles.emptyModalSub, { color: colors.textSecondary }]}>
+                          Type a note in the box above to keep important study reminders for your driving exam!
+                        </Text>
+                      </View>
+                    ) : (
+                      noteEntries.map(([chId, noteText]) => {
+                        const ch = activeChapters.find(c => c.id === chId);
+                        const chNum = ch ? getChapterNum(ch) : 1;
+                        return (
+                          <Card key={chId} style={{ padding: 12, gap: 6 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                <View style={[styles.modalBadge, { backgroundColor: '#2196F3' }]}>
+                                  <Text style={styles.modalBadgeText}>CH {chNum}</Text>
+                                </View>
+                                <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }} numberOfLines={1}>
+                                  {ch ? loc(ch.title) : 'Custom Note'}
+                                </Text>
+                              </View>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <TouchableOpacity 
+                                  onPress={() => {
+                                    setActiveNoteChapterId(chId);
+                                    setNoteInputText(noteText);
+                                  }}
+                                >
+                                  <Ionicons name="create-outline" size={18} color={colors.primary} />
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => deleteChapterNote(chId)}>
+                                  <Ionicons name="trash-outline" size={18} color={colors.error} />
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                            <Text style={{ fontSize: 13, color: colors.text, lineHeight: 18, backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#F9F9FB', padding: 8, borderRadius: 8 }}>
+                              {noteText}
+                            </Text>
+                          </Card>
+                        );
+                      })
+                    )}
+                  </>
+                );
+              })()}
+
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -1172,5 +1501,98 @@ const styles = StyleSheet.create({
   },
   readerContent: {
     padding: 20,
+  },
+
+  // Quick Tools Modal Styles
+  modalOverlayBg: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalContentCard: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 1,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 30,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    marginBottom: 8,
+  },
+  modalTitleText: {
+    fontSize: 16.5,
+    fontWeight: '900',
+  },
+  modalCloseBtn: {
+    padding: 6,
+    borderRadius: 20,
+  },
+  modalItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 16,
+    gap: 10,
+  },
+  modalBadge: {
+    backgroundColor: '#E31837',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  modalBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  modalItemTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  modalActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 10,
+  },
+  emptyModalBox: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  emptyModalTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  emptyModalSub: {
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 17,
+  },
+  clearBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 8,
+  },
+  noteInput: {
+    fontSize: 13,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    textAlignVertical: 'top',
   },
 });

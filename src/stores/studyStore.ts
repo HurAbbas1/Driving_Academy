@@ -11,12 +11,20 @@ interface ReadingProgress {
   lastReadChapterId: string | null;
 }
 
+export interface RecentChapterItem {
+  chapterId: string;
+  accessedAt: number;
+}
+
 interface StudyState {
   books: Book[];
   chapters: Chapter[];
   bookmarkedPages: string[]; // subtopicIds
+  bookmarkedChapters: string[]; // chapterIds
+  recentChapters: RecentChapterItem[];
   progress: ReadingProgress;
   downloadedChapters: string[]; // chapterIds
+  notes: Record<string, string>; // chapterId -> noteText
   loading: boolean;
   selectedBookId: string | null;
 
@@ -24,10 +32,16 @@ interface StudyState {
   addBook: (book: Book) => void;
   setSelectedBookId: (id: string | null) => void;
   toggleBookmark: (subtopicId: string) => Promise<void>;
+  toggleBookmarkChapter: (chapterId: string) => Promise<void>;
+  addRecentChapter: (chapterId: string) => Promise<void>;
+  clearRecentChapters: () => Promise<void>;
   markAsRead: (subtopicId: string, chapterId: string) => Promise<void>;
   setLastRead: (subtopicId: string, chapterId: string) => Promise<void>;
   downloadChapter: (chapterId: string) => Promise<void>;
   deleteDownload: (chapterId: string) => Promise<void>;
+  toggleDownloadChapter: (chapterId: string) => Promise<void>;
+  saveChapterNote: (chapterId: string, noteText: string) => Promise<void>;
+  deleteChapterNote: (chapterId: string) => Promise<void>;
   loadStudyState: () => Promise<void>;
   syncWithCloud: () => Promise<void>;
 }
@@ -36,12 +50,15 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   books: [],
   chapters: [],
   bookmarkedPages: [],
+  bookmarkedChapters: [],
+  recentChapters: [],
   progress: {
     completedSubtopics: [],
     lastReadSubtopicId: null,
     lastReadChapterId: null,
   },
   downloadedChapters: [],
+  notes: {},
   loading: false,
   selectedBookId: null,
 
@@ -92,6 +109,54 @@ export const useStudyStore = create<StudyState>((set, get) => ({
     } catch (e) {
       console.error('Failed to sync bookmarks', e);
     }
+  },
+
+  toggleBookmarkChapter: async (chapterId) => {
+    const { bookmarkedChapters } = get();
+    const newBookmarks = bookmarkedChapters.includes(chapterId)
+      ? bookmarkedChapters.filter(id => id !== chapterId)
+      : [...bookmarkedChapters, chapterId];
+
+    set({ bookmarkedChapters: newBookmarks });
+    await AsyncStorage.setItem('bookmarked-chapters', JSON.stringify(newBookmarks));
+  },
+
+  addRecentChapter: async (chapterId) => {
+    const { recentChapters } = get();
+    const filtered = recentChapters.filter(item => item.chapterId !== chapterId);
+    const updated = [{ chapterId, accessedAt: Date.now() }, ...filtered].slice(0, 20);
+    set({ recentChapters: updated });
+    await AsyncStorage.setItem('recent-chapters', JSON.stringify(updated));
+  },
+
+  clearRecentChapters: async () => {
+    set({ recentChapters: [] });
+    await AsyncStorage.removeItem('recent-chapters');
+  },
+
+  toggleDownloadChapter: async (chapterId) => {
+    const { downloadedChapters } = get();
+    const isDownloaded = downloadedChapters.includes(chapterId);
+    const newDownloads = isDownloaded
+      ? downloadedChapters.filter(id => id !== chapterId)
+      : [...downloadedChapters, chapterId];
+    set({ downloadedChapters: newDownloads });
+    await AsyncStorage.setItem('downloaded-chapters', JSON.stringify(newDownloads));
+  },
+
+  saveChapterNote: async (chapterId, noteText) => {
+    const { notes } = get();
+    const updated = { ...notes, [chapterId]: noteText };
+    set({ notes: updated });
+    await AsyncStorage.setItem('study-chapter-notes', JSON.stringify(updated));
+  },
+
+  deleteChapterNote: async (chapterId) => {
+    const { notes } = get();
+    const updated = { ...notes };
+    delete updated[chapterId];
+    set({ notes: updated });
+    await AsyncStorage.setItem('study-chapter-notes', JSON.stringify(updated));
   },
 
   markAsRead: async (subtopicId, chapterId) => {
@@ -167,8 +232,11 @@ export const useStudyStore = create<StudyState>((set, get) => ({
     set({ loading: true });
     try {
       const storedBookmarks = await AsyncStorage.getItem('bookmarked-pages');
+      const storedBookmarkedChapters = await AsyncStorage.getItem('bookmarked-chapters');
+      const storedRecent = await AsyncStorage.getItem('recent-chapters');
       const storedProgress = await AsyncStorage.getItem('reading-progress');
       const storedDownloads = await AsyncStorage.getItem('downloaded-chapters');
+      const storedNotes = await AsyncStorage.getItem('study-chapter-notes');
 
       let finalBooks: Book[] = [];
       let finalChapters: Chapter[] = [];
@@ -272,8 +340,11 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         books: finalBooks,
         chapters: uniqueChapters,
         bookmarkedPages: storedBookmarks ? JSON.parse(storedBookmarks) : [],
+        bookmarkedChapters: storedBookmarkedChapters ? JSON.parse(storedBookmarkedChapters) : [],
+        recentChapters: storedRecent ? JSON.parse(storedRecent) : [],
         progress: storedProgress ? JSON.parse(storedProgress) : { completedSubtopics: [], lastReadSubtopicId: null, lastReadChapterId: null },
         downloadedChapters: storedDownloads ? JSON.parse(storedDownloads) : [],
+        notes: storedNotes ? JSON.parse(storedNotes) : {},
       });
     } catch (e) {
       console.error('Failed to load study state', e);
