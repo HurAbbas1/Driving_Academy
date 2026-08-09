@@ -50,19 +50,29 @@ export const QuizScreen: React.FC = () => {
 
   // Safe localized text extractor — handles both multilingual objects and plain strings
   const loc = (field: any): string => {
+    let result = '';
     if (!field) return '';
-    if (typeof field === 'string') return field;
-    if (typeof field === 'object') {
+    if (typeof field === 'string') {
+      result = field;
+    } else if (typeof field === 'object') {
       const val = field[lang] ?? field.en ?? Object.values(field)[0] ?? '';
-      // If the resolved value is still an object (double nesting!), resolve it again
       if (typeof val === 'object') {
         const valInner = val[lang] ?? val.en ?? Object.values(val)[0] ?? '';
-        if (typeof valInner === 'object') return JSON.stringify(valInner);
-        return String(valInner);
+        result = typeof valInner === 'object' ? JSON.stringify(valInner) : String(valInner);
+      } else {
+        result = String(val);
       }
-      return String(val);
+    } else {
+      result = String(field);
     }
-    return String(field);
+
+    // Strip out chapter tags like [Chapter 2 - Q9] or 【第2章 - 第9題】 or [Capítulo 2 - P9]
+    return result
+      .replace(/\s*\[Chapter\s*\d+\s*-\s*Q\d+\]:?\s*/gi, ' ')
+      .replace(/\s*【第\d+章\s*-\s*問?\d+題?】:?\s*/g, ' ')
+      .replace(/\s*\[Capítulo\s*\d+\s*-\s*P\d+\]:?\s*/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   };
 
   // Format seconds to MM:SS
