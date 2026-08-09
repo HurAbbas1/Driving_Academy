@@ -401,7 +401,14 @@ export default function App() {
 
   const handleStartIngestion = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newBookTitle) return;
+    let finalTitle = newBookTitle.trim();
+    if (!finalTitle && selectedFile) {
+      finalTitle = selectedFile.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ').replace(/-/g, ' ');
+      finalTitle = finalTitle.charAt(0).toUpperCase() + finalTitle.slice(1);
+    }
+    if (!finalTitle) {
+      finalTitle = "Japan Driving Rules Master Handbook";
+    }
     setIsIngesting(true);
     setIngestionStep(1);
 
@@ -538,12 +545,12 @@ export default function App() {
       const book_id = `book_${Math.random().toString(36).substr(2, 7)}`;
       const books_payload = [{
         id: book_id,
-        title: { en: newBookTitle, ja: newBookTitle, zh: newBookTitle, pt: newBookTitle },
+        title: { en: finalTitle, ja: finalTitle, zh: finalTitle, pt: finalTitle },
         description: {
-          en: synthesisData.description || `Study guide for ${newBookTitle}`,
-          ja: `${newBookTitle}の学習ガイド`,
-          zh: `${newBookTitle}的学习指南`,
-          pt: `Guia de estudo para ${newBookTitle}`
+          en: synthesisData.description || `Study guide for ${finalTitle}`,
+          ja: `${finalTitle}の学習ガイド`,
+          zh: `${finalTitle}的学习指南`,
+          pt: `Guia de estudo para ${finalTitle}`
         },
         icon: "car-sport-outline"
       }];
@@ -1587,17 +1594,49 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
             <div style={styles.grid2}>
               {/* Left Form */}
               <div style={styles.card}>
-                <h2 style={styles.cardTitle}>Ingest New Handbook</h2>
+                <h2 style={{...styles.cardTitle, color: '#E31837', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                  ✨ Word Book Auto-Magic Slot
+                </h2>
+                <p style={{ fontSize: '13px', color: '#B0B0B0', marginBottom: '16px', lineHeight: '18px' }}>
+                  Upload your Word (.docx) book file below. Book title is optional—AI will auto-generate the title, 2-page detailed explanations in 4 languages (EN, JA, ZH, PT), and visual/scenario quizzes automatically!
+                </p>
+
                 <form onSubmit={handleStartIngestion} style={styles.crudForm}>
-                  <label style={styles.fieldLabel}>Handbook Title</label>
+                  <div style={{
+                    border: '2px dashed #E31837',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    textAlign: 'center',
+                    backgroundColor: 'rgba(227, 24, 55, 0.04)',
+                    marginBottom: '16px',
+                    cursor: 'pointer'
+                  }}>
+                    <label style={{ cursor: 'pointer', display: 'block' }}>
+                      <span style={{ fontSize: '28px', display: 'block', marginBottom: '8px' }}>📄</span>
+                      <span style={{ fontSize: '14px', fontWeight: 800, color: '#FFFFFF' }}>
+                        {selectedFile ? `Selected Word Book: ${selectedFile.name}` : 'Upload Word Book File (.docx / .doc / .txt)'}
+                      </span>
+                      <span style={{ fontSize: '12px', color: '#A0A0A0', display: 'block', marginTop: '4px' }}>
+                        {selectedFile ? 'Click to change file' : 'Drag & drop or tap to select Word file'}
+                      </span>
+                      <input 
+                        type="file" 
+                        accept=".docx,.doc,.pdf,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }} 
+                        disabled={isIngesting}
+                      />
+                    </label>
+                  </div>
+
+                  <label style={styles.fieldLabel}>Book Name (Optional - AI will auto-name if left blank)</label>
                   <input 
                     type="text" 
-                    placeholder="e.g., Heavy Vehicles Special License" 
+                    placeholder="Auto-detected from file (e.g. Traffic Safety Master Guide)" 
                     value={newBookTitle}
                     onChange={(e) => setNewBookTitle(e.target.value)}
                     style={styles.input} 
                     disabled={isIngesting}
-                    required
                   />
 
                   <label style={styles.fieldLabel}>Paste Raw Textbook Text (Alternative)</label>
@@ -1620,7 +1659,7 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
 
                   <button type="submit" style={{...styles.submitBtn, opacity: isIngesting ? 0.6 : 1}} disabled={isIngesting}>
                     <Plus size={16} />
-                    <span>{isIngesting ? 'AI is Processing...' : 'Start Ingestion'}</span>
+                    <span>{isIngesting ? '✨ AI Auto-Magic is Processing...' : '✨ Process Word Book (Auto-Magic)'}</span>
                   </button>
                 </form>
 
