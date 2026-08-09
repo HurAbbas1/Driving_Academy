@@ -27,15 +27,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
   const streak = profile?.streak?.current ?? 0;
   const username = profile?.displayName || 'Learner';
 
-  // Calculate study progress dynamically
-  const totalSubtopics = chapters.reduce((acc, c) => acc + (c.subtopics ? c.subtopics.length : 0), 0);
-  const completedSubtopics = progress?.completedSubtopics?.length || 0;
+  // Calculate study progress dynamically against active handbook subtopics
+  const activeSubtopicIds = new Set(
+    chapters.flatMap(c => (c.subtopics || []).map(s => s.id))
+  );
+  const validCompletedSubtopics = (progress?.completedSubtopics || []).filter(id => activeSubtopicIds.has(id));
+  const totalSubtopics = activeSubtopicIds.size || 14;
+  const completedSubtopics = validCompletedSubtopics.length;
   const studyProgressPercent = totalSubtopics > 0
-    ? Math.round((completedSubtopics / totalSubtopics) * 100)
+    ? Math.min(100, Math.round((completedSubtopics / totalSubtopics) * 100))
     : 0;
 
   const remainingLessons = Math.max(0, totalSubtopics - completedSubtopics);
-  const totalChapters = chapters.length;
+  const totalChapters = chapters.length || 14;
 
   const currentLang = useLanguageStore((state) => state.language);
   const setLanguage = useLanguageStore((state) => state.setLanguage);
