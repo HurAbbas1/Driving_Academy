@@ -885,36 +885,6 @@ export const QuizScreen: React.FC = () => {
               );
             })()}
 
-            {/* Practice by Handbook */}
-            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>{t('quiz.practiceByHandbook')}</Text>
-            {books.map((book) => (
-              <Card key={book.id} style={[styles.toolCard, { marginBottom: 12 }]} onPress={() => triggerStartQuiz(undefined, book.id)}>
-                <View style={styles.toolContent}>
-                  <View style={[styles.toolIcon, { backgroundColor: activeSection === 'car' ? `${colors.primary}15` : '#FFB30015' }]}>
-                    <Ionicons 
-                      name={activeSection === 'car' ? "car-sport-outline" : "bicycle-outline"} 
-                      size={24} 
-                      color={activeSection === 'car' ? colors.primary : "#FFB300"} 
-                    />
-                  </View>
-                  <View style={styles.toolInfo}>
-                    <Text style={[styles.toolTitle, { color: colors.text }]}>{loc(book.title)}</Text>
-                    <Text style={[styles.toolSub, { color: colors.textSecondary }]} numberOfLines={2}>
-                      {loc(book.description)}
-                    </Text>
-                  </View>
-                </View>
-                <Button
-                  title={t('study.practiceThisHandbook')}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    triggerStartQuiz(undefined, book.id);
-                  }}
-                  style={{ marginTop: 14 }}
-                  variant="secondary"
-                />
-              </Card>
-            ))}
           </>
         )}
 
