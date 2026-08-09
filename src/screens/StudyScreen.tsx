@@ -256,19 +256,21 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           <View style={styles.statBoxesRow}>
             <Card style={styles.statBoxCard}>
               <Ionicons name="book-outline" size={20} color="#E31837" />
-              <Text style={[styles.statBoxNum, { color: colors.text }]}>5</Text>
+              <Text style={[styles.statBoxNum, { color: colors.text }]}>{chapters.length || 3}</Text>
               <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>Chapters</Text>
             </Card>
 
             <Card style={styles.statBoxCard}>
               <Ionicons name="checkbox-outline" size={20} color="#FF9800" />
-              <Text style={[styles.statBoxNum, { color: colors.text }]}>25</Text>
+              <Text style={[styles.statBoxNum, { color: colors.text }]}>
+                {chapters.reduce((acc, c) => acc + (c.subtopics ? c.subtopics.length : 0), 0) || 35}
+              </Text>
               <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>{t('study.topics')}</Text>
             </Card>
 
             <Card style={styles.statBoxCard}>
               <Ionicons name="checkmark-circle-outline" size={20} color="#4CAF50" />
-              <Text style={[styles.statBoxNum, { color: colors.text }]}>8</Text>
+              <Text style={[styles.statBoxNum, { color: colors.text }]}>{progress.completedSubtopics.length}</Text>
               <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>{t('study.complete')}</Text>
             </Card>
 
@@ -283,42 +285,51 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('study.chapters')}</Text>
 
           <View style={{ gap: 14, marginBottom: 20 }}>
-            {categoryChaptersData.map((ch) => {
-              const realChapter = chapters[ch.num - 1] || chapters[0];
+            {chapters.map((ch, idx) => {
+              const subCount = ch.subtopics ? ch.subtopics.length : 0;
+              const readCount = ch.subtopics ? ch.subtopics.filter(s => progress.completedSubtopics.includes(s.id)).length : 0;
+              const percent = subCount > 0 ? Math.round((readCount / subCount) * 100) : 0;
+              const chapterImages = [
+                'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=80',
+                'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&q=80',
+                'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=600&q=80',
+              ];
+              const thumb = chapterImages[idx % chapterImages.length];
+
               return (
                 <Card 
                   key={ch.id} 
                   style={styles.chapterCardRow}
                   onPress={() => {
-                    if (realChapter) {
-                      setSelectedChapter(realChapter);
-                      setSelectedSubtopic(realChapter.subtopics[0] || null);
+                    setSelectedChapter(ch);
+                    if (ch.subtopics && ch.subtopics.length > 0) {
+                      setSelectedSubtopic(ch.subtopics[0]);
                     }
                   }}
                 >
-                  <Image source={{ uri: ch.image }} style={styles.chapterThumb} />
+                  <Image source={{ uri: thumb }} style={styles.chapterThumb} />
 
                   <View style={styles.chapterInfoCol}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <View style={styles.chapterNumBadge}>
-                        <Text style={styles.chapterNumText}>{ch.num}</Text>
+                        <Text style={styles.chapterNumText}>{ch.orderNum || (idx + 1)}</Text>
                       </View>
                       <Text style={[styles.chapterItemTitle, { color: colors.text }]} numberOfLines={1}>
-                        {t(ch.titleKey)}
+                        {loc(ch.title)}
                       </Text>
                     </View>
 
                     <Text style={[styles.chapterItemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
-                      {t(ch.descKey)}
+                      {loc(ch.title)}
                     </Text>
 
                     <View style={styles.chapterProgressFooter}>
                       <View style={styles.miniProgressTrack}>
-                        <View style={[styles.miniProgressFill, { width: `${ch.progress}%` }]} />
+                        <View style={[styles.miniProgressFill, { width: `${percent}%` }]} />
                       </View>
-                      <Text style={styles.miniProgressPercent}>{ch.progress}%</Text>
+                      <Text style={styles.miniProgressPercent}>{percent}%</Text>
                       <Text style={[styles.topicsCountMeta, { color: colors.textSecondary }]}>
-                        {t('study.topicsCount', { count: ch.topicsCount })}
+                        {t('study.topicsCount', { count: subCount })}
                       </Text>
                       <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} style={{ marginLeft: 'auto' }} />
                     </View>
