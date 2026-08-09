@@ -402,11 +402,11 @@ export default function App() {
   // Robust AI completion runner with automatic model fallback to avoid upstream idle timeouts
   const fetchOpenRouterAI = async (apiKey: string, messagesContent: any[]): Promise<any> => {
     const models = [
-      'openrouter/auto',
-      'google/gemini-flash-1.5:free',
-      'meta-llama/llama-3-8b-instruct:free',
-      'mistralai/mistral-7b-instruct:free',
-      'google/gemma-2-9b-it:free'
+      'google/gemini-2.0-flash-001',
+      'meta-llama/llama-3.3-70b-instruct',
+      'deepseek/deepseek-r1',
+      'qwen/qwen-2.5-coder-32b-instruct',
+      'openrouter/auto'
     ];
 
     let lastErrorMessage = '';
@@ -680,12 +680,12 @@ export default function App() {
         quizContent.push(imageElement);
       });
 
+      const activeKey = customApiKey.trim() || import.meta.env.VITE_OPENROUTER_API_KEY || '';
+      
       setIngestionStep(3);
-      const activeKey = customApiKey.trim() || OPENROUTER_API_KEY;
       const chapterData = await fetchOpenRouterAI(activeKey, chapterContent);
 
       setIngestionStep(4);
-      const activeKey = customApiKey.trim() || OPENROUTER_API_KEY;
       const quizData = await fetchOpenRouterAI(activeKey, quizContent);
 
       if (chapterData.error) throw new Error(`AI Synthesis Error: ${chapterData.error.message || JSON.stringify(chapterData.error)}`);
