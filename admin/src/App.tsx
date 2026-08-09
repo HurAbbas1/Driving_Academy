@@ -154,6 +154,7 @@ const renderLocalized = (field: any): string => {
 };
 
 export default function App() {
+  const [customApiKey, setCustomApiKey] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(true); // default true for preview
   const [activeTab, setActiveTab] = useState<'dashboard' | 'questions' | 'chapters' | 'ingestion' | 'users'>('dashboard');
 
@@ -401,13 +402,11 @@ export default function App() {
   // Robust AI completion runner with automatic model fallback to avoid upstream idle timeouts
   const fetchOpenRouterAI = async (apiKey: string, messagesContent: any[]): Promise<any> => {
     const models = [
-      'google/gemini-2.0-flash-exp:free',
-      'google/gemini-2.0-flash-lite-preview-02-05:free',
-      'meta-llama/llama-3.3-70b-instruct:free',
-      'deepseek/deepseek-r1:free',
-      'qwen/qwen-2.5-coder-32b-instruct:free',
+      'openrouter/auto',
+      'google/gemini-flash-1.5:free',
+      'meta-llama/llama-3-8b-instruct:free',
       'mistralai/mistral-7b-instruct:free',
-      'nvidia/nemotron-nano-12b-v2-vl:free'
+      'google/gemma-2-9b-it:free'
     ];
 
     let lastErrorMessage = '';
@@ -682,10 +681,12 @@ export default function App() {
       });
 
       setIngestionStep(3);
-      const chapterData = await fetchOpenRouterAI(OPENROUTER_API_KEY, chapterContent);
+      const activeKey = customApiKey.trim() || OPENROUTER_API_KEY;
+      const chapterData = await fetchOpenRouterAI(activeKey, chapterContent);
 
       setIngestionStep(4);
-      const quizData = await fetchOpenRouterAI(OPENROUTER_API_KEY, quizContent);
+      const activeKey = customApiKey.trim() || OPENROUTER_API_KEY;
+      const quizData = await fetchOpenRouterAI(activeKey, quizContent);
 
       if (chapterData.error) throw new Error(`AI Synthesis Error: ${chapterData.error.message || JSON.stringify(chapterData.error)}`);
       if (quizData.error) throw new Error(`AI Quiz Error: ${quizData.error.message || JSON.stringify(quizData.error)}`);
@@ -1784,6 +1785,16 @@ ${validChapters.map((c, i) => `Chapter ${i + 1}:\nTitle: ${c.title}\nContent: ${
                       />
                     </label>
                   </div>
+
+                  <label style={{...styles.fieldLabel, color: '#FFB300'}}>Custom OpenRouter API Key (Optional - paste your paid or custom API key here)</label>
+                  <input 
+                    type="password" 
+                    placeholder="sk-or-v1-..." 
+                    value={customApiKey}
+                    onChange={(e) => setCustomApiKey(e.target.value)}
+                    style={{...styles.input, borderColor: '#FFB300', marginBottom: '16px'}} 
+                    disabled={isIngesting}
+                  />
 
                   <label style={styles.fieldLabel}>Book Name (Optional - AI will auto-name if left blank)</label>
                   <input 
