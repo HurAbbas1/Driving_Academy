@@ -42,8 +42,8 @@ export const QuizScreen: React.FC = () => {
     viewMode,
     setViewMode
   } = useQuizStore();
-  const { books } = useStudyStore();
-  const [activeSection, setActiveSection] = useState<'car' | 'bike' | null>(null);
+  const { books, chapters } = useStudyStore();
+  const [activeSection, setActiveSection] = useState<'car' | 'bike' | null>('car');
   const [countdown, setCountdown] = useState(3);
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const timerRef = useRef<any>(null);
@@ -822,9 +822,73 @@ export const QuizScreen: React.FC = () => {
               </Text>
             </View>
 
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('quiz.practiceByHandbook')}</Text>
+            {/* Practice by Chapter (All 14 Official Chapters with Cover Images) */}
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>{t('study.practiceByChapter')}</Text>
+            
+            {(() => {
+              const officialMasterBook = books.find(b => b.id === 'book_official_japan_handbook') || books[0];
+              const activeChaptersList = officialMasterBook?.chapters && officialMasterBook.chapters.length > 0 
+                ? officialMasterBook.chapters 
+                : chapters.filter(c => c.id.startsWith('ch_official_') || c.id.startsWith('ch_'));
+
+              const quizChapterImages = [
+                'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=800&q=80',
+                'https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80',
+                'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=800&q=80',
+                'https://images.unsplash.com/photo-1578836537282-3171d77f8632?w=800&q=80',
+                'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80',
+                'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&q=80',
+                'https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80',
+                'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80',
+                'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&q=80',
+                'https://images.unsplash.com/photo-1532105956626-9569c03602f6?w=800&q=80',
+                'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800&q=80',
+                'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&q=80',
+                'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&q=80',
+                'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80'
+              ];
+
+              return (
+                <View style={{ gap: 12, marginBottom: 24 }}>
+                  {activeChaptersList.map((ch, idx) => {
+                    const thumb = ch.cover_image || quizChapterImages[idx % quizChapterImages.length];
+                    return (
+                      <Card 
+                        key={`${ch.id}-${idx}`} 
+                        style={{ padding: 12, borderRadius: 16, flexDirection: 'row', gap: 12, alignItems: 'center' }}
+                        onPress={() => triggerStartQuiz(undefined, undefined, ch.id)}
+                      >
+                        <Image source={{ uri: thumb }} style={{ width: 76, height: 76, borderRadius: 12 }} />
+                        <View style={{ flex: 1 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                            <View style={{ backgroundColor: colors.primary, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                              <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '900' }}>CH {ch.orderNum || (idx + 1)}</Text>
+                            </View>
+                          </View>
+                          <Text style={{ color: colors.text, fontSize: 14, fontWeight: '800', lineHeight: 18, marginBottom: 6 }} numberOfLines={2}>
+                            {loc(ch.title)}
+                          </Text>
+                          <Pressable 
+                            style={{ backgroundColor: `${colors.primary}15`, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, alignSelf: 'flex-start' }}
+                            onPress={() => triggerStartQuiz(undefined, undefined, ch.id)}
+                          >
+                            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>
+                              {t('study.practiceThisHandbook', 'Start Chapter Quiz')}
+                            </Text>
+                          </Pressable>
+                        </View>
+                        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                      </Card>
+                    );
+                  })}
+                </View>
+              );
+            })()}
+
+            {/* Practice by Handbook */}
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>{t('quiz.practiceByHandbook')}</Text>
             {books.map((book) => (
-              <Card key={book.id} style={[styles.toolCard, { marginBottom: 12 }]} onPress={() => setSelectedBook(book)}>
+              <Card key={book.id} style={[styles.toolCard, { marginBottom: 12 }]} onPress={() => triggerStartQuiz(undefined, book.id)}>
                 <View style={styles.toolContent}>
                   <View style={[styles.toolIcon, { backgroundColor: activeSection === 'car' ? `${colors.primary}15` : '#FFB30015' }]}>
                     <Ionicons 
@@ -843,7 +907,7 @@ export const QuizScreen: React.FC = () => {
                 <Button
                   title={t('study.practiceThisHandbook')}
                   onPress={(e) => {
-                    e.stopPropagation(); // prevent opening book chapters
+                    e.stopPropagation();
                     triggerStartQuiz(undefined, book.id);
                   }}
                   style={{ marginTop: 14 }}
