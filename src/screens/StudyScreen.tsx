@@ -731,50 +731,85 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
         </View>
 
         {/* Quick Tools Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('study.quickTools')}</Text>
-          <View style={styles.quickToolsGrid}>
-            <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('bookmarks')}>
-              <View style={[
-                styles.quickToolIconBadge, 
-                { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
-              ]}>
-                <Ionicons name="bookmark" size={22} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
-              </View>
-              <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.bookmarks')}</Text>
-            </TouchableOpacity>
+        {(() => {
+          const bookmarksCount = activeChapters.filter(c => 
+            bookmarkedChapters.includes(c.id) || bookmarkedPages.some(p => p === c.id || p.startsWith(c.id))
+          ).length;
+          const recentCount = recentChapters.filter(r => activeChapters.some(c => c.id === r.chapterId)).length;
+          const downloadsCount = downloadedChapters.filter(id => activeChapters.some(c => c.id === id)).length;
+          const notesCount = Object.keys(notes).length;
 
-            <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('recent')}>
-              <View style={[
-                styles.quickToolIconBadge, 
-                { backgroundColor: theme === 'dark' ? 'rgba(255, 152, 0, 0.2)' : '#FFF3E0' }
-              ]}>
-                <Ionicons name="time" size={22} color={theme === 'dark' ? '#FFB74D' : '#FF9800'} />
-              </View>
-              <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.recent')}</Text>
-            </TouchableOpacity>
+          return (
+            <View style={styles.sectionContainer}>
+              <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('study.quickTools')}</Text>
+              <View style={styles.quickToolsGrid}>
+                {/* Bookmarks */}
+                <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('bookmarks')}>
+                  <View style={[
+                    styles.quickToolIconBadge, 
+                    { backgroundColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.2)' : '#FFEBEE' }
+                  ]}>
+                    <Ionicons name="bookmark" size={22} color={theme === 'dark' ? '#FF4D6D' : '#E31837'} />
+                    {bookmarksCount > 0 && (
+                      <View style={[styles.toolBadgeCount, { backgroundColor: '#E31837' }]}>
+                        <Text style={styles.toolBadgeCountText}>{bookmarksCount}</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.bookmarks')}</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('downloads')}>
-              <View style={[
-                styles.quickToolIconBadge, 
-                { backgroundColor: theme === 'dark' ? 'rgba(76, 175, 80, 0.2)' : '#E8F5E9' }
-              ]}>
-                <Ionicons name="download" size={22} color={theme === 'dark' ? '#81C784' : '#4CAF50'} />
-              </View>
-              <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.downloads')}</Text>
-            </TouchableOpacity>
+                {/* Recent */}
+                <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('recent')}>
+                  <View style={[
+                    styles.quickToolIconBadge, 
+                    { backgroundColor: theme === 'dark' ? 'rgba(255, 152, 0, 0.2)' : '#FFF3E0' }
+                  ]}>
+                    <Ionicons name="time" size={22} color={theme === 'dark' ? '#FFB74D' : '#FF9800'} />
+                    {recentCount > 0 && (
+                      <View style={[styles.toolBadgeCount, { backgroundColor: '#FF9800' }]}>
+                        <Text style={styles.toolBadgeCountText}>{recentCount}</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.recent')}</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('notes')}>
-              <View style={[
-                styles.quickToolIconBadge, 
-                { backgroundColor: theme === 'dark' ? 'rgba(33, 150, 243, 0.2)' : '#E3F2FD' }
-              ]}>
-                <Ionicons name="journal" size={22} color={theme === 'dark' ? '#64B5F6' : '#2196F3'} />
+                {/* Downloads */}
+                <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('downloads')}>
+                  <View style={[
+                    styles.quickToolIconBadge, 
+                    { backgroundColor: theme === 'dark' ? 'rgba(76, 175, 80, 0.2)' : '#E8F5E9' }
+                  ]}>
+                    <Ionicons name="download" size={22} color={theme === 'dark' ? '#81C784' : '#4CAF50'} />
+                    {downloadsCount > 0 && (
+                      <View style={[styles.toolBadgeCount, { backgroundColor: '#4CAF50' }]}>
+                        <Text style={styles.toolBadgeCountText}>{downloadsCount}</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.downloads')}</Text>
+                </TouchableOpacity>
+
+                {/* Notes */}
+                <TouchableOpacity style={styles.quickToolBox} onPress={() => setQuickToolModal('notes')}>
+                  <View style={[
+                    styles.quickToolIconBadge, 
+                    { backgroundColor: theme === 'dark' ? 'rgba(33, 150, 243, 0.2)' : '#E3F2FD' }
+                  ]}>
+                    <Ionicons name="journal" size={22} color={theme === 'dark' ? '#64B5F6' : '#2196F3'} />
+                    {notesCount > 0 && (
+                      <View style={[styles.toolBadgeCount, { backgroundColor: '#2196F3' }]}>
+                        <Text style={styles.toolBadgeCountText}>{notesCount}</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.notes')}</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={[styles.quickToolLabel, { color: colors.text }]}>{t('study.notes')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+            </View>
+          );
+        })()}
 
         {/* Study Tip Banner */}
         <Card 
@@ -1502,6 +1537,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+    position: 'relative',
+  },
+  toolBadgeCount: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  toolBadgeCountText: {
+    color: '#FFFFFF',
+    fontSize: 9.5,
+    fontWeight: '900',
   },
   quickToolLabel: {
     fontSize: 11.5,
