@@ -39,7 +39,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
   } = useStudyStore();
 
   // Navigation states
-  const [activeCategory, setActiveCategory] = useState<'car' | 'bike' | 'large' | null>(null);
+  const [activeCategory, setActiveCategory] = useState<'car' | 'bike' | 'large' | null>('car');
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedSubtopic, setSelectedSubtopic] = useState<Subtopic | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,7 +89,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
       descKey: 'study.rulesForHighwaysSub',
       progress: 60,
       topicsCount: 5,
-      image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=600&q=80',
     },
     {
       id: 'ch-2',
@@ -98,7 +98,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
       descKey: 'study.rulesForPedestriansSub',
       progress: 40,
       topicsCount: 6,
-      image: 'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1565008576549-57569a49371d?w=600&q=80',
     },
     {
       id: 'ch-3',
@@ -107,7 +107,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
       descKey: 'study.trafficSignsSignalsSub',
       progress: 30,
       topicsCount: 7,
-      image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1508974239320-0a029497e820?w=600&q=80',
     },
     {
       id: 'ch-4',
@@ -125,7 +125,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
       descKey: 'study.parkingStoppingSub',
       progress: 0,
       topicsCount: 5,
-      image: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=600&q=80',
     },
   ];
 
@@ -231,7 +231,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           {/* Car License Category Hero Card */}
           <View style={styles.categoryHeroCard}>
             <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&q=80' }}
+              source={{ uri: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=1200&q=80' }}
               style={styles.categoryHeroImage}
               resizeMode="cover"
             />
