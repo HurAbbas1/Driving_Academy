@@ -617,12 +617,9 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
             <Card 
               style={styles.continueReadingHero}
               onPress={() => {
-                if (currentCh) {
-                  setSelectedChapter(currentCh);
-                  addRecentChapter(currentCh.id);
-                  if (currentSubtopic) setSelectedSubtopic(currentSubtopic);
-                  setActiveCategory('car');
-                }
+                setActiveCategory('car');
+                setSelectedChapter(null);
+                setSelectedSubtopic(null);
               }}
             >
               <View style={styles.circularGaugeBox}>
@@ -652,12 +649,9 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               <TouchableOpacity 
                 style={styles.continueActionBtn}
                 onPress={() => {
-                  if (currentCh) {
-                    setSelectedChapter(currentCh);
-                    addRecentChapter(currentCh.id);
-                    if (currentSubtopic) setSelectedSubtopic(currentSubtopic);
-                    setActiveCategory('car');
-                  }
+                  setActiveCategory('car');
+                  setSelectedChapter(null);
+                  setSelectedSubtopic(null);
                 }}
               >
                 <Ionicons name="chevron-forward" size={20} color="#FFF" />
