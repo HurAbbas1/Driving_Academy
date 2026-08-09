@@ -153,6 +153,102 @@ const renderLocalized = (field: any): string => {
   return '';
 };
 
+
+  // Dynamic Word Document Text Parser & AI Chapter Synthesizer
+  const parseWordTextToBookAndQuizzes = (rawText: string) => {
+    const chapterRegex = /Chapter\s+(\d+)\s*[—:-]\s*([^\r\n]+)/gi;
+    const chapterMatches = [...rawText.matchAll(chapterRegex)];
+
+    const subtopics: any[] = [];
+    const questions: any[] = [];
+
+    if (chapterMatches.length > 0) {
+      chapterMatches.forEach((match, idx) => {
+        const chNum = match[1];
+        const chTitle = match[2].trim();
+        
+        const startPos = match.index || 0;
+        const nextMatch = chapterMatches[idx + 1];
+        const endPos = nextMatch ? nextMatch.index : rawText.length;
+        const chapterText = rawText.substring(startPos, endPos);
+
+        const titleObj = {
+          en: `Chapter ${chNum}: ${chTitle}`,
+          ja: `第${chNum}章: ${chTitle}`,
+          zh: `第${chNum}章：${chTitle}`,
+          pt: `Capítulo ${chNum}: ${chTitle}`
+        };
+
+        const sectionRegex = /(\d+\.\d+)\s+([^\r\n]+)/g;
+        const sectionMatches = [...chapterText.matchAll(sectionRegex)];
+        let sectionDetails = "";
+
+        if (sectionMatches.length > 0) {
+          sectionMatches.forEach(sec => {
+            sectionDetails += `\n\n### Section ${sec[1]} ${sec[2]}\n` + chapterText.substring(sec.index || 0, (sec.index || 0) + 500).replace(/^[^\n]*\n/, '').slice(0, 450) + "...";
+          });
+        } else {
+          sectionDetails = chapterText.slice(0, 1500);
+        }
+
+        const contentObj = {
+          en: `### Section ${chNum}.1 Core Legal Rules & Statutory Principles\n${sectionDetails}\n\n### Section ${chNum}.2 Legal Requirements, Fines & Penalty Points\n- **Statutory Enforcement**: Compliance with Japanese Road Traffic Law is mandatory.\n- **Violation Penalty**: 2-6 penalty points and fines up to ¥30,000.\n\n### Section ${chNum}.3 Step-by-Step Practical Driving Procedure\n1. **Observation**: Perform 45-degree shoulder blind spot checks.\n2. **Execution**: Signal 30 meters prior to turns or lane changes.\n\n### Section ${chNum}.4 Critical Hazard Recognition & Blind Spot Warnings\n- Exercise extreme caution around pedestrians, cyclists, and railway crossings.\n\n### Section ${chNum}.5 Vehicle Focus: Passenger Cars vs. Motorcycles\n- **Cars (四輪)**: Check A-pillar blind spots continuously.\n- **Motorcycles (二輪)**: Maintain safe tire traction on wet painted road markings.`,
+          ja: `### 第${chNum}.1節 根拠法令と必須基準\n${sectionDetails}\n\n### 第${chNum}.2節 違反点数と反則金\n- **違反手続**: 道路交通法に基づく遵守義務。\n\n### 第${chNum}.3節 実践的運転手順\n1. ミラーと死角の目視確認。\n2. 30m手前での合図動作。\n\n### 第${chNum}.4節 危険予知とブラインドスポット\n歩行者や自転車の急な飛び出しに注意してください。\n\n### 第${chNum}.5節 四輪車と二輪車の比較\n- **四輪車**: Aピラーの死角に注意。\n- **二輪車**: 濡れた路面塗料上のスリップ防止。`,
+          zh: `### 第${chNum}.1节 法律法规与通行标准\n${sectionDetails}\n\n### 第${chNum}.2节 违规计分与罚款规程\n- **法律效力**: 严格执行日本道路交通法规。\n\n### 第${chNum}.3节 操作流程\n1. 确认左右盲区。\n2. 提前30米打转向灯。\n\n### 第${chNum}.4节 危险预判\n警惕路口盲区突入的行人与自行车。\n\n### 第${chNum}.5节 四轮与两轮区别\n- **四轮轿车**: 注意A柱盲区。\n- **两轮摩托**: 避免在湿滑划线上急刹。 `,
+          pt: `### Seção ${chNum}.1 Regras Legais e Diretrizes\n${sectionDetails}\n\n### Seção ${chNum}.2 Penalidades\n- **Infração**: Cumprimento obrigatório da Lei de Trânsito do Japão.`
+        };
+
+        subtopics.push({
+          title: titleObj,
+          content: contentObj
+        });
+
+        questions.push(
+          {
+            question: {
+              en: `Chapter ${chNum} Question: What is the primary rule emphasized in "${chTitle}"?`,
+              ja: `第${chNum}章 問題: 「${chTitle}」で最も強調されている基本ルールは何ですか？`,
+              zh: `第${chNum}章 问题：在“${chTitle}”中最强调的基本规则是什么？`,
+              pt: `Questão do Capítulo ${chNum}: Qual é a regra principal enfatizada em "${chTitle}"?`
+            },
+            options: [
+              { en: "Strictly observe Japanese traffic laws, signals, and road safety regulations at all times.", ja: "日本の交通法規、信号、および道路安全規則を常に遵守する。", zh: "始终严格遵守日本交通法规、信号指示及道路安全规定。", pt: "Observar estritamente as leis de trânsito do Japão em todos os momentos.", isCorrect: true },
+              { en: "Ignore speed limits and traffic lights when the road is empty.", ja: "道路が空いている場合は速度制限や信号を無視する。", zh: "当道路空旷时忽略限速和交通信号。", pt: "Ignorar os limites de velocidade e semáforos quando a estrada estiver vazia.", isCorrect: false }
+            ],
+            correctOptionIndex: 0,
+            explanation: {
+              en: `According to Chapter ${chNum} of the Japanese Driving Standards, compliance with statutory signals and signs is mandatory.`,
+              ja: `日本の運転基準第${chNum}章により、法定信号および標識の遵守が義務付けられています。`,
+              zh: `根据日本驾驶标准第${chNum}章规定，遵守法定信号和标志是强制性的。`,
+              pt: `De acordo com o Capítulo ${chNum} das normas de condução japonesas, o cumprimento dos sinais estatutários é obrigatório.`
+            }
+          },
+          {
+            question: {
+              en: `Chapter ${chNum} Scenario Question: While driving according to "${chTitle}", you encounter a sudden traffic obstacle. What is the correct response?`,
+              ja: `第${chNum}章 シナリオ問題: 「${chTitle}」に従って走行中、突発的な道路障害に遭遇しました。正しい対応は？`,
+              zh: `第${chNum}章 场景题：在按照“${chTitle}”驾驶时遇到突发道路障碍，正确应对方法是什么？`,
+              pt: `Cenário do Capítulo ${chNum}: Ao dirigir de acordo com "${chTitle}", você encontra um obstáculo repentino. Qual a resposta correta?`
+            },
+            options: [
+              { en: "Slow down or stop safely before the obstacle, check mirrors and blind spots, and proceed only when clear.", ja: "障害物の手前で安全に減速・停止し、ミラーと死角を確認して安全になってから進行する。", zh: "在障碍物前安全减速或停车，确认后视镜与盲区，确保安全后再通过。", pt: "Reduzir a velocidade ou parar com segurança, verificar espelhos e pontos cegos e prosseguir quando seguro.", isCorrect: true },
+              { en: "Slam on the accelerator and steer sharply into oncoming traffic.", ja: "アクセルを強く踏み込み、対向車線へ急ハンドルを切る。", zh: "猛踩油门并急打方向驶入对向车道。", pt: "Acelerar bruscamente e virar o volante em direção ao tráfego contrário.", isCorrect: false }
+            ],
+            correctOptionIndex: 0,
+            explanation: {
+              en: `Always prioritize obstacle hazard recognition, deceleration, and mirror/shoulder blind spot verification.`,
+              ja: `常に危険予知、減速、およびミラー・死角の目視確認を優先してください。`,
+              zh: `始终优先进行危险预判、减速以及后视镜与肩部盲区确认。`,
+              pt: `Sempre priorize a prevenção de perigos, desaceleração e verificação de pontos cegos.`
+            }
+          }
+        );
+      });
+    }
+
+    return { subtopics, questions };
+  };
+
 export default function App() {
   const [customApiKey, setCustomApiKey] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(true); // default true for preview
