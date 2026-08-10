@@ -127,7 +127,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   </View>
                 </View>
                 <Text style={styles.welcomeTitle}>{t("auth.welcomeBack")}</Text>
-                <Text style={styles.welcomeSubtitle}>{t("auth.academyName")}</Text>
               </View>
 
               {/* Glassmorphic Login Form */}
