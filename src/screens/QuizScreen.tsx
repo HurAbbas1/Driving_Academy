@@ -715,125 +715,8 @@ export const QuizScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={[styles.title, { color: colors.text }]}>{t('tabs.quiz')}</Text>
 
-        {/* Practice by Handbook / Chapter */}
-        {!activeSection ? (
-          <View style={styles.selectorContainer}>
-            {/* Car Card */}
-            <Card
-              onPress={() => setActiveSection('car')}
-              style={[
-                styles.selectorCard,
-                {
-                  borderColor: theme === 'dark' ? 'rgba(227, 24, 55, 0.35)' : 'rgba(227, 24, 55, 0.16)',
-                  ...Platform.select({
-                    web: {
-                      boxShadow: theme === 'dark' ? '0 0 16px rgba(227, 24, 55, 0.12)' : '0 0 16px rgba(227, 24, 55, 0.05)',
-                    } as any,
-                    default: {
-                      shadowColor: colors.primary,
-                      shadowOpacity: theme === 'dark' ? 0.22 : 0.05,
-                      shadowRadius: 10,
-                      elevation: 3,
-                    }
-                  })
-                }
-              ]}
-            >
-              <View style={[styles.selectorIconWrapper, { backgroundColor: `${colors.primary}12` }]}>
-                <Ionicons name="car-sport-sharp" size={32} color={colors.primary} />
-              </View>
-              <View style={styles.selectorTextInfo}>
-                <Text style={[styles.selectorCardTitle, { color: colors.text }]}>
-                  {t('study.carTitle')}
-                </Text>
-                <Text style={[styles.selectorCardSub, { color: colors.textSecondary }]}>
-                  {t('study.carSub')}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-            </Card>
-
-            {/* Bike Card */}
-            <Card
-              onPress={() => setActiveSection('bike')}
-              style={[
-                styles.selectorCard,
-                {
-                  borderColor: theme === 'dark' ? 'rgba(255, 179, 0, 0.35)' : 'rgba(245, 158, 11, 0.16)',
-                  ...Platform.select({
-                    web: {
-                      boxShadow: theme === 'dark' ? '0 0 16px rgba(255, 179, 0, 0.12)' : '0 0 16px rgba(245, 158, 11, 0.05)',
-                        } as any,
-                        default: {
-                          shadowColor: '#FFB300',
-                          shadowOpacity: theme === 'dark' ? 0.22 : 0.05,
-                          shadowRadius: 10,
-                          elevation: 3,
-                        }
-                      })
-                    }
-                  ]}
-                >
-              <View style={[styles.selectorIconWrapper, { backgroundColor: '#FFB30015' }]}>
-                <Ionicons name="bicycle-sharp" size={32} color="#FFB300" />
-              </View>
-              <View style={styles.selectorTextInfo}>
-                <Text style={[styles.selectorCardTitle, { color: colors.text }]}>
-                  {t('study.bikeTitle')}
-                </Text>
-                <Text style={[styles.selectorCardSub, { color: colors.textSecondary }]}>
-                  {t('study.bikeSub')}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-            </Card>
-          </View>
-        ) : selectedBook ? (
-          <>
-            <View style={[styles.chapterHeader, { marginBottom: 12 }]}>
-              <Pressable onPress={() => setSelectedBook(null)} style={styles.backBtn}>
-                <Ionicons name="arrow-back" size={24} color={colors.text} />
-              </Pressable>
-              <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
-                {loc(selectedBook.title)}
-              </Text>
-            </View>
-
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('study.practiceByChapter')}</Text>
-            {(selectedBook.chapters || []).map((chapter: any) => (
-              <Card 
-                key={chapter.id} 
-                onPress={() => triggerStartQuiz(undefined, undefined, chapter.id)} 
-                style={[styles.toolCard, { marginBottom: 10 }]}
-              >
-                <View style={styles.toolContent}>
-                  <View style={[styles.toolIcon, { backgroundColor: `${colors.primary}10` }]}>
-                    <Ionicons name="journal-outline" size={22} color={colors.primary} />
-                  </View>
-                  <View style={styles.toolInfo}>
-                    <Text style={[styles.toolTitle, { color: colors.text }]}>{loc(chapter.title)}</Text>
-                    <Text style={[styles.toolSub, { color: colors.textSecondary }]}>
-                      {loc(selectedBook.title)} | {t('study.testYourKnowledge')}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-                </View>
-              </Card>
-            ))}
-          </>
-        ) : (
-          <>
-            <View style={[styles.chapterHeader, { marginBottom: 12 }]}>
-              <Pressable onPress={() => setActiveSection(null)} style={styles.backBtn}>
-                <Ionicons name="arrow-back" size={24} color={colors.text} />
-              </Pressable>
-              <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
-                {activeSection === 'car' ? t('study.carCategory') : t('study.bikeCategory')}
-              </Text>
-            </View>
-
-            {/* Practice by Chapter (All 14 Official Chapters with Cover Images) */}
-            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>{t('study.practiceByChapter')}</Text>
+        {/* Practice by Chapter (All 14 Official Chapters with Cover Images) */}
+        <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>{t('study.practiceByChapter')}</Text>
             
             {(() => {
               const getChapterNum = (ch: any): number => {
@@ -907,9 +790,6 @@ export const QuizScreen: React.FC = () => {
                 </View>
               );
             })()}
-
-          </>
-        )}
 
         {/* Start Final Practice Exam */}
         <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 16 }]}>{t('quiz.finalCombinedExam')}</Text>
