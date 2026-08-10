@@ -688,52 +688,6 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
             </Card>
-
-            {/* Category Card 2: Motorcycle License */}
-            <Card style={styles.categoryCardRow} onPress={() => setActiveCategory('bike')}>
-              <View style={[
-                styles.catIconCircle, 
-                { backgroundColor: theme === 'dark' ? 'rgba(255, 152, 0, 0.2)' : '#FFF8E1' }
-              ]}>
-                <Ionicons name="bicycle" size={22} color={theme === 'dark' ? '#FFB74D' : '#FF9800'} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.catCardTitle, { color: colors.text }]}>{t('study.motorcycleLicense')}</Text>
-                <Text style={[styles.catCardSub, { color: colors.textSecondary }]}>{t('study.motorcycleLicenseSub')}</Text>
-              </View>
-              <View style={[
-                styles.catBadgeYellow,
-                { backgroundColor: theme === 'dark' ? 'rgba(255, 152, 0, 0.2)' : '#FFF8E1' }
-              ]}>
-                <Text style={[styles.catBadgeYellowText, { color: theme === 'dark' ? '#FFB74D' : '#E65100' }]}>
-                  {activeChapters.length} Chapters
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-            </Card>
-
-            {/* Category Card 3: Large Vehicle License */}
-            <Card style={styles.categoryCardRow} onPress={() => setActiveCategory('large')}>
-              <View style={[
-                styles.catIconCircle, 
-                { backgroundColor: theme === 'dark' ? 'rgba(156, 39, 176, 0.2)' : '#F3E5F5' }
-              ]}>
-                <Ionicons name="bus" size={22} color={theme === 'dark' ? '#CE93D8' : '#9C27B0'} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.catCardTitle, { color: colors.text }]}>{t('study.largeVehicleLicense')}</Text>
-                <Text style={[styles.catCardSub, { color: colors.textSecondary }]}>{t('study.largeVehicleLicenseSub')}</Text>
-              </View>
-              <View style={[
-                styles.catBadgePurple,
-                { backgroundColor: theme === 'dark' ? 'rgba(156, 39, 176, 0.2)' : '#F3E5F5' }
-              ]}>
-                <Text style={[styles.catBadgePurpleText, { color: theme === 'dark' ? '#CE93D8' : '#7B1FA2' }]}>
-                  {activeChapters.length} Chapters
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-            </Card>
           </View>
         </View>
 
