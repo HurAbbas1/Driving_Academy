@@ -186,7 +186,7 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
             <Ionicons name="arrow-back" size={20} color={colors.text} />
           </TouchableOpacity>
           <Text style={[styles.readerTitle, { color: colors.text }]} numberOfLines={1}>
-            {loc(selectedSubtopic.title)}
+            {loc(selectedChapter.title)}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <TouchableOpacity 
