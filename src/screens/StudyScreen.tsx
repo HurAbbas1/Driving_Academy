@@ -398,7 +398,10 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
 
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
               <View style={styles.logoBadge}>
-                <Text style={styles.logoBadgeText}>NS</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#000000', fontSize: 16, fontWeight: '900', fontStyle: 'italic', includeFontPadding: false }}>N</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', fontStyle: 'italic', includeFontPadding: false }}>S</Text>
+                </View>
               </View>
               <View style={{ marginLeft: 8 }}>
                 <Text style={[styles.logoBrandMain, { color: colors.text }]}>NEW SUNSHINE</Text>
@@ -590,7 +593,10 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
         <View style={styles.topNav}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View style={styles.logoBadge}>
-              <Text style={styles.logoBadgeText}>NS</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: '#000000', fontSize: 16, fontWeight: '900', fontStyle: 'italic', includeFontPadding: false }}>N</Text>
+                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', fontStyle: 'italic', includeFontPadding: false }}>S</Text>
+              </View>
             </View>
             <View style={{ marginLeft: 10 }}>
               <Text style={[styles.logoBrandMain, { color: colors.text }]}>NEW SUNSHINE</Text>

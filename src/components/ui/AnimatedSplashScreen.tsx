@@ -59,7 +59,10 @@ export const AnimatedSplashScreen: React.FC<AnimatedSplashScreenProps> = ({ isRe
       <Animated.View style={{ opacity: logoOpacity, transform: [{ scale: logoScale }], alignItems: 'center' }}>
         {/* Japanese Sun Circle + NS Letters */}
         <View style={styles.sunBadgeCircle}>
-          <Text style={styles.sunNsText}>N<Text style={{ color: '#FFFFFF' }}>S</Text></Text>
+          <View style={styles.nsTextRow}>
+            <Text style={styles.nsLetterN}>N</Text>
+            <Text style={styles.nsLetterS}>S</Text>
+          </View>
         </View>
 
         {/* Branding Title */}
@@ -100,12 +103,27 @@ const styles = StyleSheet.create({
       web: { boxShadow: '0 0 45px rgba(255, 23, 68, 0.8), 0 0 80px rgba(227, 24, 55, 0.5)' } as any
     }),
   },
-  sunNsText: {
+  nsTextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 2, // Fine-tunes optical centering for italic slant
+  },
+  nsLetterN: {
     color: '#000000',
-    fontSize: 48,
+    fontSize: 46,
     fontWeight: '900',
     fontStyle: 'italic',
-    letterSpacing: -2,
+    includeFontPadding: false,
+    textAlign: 'center',
+  },
+  nsLetterS: {
+    color: '#FFFFFF',
+    fontSize: 46,
+    fontWeight: '900',
+    fontStyle: 'italic',
+    includeFontPadding: false,
+    textAlign: 'center',
   },
   logoTitleMain: {
     color: '#FFFFFF',

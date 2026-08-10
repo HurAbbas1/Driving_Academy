@@ -44,7 +44,10 @@ export const LoadingScreen: React.FC = () => {
             },
           ]}
         >
-          <Text style={styles.circleText}>NCS</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingLeft: 2 }}>
+            <Text style={{ color: '#000000', fontSize: 44, fontWeight: '900', fontStyle: 'italic', includeFontPadding: false }}>N</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 44, fontWeight: '900', fontStyle: 'italic', includeFontPadding: false }}>S</Text>
+          </View>
         </Animated.View>
         <Text style={[styles.title, { color: colors.text }]}>NEW SUNSHINE</Text>
         <Text style={[styles.subtitle, { color: colors.primary }]}>DRIVING ACADEMY</Text>

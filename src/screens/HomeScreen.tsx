@@ -54,7 +54,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToTab }) => {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             {/* Logo Badge */}
             <View style={styles.logoBadge}>
-              <Text style={styles.logoBadgeText}>NS</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: '#000000', fontSize: 16, fontWeight: '900', fontStyle: 'italic', includeFontPadding: false }}>N</Text>
+                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', fontStyle: 'italic', includeFontPadding: false }}>S</Text>
+              </View>
             </View>
             <View style={{ marginLeft: 10 }}>
               <Text style={[styles.logoBrandMain, { color: colors.text }]}>NEW SUNSHINE</Text>

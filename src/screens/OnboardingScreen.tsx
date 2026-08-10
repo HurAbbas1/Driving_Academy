@@ -302,7 +302,10 @@ const AnimatedIntroSplash: React.FC<{ onFinish: () => void }> = ({ onFinish }) =
 
       <Animated.View style={{ opacity: logoOpacity, transform: [{ scale: logoScale }], alignItems: 'center' }}>
         <View style={splash.sunBadgeCircle}>
-          <Text style={splash.sunNsText}>N<Text style={{ color: '#FFFFFF' }}>S</Text></Text>
+          <View style={splash.nsTextRow}>
+            <Text style={splash.nsLetterN}>N</Text>
+            <Text style={splash.nsLetterS}>S</Text>
+          </View>
         </View>
 
         <Animated.View style={{ opacity: textOpacity, alignItems: 'center', marginTop: 20 }}>
@@ -457,7 +460,28 @@ const splash = StyleSheet.create({
     fontSize: 42,
     fontWeight: '900',
     fontStyle: 'italic',
-    letterSpacing: -2,
+  },
+  nsTextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 2, // Fine-tunes optical centering for italic slant
+  },
+  nsLetterN: {
+    color: '#000000',
+    fontSize: 42,
+    fontWeight: '900',
+    fontStyle: 'italic',
+    includeFontPadding: false,
+    textAlign: 'center',
+  },
+  nsLetterS: {
+    color: '#FFFFFF',
+    fontSize: 42,
+    fontWeight: '900',
+    fontStyle: 'italic',
+    includeFontPadding: false,
+    textAlign: 'center',
   },
   finalTitle: {
     color: '#FFFFFF',

@@ -120,7 +120,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               {/* Logo & Welcome Area */}
               <View style={styles.headerArea}>
                 <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 24}}>
-                  <Text style={{color: colors.primary, fontSize: 42, fontWeight: '900', fontStyle: 'italic', letterSpacing: -2}}>N<Text style={{color: '#FFF'}}>S</Text></Text>
+                  <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+                    <Text style={{color: colors.primary, fontSize: 42, fontWeight: '900', fontStyle: 'italic', includeFontPadding: false}}>N</Text>
+                    <Text style={{color: '#FFF', fontSize: 42, fontWeight: '900', fontStyle: 'italic', includeFontPadding: false}}>S</Text>
+                  </View>
                   <View style={{marginLeft: 12}}>
                     <Text style={{color: '#FFF', fontWeight: '800', fontSize: 20, letterSpacing: 1.5}}>NEW SUNSHINE</Text>
                     <Text style={{color: colors.primary, fontWeight: '700', fontSize: 12, letterSpacing: 2}}>DRIVING ACADEMY</Text>
