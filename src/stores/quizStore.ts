@@ -44,6 +44,57 @@ const shuffleArray = <T>(array: T[]): T[] => {
   return arr;
 };
 
+const DEFAULT_DISTRACTORS = [
+  {
+    en: "Flash your hazard lights and proceed without stopping.",
+    ja: "ハザードランプを点滅させて一時停止せずに進む。",
+    zh: "闪烁危险警示灯且不停车直接通行。",
+    pt: "Piscar o pisca-alerta e prosseguir sem parar.",
+    isCorrect: false
+  },
+  {
+    en: "Honk twice to claim right of way before proceeding.",
+    ja: "クラクションを2回鳴らして優先権を主張してから進む。",
+    zh: "按两次喇叭主张优先权后再通行。",
+    pt: "Buzinar duas vezes para reivindicar a preferência antes de prosseguir.",
+    isCorrect: false
+  },
+  {
+    en: "Accelerate quickly to clear the area as fast as possible.",
+    ja: "エリアをできるだけ早く通過するために素早く加速する。",
+    zh: "快速加速以尽快驶离该区域。",
+    pt: "Acelerar rapidamente para desocupar a zona o mais分速度で加速する。",
+    isCorrect: false
+  },
+  {
+    en: "Proceed only if no traffic enforcement cameras are present.",
+    ja: "速度違反取締カメラがない場合のみ進む。",
+    zh: "仅在没有交通执法摄像头时通行。",
+    pt: "Proceder apenas se não houver câmeras de trânsito.",
+    isCorrect: false
+  }
+];
+
+export const ensure4Options = (q: Question): Question => {
+  let opts = [...(q.options || [])];
+  if (opts.length >= 4) return { ...q, options: opts };
+
+  let dIdx = 0;
+  while (opts.length < 4) {
+    const candidate = DEFAULT_DISTRACTORS[dIdx % DEFAULT_DISTRACTORS.length];
+    const candidateEn = candidate.en;
+    const exists = opts.some(o => {
+      const txt = typeof o === 'string' ? o : (o.en || (o as any).text);
+      return txt === candidateEn;
+    });
+    if (!exists) {
+      opts.push(candidate as any);
+    }
+    dIdx++;
+  }
+  return { ...q, options: opts };
+};
+
 const DEFAULT_FALLBACK_QUESTIONS: Question[] = [
   {
     id: 'q_fallback_1',
@@ -165,10 +216,11 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         if (selected.length === 0) selected = DEFAULT_FALLBACK_QUESTIONS;
 
         selected = selected.map(q => {
-          const originalOptions = [...q.options];
+          const q4 = ensure4Options(q);
+          const originalOptions = [...q4.options];
           const shuffledOptions = shuffleArray(originalOptions);
           return {
-            ...q,
+            ...q4,
             options: shuffledOptions,
           };
         });
@@ -193,10 +245,11 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       if (selected.length === 0) selected = DEFAULT_FALLBACK_QUESTIONS;
       
       selected = selected.map(q => {
-        const originalOptions = [...q.options];
+        const q4 = ensure4Options(q);
+        const originalOptions = [...q4.options];
         const shuffledOptions = shuffleArray(originalOptions);
         return {
-          ...q,
+          ...q4,
           options: shuffledOptions,
         };
       });
