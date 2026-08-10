@@ -277,199 +277,35 @@ const neonStyles = StyleSheet.create({
    ANIMATED INTRO SPLASH
    ───────────────────────────────────────────── */
 const AnimatedIntroSplash: React.FC<{ onFinish: () => void }> = ({ onFinish }) => {
-  // Background
   const bgFade = useRef(new Animated.Value(0)).current;
-
-  // Phase 1: Red sun
-  const sunScale = useRef(new Animated.Value(0)).current;
-  const sunGlow = useRef(new Animated.Value(0)).current;
-
-  // Ambient glow ring
-  const glowRingScale = useRef(new Animated.Value(0.4)).current;
-  const glowRingOpacity = useRef(new Animated.Value(0)).current;
-
-  // Phase 2: Car
-  const carX = useRef(new Animated.Value(-SCREEN_W * 0.8)).current;
-  const carOpacity = useRef(new Animated.Value(0)).current;
-
-  // Speed lines
-  const speedLine1 = useRef(new Animated.Value(0)).current;
-  const speedLine2 = useRef(new Animated.Value(0)).current;
-  const speedLine3 = useRef(new Animated.Value(0)).current;
-
-  // Phase 3: NS letters
-  const nX = useRef(new Animated.Value(-80)).current;
-  const nOpacity = useRef(new Animated.Value(0)).current;
-  const sX = useRef(new Animated.Value(80)).current;
-  const sOpacity = useRef(new Animated.Value(0)).current;
-
-  // Road
-  const roadScaleX = useRef(new Animated.Value(0)).current;
-
-  // Phase 4: Particles
-  const particles = Array.from({ length: 6 }, () => ({
-    progress: useRef(new Animated.Value(0)).current,
-  }));
-  const particleOpacity = useRef(new Animated.Value(0)).current;
-
-  // Phase 5: Everything scales down & morphs
-  const sceneScale = useRef(new Animated.Value(1)).current;
-  const sceneOpacity = useRef(new Animated.Value(1)).current;
-
-  // Final logo
-  const finalOpacity = useRef(new Animated.Value(0)).current;
-  const finalScale = useRef(new Animated.Value(0.7)).current;
-  const taglineOpacity = useRef(new Animated.Value(0)).current;
-  const taglineY = useRef(new Animated.Value(24)).current;
-
-  // Underline
+  const logoScale = useRef(new Animated.Value(0.6)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const textOpacity = useRef(new Animated.Value(0)).current;
   const underlineWidth = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.sequence([
-      // BG fade in
       Animated.timing(bgFade, { toValue: 1, duration: 300, useNativeDriver: useNative }),
-
-      // ── Phase 1: Red Sun rises with glow ring ──
       Animated.parallel([
-        Animated.spring(sunScale, { toValue: 1, friction: 5, tension: 50, useNativeDriver: useNative }),
-        Animated.timing(sunGlow, { toValue: 1, duration: 500, useNativeDriver: useNative }),
+        Animated.timing(logoOpacity, { toValue: 1, duration: 600, useNativeDriver: useNative }),
+        Animated.spring(logoScale, { toValue: 1, friction: 6, tension: 45, useNativeDriver: useNative }),
       ]),
-      // Glow ring expands
-      Animated.parallel([
-        Animated.timing(glowRingOpacity, { toValue: 0.5, duration: 250, useNativeDriver: useNative }),
-        Animated.timing(glowRingScale, { toValue: 3, duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
-      ]),
-      Animated.timing(glowRingOpacity, { toValue: 0, duration: 400, useNativeDriver: useNative }),
-
-      // ── Phase 2: Supercar races in ──
-      Animated.parallel([
-        Animated.timing(carOpacity, { toValue: 1, duration: 80, useNativeDriver: useNative }),
-        Animated.timing(carX, { toValue: 0, duration: 700, easing: Easing.out(Easing.back(1.1)), useNativeDriver: useNative }),
-        // Speed lines
-        Animated.sequence([
-          Animated.delay(100),
-          Animated.parallel([
-            Animated.timing(speedLine1, { toValue: 1, duration: 400, useNativeDriver: useNative }),
-            Animated.timing(speedLine2, { toValue: 1, duration: 500, useNativeDriver: useNative }),
-            Animated.timing(speedLine3, { toValue: 1, duration: 350, useNativeDriver: useNative }),
-          ]),
-        ]),
-      ]),
-
-      // ── Phase 3: NS letters fly in from opposite sides ──
-      Animated.parallel([
-        Animated.spring(nX, { toValue: 0, friction: 6, tension: 60, useNativeDriver: useNative }),
-        Animated.timing(nOpacity, { toValue: 1, duration: 250, useNativeDriver: useNative }),
-        Animated.spring(sX, { toValue: 0, friction: 6, tension: 60, useNativeDriver: useNative }),
-        Animated.timing(sOpacity, { toValue: 1, duration: 250, useNativeDriver: useNative }),
-      ]),
-
-      // Road extends
-      Animated.timing(roadScaleX, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
-
-      // ── Phase 4: Particle burst ──
-      Animated.parallel([
-        Animated.timing(particleOpacity, { toValue: 1, duration: 150, useNativeDriver: useNative }),
-        ...particles.map((p, i) =>
-          Animated.timing(p.progress, { toValue: 1, duration: 500 + i * 60, easing: Easing.out(Easing.cubic), useNativeDriver: useNative })
-        ),
-      ]),
-      Animated.timing(particleOpacity, { toValue: 0, duration: 350, useNativeDriver: useNative }),
-
-      // ── Dramatic Pause ──
-      Animated.delay(500),
-
-      // ── Phase 5: Scene shrinks, final logo appears ──
-      Animated.parallel([
-        Animated.timing(sceneScale, { toValue: 0.6, duration: 600, easing: Easing.inOut(Easing.cubic), useNativeDriver: useNative }),
-        Animated.timing(sceneOpacity, { toValue: 0, duration: 500, useNativeDriver: useNative }),
-        Animated.timing(finalOpacity, { toValue: 1, duration: 500, delay: 250, useNativeDriver: useNative }),
-        Animated.spring(finalScale, { toValue: 1, friction: 7, tension: 40, delay: 250, useNativeDriver: useNative }),
-      ]),
-
-      // ── Phase 6: Tagline + underline ──
-      Animated.parallel([
-        Animated.timing(taglineOpacity, { toValue: 1, duration: 350, useNativeDriver: useNative }),
-        Animated.spring(taglineY, { toValue: 0, friction: 8, tension: 50, useNativeDriver: useNative }),
-      ]),
+      Animated.timing(textOpacity, { toValue: 1, duration: 400, useNativeDriver: useNative }),
       Animated.timing(underlineWidth, { toValue: 1, duration: 400, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }),
-
-      // Hold
-      Animated.delay(700),
+      Animated.delay(800),
     ]).start(() => onFinish());
   }, []);
 
   return (
     <Animated.View style={[splash.container, { opacity: bgFade }]}>
-      {/* Ambient red gradient background glow */}
       <View style={splash.ambientGlow} />
 
-      {/* ── Scene Container (start logo) ── */}
-      <Animated.View style={[splash.scene, { opacity: sceneOpacity, transform: [{ scale: sceneScale }] }]}>
-        {/* Dark card */}
-        <View style={splash.card}>
-          {/* Red Sun */}
-          <Animated.View style={[splash.sun, { opacity: sunGlow, transform: [{ scale: sunScale }] }]} />
-
-          {/* Glow ring */}
-          <Animated.View style={[splash.glowRing, { opacity: glowRingOpacity, transform: [{ scale: glowRingScale }] }]} />
-
-          {/* Speed lines */}
-          {[speedLine1, speedLine2, speedLine3].map((sl, i) => (
-            <Animated.View
-              key={`sl-${i}`}
-              style={[
-                splash.speedLine,
-                { top: 90 + i * 16, right: 160 + i * 10 },
-                {
-                  opacity: sl.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1, 0] }),
-                  transform: [{ scaleX: sl }, { translateX: sl.interpolate({ inputRange: [0, 1], outputRange: [0, -40] }) }],
-                },
-              ]}
-            />
-          ))}
-
-          {/* Red Neon Nissan GT-R R35 Silhouette */}
-          <Animated.View style={[splash.carWrap, { opacity: carOpacity, transform: [{ translateX: carX }] }]}>
-            <RedNeonGTRSilhouette />
-          </Animated.View>
-
-          {/* Road */}
-          <Animated.View style={[splash.road, { transform: [{ scaleX: roadScaleX }] }]} />
-          <Animated.View style={[splash.roadDash, { transform: [{ scaleX: roadScaleX }] }]} />
-
-          {/* Particles */}
-          {particles.map((p, i) => {
-            const angle = (i * 60 + 15) * (Math.PI / 180);
-            const dist = 60 + (i % 3) * 25;
-            return (
-              <Animated.View
-                key={`p-${i}`}
-                style={[
-                  splash.particle,
-                  i % 2 === 0 ? splash.particleRed : splash.particleGold,
-                  {
-                    opacity: particleOpacity,
-                    transform: [
-                      { translateX: p.progress.interpolate({ inputRange: [0, 1], outputRange: [0, Math.cos(angle) * dist] }) },
-                      { translateY: p.progress.interpolate({ inputRange: [0, 1], outputRange: [0, Math.sin(angle) * dist] }) },
-                      { scale: p.progress.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 1.3, 0.2] }) },
-                    ],
-                  },
-                ]}
-              />
-            );
-          })}
-        </View>
-      </Animated.View>
-
-      {/* ── Final Logo (end logo) ── */}
-      <Animated.View style={[splash.finalWrap, { opacity: finalOpacity, transform: [{ scale: finalScale }] }]}>
+      <Animated.View style={{ opacity: logoOpacity, transform: [{ scale: logoScale }], alignItems: 'center' }}>
         <View style={splash.sunBadgeCircle}>
           <Text style={splash.sunNsText}>N<Text style={{ color: '#FFFFFF' }}>S</Text></Text>
         </View>
-        <Animated.View style={{ opacity: taglineOpacity, transform: [{ translateY: taglineY }], alignItems: 'center', marginTop: 18 }}>
+
+        <Animated.View style={{ opacity: textOpacity, alignItems: 'center', marginTop: 20 }}>
           <Text style={splash.finalTitle}>NEW SUNSHINE</Text>
           <Text style={splash.finalSub}>DRIVING ACADEMY</Text>
           <Animated.View style={[splash.underline, { transform: [{ scaleX: underlineWidth }] }]} />
