@@ -222,6 +222,73 @@ export const StudyScreen: React.FC<StudyScreenProps> = ({ onNavigateToTab }) => 
           />
         </ScrollView>
 
+        {/* Page Navigation Bar & Page Count Indicator */}
+        {(() => {
+          const subtopicsList = selectedChapter.subtopics || [];
+          const currentIndex = subtopicsList.findIndex(s => s.id === selectedSubtopic.id);
+          const prevSubtopic = currentIndex > 0 ? subtopicsList[currentIndex - 1] : null;
+          const nextSubtopic = currentIndex < subtopicsList.length - 1 ? subtopicsList[currentIndex + 1] : null;
+
+          return (
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 20,
+              paddingVertical: 14,
+              borderTopWidth: 1,
+              borderTopColor: colors.border,
+              backgroundColor: colors.backgroundElement
+            }}>
+              <TouchableOpacity
+                disabled={!prevSubtopic}
+                onPress={() => prevSubtopic && setSelectedSubtopic(prevSubtopic)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  opacity: prevSubtopic ? 1 : 0.35,
+                  paddingVertical: 6,
+                  paddingHorizontal: 10,
+                  borderRadius: 8,
+                  backgroundColor: prevSubtopic ? `${colors.primary}10` : 'transparent'
+                }}
+              >
+                <Ionicons name="chevron-back-circle" size={22} color={colors.primary} />
+                <Text style={{ color: colors.text, fontSize: 13, fontWeight: '700' }}>
+                  {t('common.previous', 'Previous')}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={{ backgroundColor: `${colors.primary}15`, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12 }}>
+                <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '900' }}>
+                  Page {currentIndex >= 0 ? currentIndex + 1 : 1} of {Math.max(subtopicsList.length, 6)}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                disabled={!nextSubtopic}
+                onPress={() => nextSubtopic && setSelectedSubtopic(nextSubtopic)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  opacity: nextSubtopic ? 1 : 0.35,
+                  paddingVertical: 6,
+                  paddingHorizontal: 10,
+                  borderRadius: 8,
+                  backgroundColor: nextSubtopic ? `${colors.primary}10` : 'transparent'
+                }}
+              >
+                <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>
+                  {t('common.next', 'Next')}
+                </Text>
+                <Ionicons name="chevron-forward-circle" size={22} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
+          );
+        })()}
+
         {/* Instant Quick Note Popup Modal (Scoped ONLY to Subtopic Reader) */}
         <Modal
           visible={isQuickNoteModalOpen}
