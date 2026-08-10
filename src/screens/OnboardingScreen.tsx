@@ -106,6 +106,10 @@ const carStyles = StyleSheet.create({
     width: 185,
     height: 68,
     position: 'relative',
+    ...Platform.select({
+      web: { filter: 'drop-shadow(0 0 16px #FF1744)' } as any,
+      default: { shadowColor: '#FF1744', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.9, shadowRadius: 18 },
+    }),
   },
   body: {
     position: 'absolute',
