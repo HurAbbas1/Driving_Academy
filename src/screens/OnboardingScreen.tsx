@@ -17,425 +17,259 @@ const { width: SCREEN_W } = Dimensions.get('window');
 const useNative = Platform.OS !== 'web';
 
 /* ─────────────────────────────────────────────
-   SUPERCAR — Built Entirely from Views
+   RED NEON NISSAN GT-R R35 SILHOUETTE (Neon Sign)
    ───────────────────────────────────────────── */
-/* ─────────────────────────────────────────────
-   NISSAN GT-R R35 — Iconic Japanese Supercar
-   ───────────────────────────────────────────── */
-const SuperCar: React.FC = () => (
-  <View style={carStyles.wrapper}>
-    {/* GT-R Rear Wing Spoiler */}
-    <View style={carStyles.spoilerPillarLeft} />
-    <View style={carStyles.spoilerPillarRight} />
-    <View style={carStyles.spoilerWing} />
+const RedNeonGTRSilhouette: React.FC = () => (
+  <View style={neonStyles.wrapper}>
+    {/* Ambient Red Glow Halo */}
+    <View style={neonStyles.ambientGlow} />
 
-    {/* Main GT-R Body Chassis */}
-    <View style={carStyles.body}>
-      {/* Red accent line */}
-      <View style={carStyles.bodyStripe} />
+    {/* 1. Roofline Neon Tube */}
+    <View style={neonStyles.roofTube} />
+    <View style={neonStyles.roofCore} />
+
+    {/* 2. GT-R Rear Wing Spoiler Neon Loop */}
+    <View style={neonStyles.spoilerWing} />
+    <View style={neonStyles.spoilerPillarLeft} />
+    <View style={neonStyles.spoilerPillarRight} />
+
+    {/* 3. Front Fender & Hood Tube */}
+    <View style={neonStyles.hoodTube} />
+
+    {/* 4. Side Skirt Baseline Tube */}
+    <View style={neonStyles.sideSkirtTube} />
+
+    {/* 5. Front & Rear Wheel Arches */}
+    <View style={neonStyles.frontWheelArch} />
+    <View style={neonStyles.rearWheelArch} />
+
+    {/* 6. Window Frame Outline */}
+    <View style={neonStyles.windowFrame} />
+
+    {/* 7. Slanted Headlight Sweep Stroke */}
+    <View style={neonStyles.headlightSweep} />
+
+    {/* 8. Quad Afterburner Taillights */}
+    <View style={neonStyles.gtrTailRing1}>
+      <View style={neonStyles.gtrTailInner} />
+    </View>
+    <View style={neonStyles.gtrTailRing2}>
+      <View style={neonStyles.gtrTailInner} />
     </View>
 
-    {/* GT-R Aerodynamic Cockpit & Roofline */}
-    <View style={carStyles.cockpit}>
-      <View style={carStyles.windshield} />
-      <View style={carStyles.rearWindow} />
-      <View style={carStyles.cPillarKink} />
-    </View>
-
-    {/* Long Muscle Hood */}
-    <View style={carStyles.hood}>
-      {/* Hood NACA Air Ducts */}
-      <View style={carStyles.hoodNacaDuct} />
-    </View>
-
-    {/* GT-R Front Splitter */}
-    <View style={carStyles.frontSplitter} />
-
-    {/* GT-R Rear Carbon Diffuser & Quad Exhaust */}
-    <View style={carStyles.rearDiffuser} />
-    <View style={carStyles.quadExhaustTip} />
-
-    {/* Slanted GT-R Lightning LED Headlights */}
-    <View style={carStyles.headlightSlant} />
-    <View style={carStyles.headlightDrl} />
-
-    {/* Iconic GT-R Quad Round Tail Lights (2 Ring Lights) */}
-    <View style={carStyles.gtrRingLight1}>
-      <View style={carStyles.gtrRingInner} />
-    </View>
-    <View style={carStyles.gtrRingLight2}>
-      <View style={carStyles.gtrRingInner} />
-    </View>
-
-    {/* Iconic GT-R Side Fender Vent & Red Badge */}
-    <View style={carStyles.gtrFenderVent}>
-      <View style={carStyles.gtrBadgeSlash} />
-    </View>
-
-    {/* Front R35 Wheel & Brembo Caliper */}
-    <View style={carStyles.wheelFront}>
-      <View style={carStyles.bremboCaliper} />
-      <View style={carStyles.wheelRim}>
-        <View style={carStyles.wheelSpokes} />
-      </View>
-      <View style={carStyles.wheelHub} />
-    </View>
-
-    {/* Rear R35 Wheel & Brembo Caliper */}
-    <View style={carStyles.wheelRear}>
-      <View style={carStyles.bremboCaliper} />
-      <View style={carStyles.wheelRim}>
-        <View style={carStyles.wheelSpokes} />
-      </View>
-      <View style={carStyles.wheelHub} />
-    </View>
-
-    {/* Side skirt & door line */}
-    <View style={carStyles.sideSkirt} />
-    <View style={carStyles.doorLine} />
-
-    {/* GT-R Badge Label */}
-    <View style={carStyles.gtrLogoLabel}>
-      <Text style={carStyles.gtrLogoText}>GT-R</Text>
+    {/* 9. GT-R Badge Label */}
+    <View style={neonStyles.gtrBadgeTag}>
+      <Text style={neonStyles.gtrBadgeText}>GT-R</Text>
     </View>
   </View>
 );
 
-const carStyles = StyleSheet.create({
+const neonStyles = StyleSheet.create({
   wrapper: {
-    width: 185,
-    height: 68,
+    width: 260,
+    height: 100,
     position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ambientGlow: {
+    position: 'absolute',
+    width: 240,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 23, 68, 0.22)',
     ...Platform.select({
-      web: { filter: 'drop-shadow(0 0 16px #FF1744)' } as any,
-      default: { shadowColor: '#FF1744', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.9, shadowRadius: 18 },
+      web: { filter: 'blur(20px)' } as any,
+      default: { shadowColor: '#FF1744', shadowRadius: 30, shadowOpacity: 0.9 },
     }),
   },
-  body: {
+  roofTube: {
     position: 'absolute',
-    bottom: 14,
-    left: 10,
-    right: 5,
-    height: 25,
-    backgroundColor: '#1E232A',
-    borderRadius: 4,
-    borderTopLeftRadius: 3,
-    borderTopRightRadius: 10,
-    borderWidth: 1,
-    borderColor: '#3A424D',
-  },
-  bodyStripe: {
-    position: 'absolute',
-    top: 12,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: '#E31837',
-    opacity: 0.85,
-  },
-  cockpit: {
-    position: 'absolute',
-    bottom: 34,
-    left: 50,
-    width: 62,
-    height: 23,
-    backgroundColor: '#171B21',
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 16,
-    borderWidth: 1,
-    borderColor: '#3A424D',
+    top: 15,
+    left: 55,
+    width: 125,
+    height: 38,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 32,
+    borderWidth: 3.5,
+    borderColor: '#FF1744',
     borderBottomWidth: 0,
-    overflow: 'hidden',
-  },
-  windshield: {
-    position: 'absolute',
-    right: 0,
-    top: 2,
-    width: 32,
-    height: 19,
-    borderTopRightRadius: 14,
-    backgroundColor: 'rgba(227, 24, 55, 0.25)',
-    borderLeftWidth: 1,
-    borderColor: '#4A5462',
-  },
-  rearWindow: {
-    position: 'absolute',
-    left: 2,
-    top: 3,
-    width: 24,
-    height: 17,
-    borderTopLeftRadius: 4,
-    backgroundColor: 'rgba(227, 24, 55, 0.18)',
-    borderRightWidth: 1,
-    borderColor: '#4A5462',
-  },
-  cPillarKink: {
-    position: 'absolute',
-    left: 24,
-    top: 0,
-    width: 6,
-    height: 23,
-    backgroundColor: '#1E232A',
-    transform: [{ skewX: '-20deg' }],
-  },
-  hood: {
-    position: 'absolute',
-    bottom: 23,
-    right: 5,
-    width: 68,
-    height: 14,
-    backgroundColor: '#1E232A',
-    borderTopRightRadius: 8,
-    borderTopLeftRadius: 1,
-    borderWidth: 1,
-    borderColor: '#3A424D',
-    borderBottomWidth: 0,
-    borderLeftWidth: 0,
-  },
-  hoodNacaDuct: {
-    position: 'absolute',
-    top: 3,
-    right: 25,
-    width: 10,
-    height: 4,
-    backgroundColor: '#0F1216',
-    borderRadius: 1,
-    borderWidth: 0.5,
-    borderColor: '#E31837',
-  },
-  frontSplitter: {
-    position: 'absolute',
-    bottom: 10,
-    right: 0,
-    width: 20,
-    height: 6,
-    backgroundColor: '#0D0F12',
-    borderTopRightRadius: 4,
-    borderBottomRightRadius: 2,
-    borderWidth: 1,
-    borderColor: '#2A3038',
-  },
-  rearDiffuser: {
-    position: 'absolute',
-    bottom: 10,
-    left: 2,
-    width: 16,
-    height: 6,
-    backgroundColor: '#0D0F12',
-    borderRadius: 2,
-  },
-  quadExhaustTip: {
-    position: 'absolute',
-    bottom: 11,
-    left: 0,
-    width: 5,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#2196F3',
+    borderRightWidth: 2,
+    borderLeftWidth: 3.5,
     ...Platform.select({
-      web: { boxShadow: '0 0 6px rgba(33, 150, 243, 0.9)' } as any,
-      default: { shadowColor: '#2196F3', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.9, shadowRadius: 6 },
+      web: { boxShadow: '0 0 12px #FF1744, 0 0 25px #FF1744' } as any,
+      default: { shadowColor: '#FF1744', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 12 },
     }),
+  },
+  roofCore: {
+    position: 'absolute',
+    top: 16,
+    left: 56,
+    width: 123,
+    height: 36,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 31,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    borderBottomWidth: 0,
+    opacity: 0.9,
   },
   spoilerWing: {
     position: 'absolute',
-    bottom: 53,
-    left: 4,
-    width: 34,
-    height: 4,
-    backgroundColor: '#111418',
-    borderRadius: 2,
+    top: 22,
+    left: 10,
+    width: 48,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF1744',
     borderWidth: 1,
-    borderColor: '#3A424D',
+    borderColor: '#FFFFFF',
+    ...Platform.select({
+      web: { boxShadow: '0 0 14px #FF1744' } as any,
+    }),
   },
   spoilerPillarLeft: {
     position: 'absolute',
-    bottom: 38,
-    left: 12,
+    top: 28,
+    left: 20,
     width: 3,
-    height: 15,
-    backgroundColor: '#2A3038',
+    height: 20,
+    backgroundColor: '#FF1744',
   },
   spoilerPillarRight: {
     position: 'absolute',
-    bottom: 38,
-    left: 28,
+    top: 28,
+    left: 44,
     width: 3,
-    height: 15,
-    backgroundColor: '#2A3038',
+    height: 20,
+    backgroundColor: '#FF1744',
   },
-  headlightSlant: {
-    position: 'absolute',
-    bottom: 24,
-    right: 4,
-    width: 12,
-    height: 7,
-    borderRadius: 3,
-    backgroundColor: '#FFE066',
-    transform: [{ rotate: '-10deg' }],
-    ...Platform.select({
-      web: { boxShadow: '0 0 14px rgba(255, 224, 102, 1)' } as any,
-      default: { shadowColor: '#FFE066', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 14 },
-    }),
-  },
-  headlightDrl: {
+  hoodTube: {
     position: 'absolute',
     bottom: 26,
-    right: 6,
-    width: 7,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: '#FFFFFF',
-  },
-  gtrRingLight1: {
-    position: 'absolute',
-    bottom: 27,
-    left: 8,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FF1744',
-    borderWidth: 1.5,
-    borderColor: '#FF80AB',
-    alignItems: 'center',
-    justifyContent: 'center',
+    right: 10,
+    width: 78,
+    height: 20,
+    borderTopRightRadius: 14,
+    borderTopLeftRadius: 2,
+    borderWidth: 3.5,
+    borderColor: '#FF1744',
+    borderBottomWidth: 0,
+    borderLeftWidth: 0,
     ...Platform.select({
-      web: { boxShadow: '0 0 10px rgba(255, 23, 68, 0.95)' } as any,
-      default: { shadowColor: '#FF1744', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.95, shadowRadius: 10 },
+      web: { boxShadow: '0 0 12px #FF1744' } as any,
     }),
   },
-  gtrRingLight2: {
+  sideSkirtTube: {
     position: 'absolute',
-    bottom: 27,
-    left: 20,
-    width: 9,
+    bottom: 10,
+    left: 18,
+    right: 16,
+    height: 3.5,
+    borderRadius: 2,
+    backgroundColor: '#FF1744',
+    borderWidth: 0.8,
+    borderColor: '#FFFFFF',
+    ...Platform.select({
+      web: { boxShadow: '0 0 14px #FF1744' } as any,
+    }),
+  },
+  frontWheelArch: {
+    position: 'absolute',
+    bottom: 10,
+    right: 34,
+    width: 40,
+    height: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderWidth: 3.5,
+    borderColor: '#FF1744',
+    borderBottomWidth: 0,
+  },
+  rearWheelArch: {
+    position: 'absolute',
+    bottom: 10,
+    left: 34,
+    width: 40,
+    height: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderWidth: 3.5,
+    borderColor: '#FF1744',
+    borderBottomWidth: 0,
+  },
+  windowFrame: {
+    position: 'absolute',
+    top: 21,
+    left: 76,
+    width: 76,
+    height: 24,
+    borderTopLeftRadius: 9,
+    borderTopRightRadius: 22,
+    borderWidth: 2.5,
+    borderColor: '#FF1744',
+    borderBottomWidth: 0,
+    opacity: 0.9,
+  },
+  headlightSweep: {
+    position: 'absolute',
+    bottom: 26,
+    right: 12,
+    width: 20,
     height: 9,
     borderRadius: 4.5,
-    backgroundColor: '#FF1744',
-    borderWidth: 1.5,
-    borderColor: '#FF80AB',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    transform: [{ rotate: '-18deg' }],
     ...Platform.select({
-      web: { boxShadow: '0 0 8px rgba(255, 23, 68, 0.95)' } as any,
-      default: { shadowColor: '#FF1744', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.95, shadowRadius: 8 },
+      web: { boxShadow: '0 0 16px #FFFFFF' } as any,
     }),
   },
-  gtrRingInner: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#FFFFFF',
-  },
-  gtrFenderVent: {
+  gtrTailRing1: {
     position: 'absolute',
-    bottom: 18,
-    right: 50,
-    width: 7,
+    bottom: 30,
+    left: 18,
+    width: 13,
+    height: 13,
+    borderRadius: 6.5,
+    borderWidth: 2.5,
+    borderColor: '#FF1744',
+    backgroundColor: 'rgba(255, 23, 68, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gtrTailRing2: {
+    position: 'absolute',
+    bottom: 30,
+    left: 34,
+    width: 12,
     height: 12,
-    backgroundColor: '#0D0F12',
-    borderRadius: 2,
-    borderWidth: 1,
-    borderColor: '#3A424D',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  gtrBadgeSlash: {
-    width: 3,
-    height: 6,
-    backgroundColor: '#E31837',
-    borderRadius: 1,
-  },
-  wheelFront: {
-    position: 'absolute',
-    bottom: 2,
-    right: 22,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#0B0D0F',
-    borderWidth: 3,
-    borderColor: '#4A5462',
+    borderRadius: 6,
+    borderWidth: 2.5,
+    borderColor: '#FF1744',
+    backgroundColor: 'rgba(255, 23, 68, 0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  wheelRear: {
-    position: 'absolute',
-    bottom: 2,
-    left: 22,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#0B0D0F',
-    borderWidth: 3,
-    borderColor: '#4A5462',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bremboCaliper: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#FF9800',
-  },
-  wheelRim: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 1.5,
-    borderColor: '#8A99AD',
-    backgroundColor: '#1E232A',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  wheelSpokes: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#C0C9D6',
-  },
-  wheelHub: {
-    position: 'absolute',
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+  gtrTailInner: {
+    width: 4.5,
+    height: 4.5,
+    borderRadius: 2.25,
     backgroundColor: '#FFFFFF',
   },
-  sideSkirt: {
+  gtrBadgeTag: {
     position: 'absolute',
-    bottom: 12,
-    left: 42,
-    right: 42,
-    height: 3,
-    backgroundColor: '#0D0F12',
-    borderRadius: 1.5,
-  },
-  doorLine: {
-    position: 'absolute',
-    bottom: 18,
-    left: 72,
-    width: 1,
-    height: 26,
-    backgroundColor: '#3A424D',
-  },
-  gtrLogoLabel: {
-    position: 'absolute',
-    top: 2,
-    right: 12,
-    backgroundColor: 'rgba(227, 24, 55, 0.9)',
+    top: 0,
+    right: 16,
+    backgroundColor: '#FF1744',
     paddingHorizontal: 5,
     paddingVertical: 1,
-    borderRadius: 4,
+    borderRadius: 3,
   },
-  gtrLogoText: {
-    color: '#FFF',
-    fontSize: 9,
+  gtrBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 8.5,
     fontWeight: '900',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
 });
 
@@ -596,24 +430,14 @@ const AnimatedIntroSplash: React.FC<{ onFinish: () => void }> = ({ onFinish }) =
             />
           ))}
 
-          {/* Supercar */}
+          {/* Red Neon Nissan GT-R R35 Silhouette */}
           <Animated.View style={[splash.carWrap, { opacity: carOpacity, transform: [{ translateX: carX }] }]}>
-            <SuperCar />
+            <RedNeonGTRSilhouette />
           </Animated.View>
 
           {/* Road */}
           <Animated.View style={[splash.road, { transform: [{ scaleX: roadScaleX }] }]} />
           <Animated.View style={[splash.roadDash, { transform: [{ scaleX: roadScaleX }] }]} />
-
-          {/* N letter */}
-          <Animated.View style={[splash.letterWrap, { left: '23%' }, { opacity: nOpacity, transform: [{ translateX: nX }] }]}>
-            <Text style={splash.letterN}>N</Text>
-          </Animated.View>
-
-          {/* S letter */}
-          <Animated.View style={[splash.letterWrap, { left: '52%' }, { opacity: sOpacity, transform: [{ translateX: sX }] }]}>
-            <Text style={splash.letterS}>S</Text>
-          </Animated.View>
 
           {/* Particles */}
           {particles.map((p, i) => {
@@ -642,11 +466,10 @@ const AnimatedIntroSplash: React.FC<{ onFinish: () => void }> = ({ onFinish }) =
 
       {/* ── Final Logo (end logo) ── */}
       <Animated.View style={[splash.finalWrap, { opacity: finalOpacity, transform: [{ scale: finalScale }] }]}>
-        <View style={splash.finalRow}>
-          <Text style={splash.finalN}>N</Text>
-          <Text style={splash.finalS}>S</Text>
+        <View style={splash.sunBadgeCircle}>
+          <Text style={splash.sunNsText}>N<Text style={{ color: '#FFFFFF' }}>S</Text></Text>
         </View>
-        <Animated.View style={{ opacity: taglineOpacity, transform: [{ translateY: taglineY }] }}>
+        <Animated.View style={{ opacity: taglineOpacity, transform: [{ translateY: taglineY }], alignItems: 'center', marginTop: 18 }}>
           <Text style={splash.finalTitle}>NEW SUNSHINE</Text>
           <Text style={splash.finalSub}>DRIVING ACADEMY</Text>
           <Animated.View style={[splash.underline, { transform: [{ scaleX: underlineWidth }] }]} />
@@ -779,32 +602,26 @@ const splash = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
   },
-  finalRow: {
-    flexDirection: 'row',
+  sunBadgeCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: '#E31837',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  finalN: {
-    fontSize: 64,
-    fontWeight: '900',
-    fontStyle: 'italic',
-    color: '#E31837',
-    letterSpacing: -4,
+    justifyContent: 'center',
+    marginBottom: 8,
     ...Platform.select({
-      web: { textShadow: '0 4px 24px rgba(227, 24, 55, 0.4)' } as any,
-      default: {},
+      ios: { shadowColor: '#FF1744', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.6, shadowRadius: 20 },
+      android: { elevation: 25 },
+      web: { boxShadow: '0 0 35px rgba(255, 23, 68, 0.7), 0 0 70px rgba(227, 24, 55, 0.4)' } as any
     }),
   },
-  finalS: {
-    fontSize: 64,
+  sunNsText: {
+    color: '#000000',
+    fontSize: 42,
     fontWeight: '900',
     fontStyle: 'italic',
-    color: '#FFFFFF',
-    letterSpacing: -4,
-    ...Platform.select({
-      web: { textShadow: '0 4px 24px rgba(255, 255, 255, 0.2)' } as any,
-      default: {},
-    }),
+    letterSpacing: -2,
   },
   finalTitle: {
     color: '#FFFFFF',
